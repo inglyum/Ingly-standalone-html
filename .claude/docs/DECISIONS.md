@@ -15,3 +15,5 @@ Registro append-only delle decisioni architetturali. Ogni scelta importante qui.
 ## Come aggiungere una riga
 Data · Decisione · Motivo · Esito atteso. Alla review (trimestrale) aggiorna
 l'esito reale.
+| 2026-07 | Gating moduli via codice licenza offline (non backend) | Scelta utente: funziona su qualsiasi PC senza infrastruttura | Copie clienti limitate al piano, master piena |
+| 2026-07 | Default senza licenza = accesso completo (non Starter) | Non bloccare il proprietario fuori dal proprio tool (regola opt-in) | Nessuna regressione d'uso |
