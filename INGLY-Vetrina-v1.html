@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ingly Design — Personalizzazioni Laser Premium · Valle del Belice</title>
+<meta name="description" content="Cake topper, targhe, QR menu, bomboniere e gadget personalizzati con incisione laser e stampa UV. Design moderno, consegna 48–72h. San Cipirello (PA).">
+<meta property="og:title" content="Ingly Design — Personalizzazioni Laser Premium">
+<meta property="og:description" content="Design moderno + precisione tecnica + consegna 48–72h. Valle del Belice.">
+<meta property="og:type" content="website">
+<!-- Dati strutturati LocalBusiness (SEO) -->
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"LocalBusiness","name":"Ingly Design","description":"Laboratorio di personalizzazioni premium con laser CO2/MOPA, stampa UV, DTF e sublimazione.","address":{"@type":"PostalAddress","addressLocality":"San Cipirello","addressRegion":"PA","addressCountry":"IT"},"areaServed":"Valle del Belice","priceRange":"€€"}
+</script>
+<style>
+  :root{
+    --gold:#fbbf24; --gold-deep:#d99a06; --gold-soft:#fbbf2418;
+    --ink:#17140d; --ink-2:#221d13; --card:#1c1810; --line:#ffffff14; --line-2:#ffffff26;
+    --cream:#f7f3ea; --muted:#b9ad93; --dim:#8a7f66;
+    --wood:#c98b4b;
+    --radius:16px; --radius-sm:11px;
+    --ease:cubic-bezier(.16,1,.3,1);
+    --serif: ui-serif, Georgia, 'Times New Roman', serif;
+    --sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --ink:#f7f3ea; --ink-2:#efe8d8; --card:#fffdf8; --line:#0000000f; --line-2:#00000018; --cream:#221d13; --muted:#6b6047; --dim:#8a7f66; }
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{ background:var(--ink); color:var(--cream); font-family:var(--sans);
+    -webkit-font-smoothing:antialiased; line-height:1.5; overflow-x:hidden; }
+  img{ max-width:100%; display:block; }
+  a{ color:inherit; text-decoration:none; }
+
+  .wrap{ max-width:1180px; margin:0 auto; padding:0 22px; }
+
+  /* ── Header ── */
+  header{ position:sticky; top:0; z-index:50; background:color-mix(in srgb,var(--ink) 86%,transparent);
+    backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+  .nav{ display:flex; align-items:center; gap:18px; height:64px; }
+  .brand{ font-weight:800; font-size:19px; letter-spacing:-.02em; }
+  .brand b{ color:var(--gold); }
+  .nav .spacer{ flex:1; }
+  .nav a.link{ color:var(--muted); font-size:14px; font-weight:600; transition:color .16s; }
+  .nav a.link:hover{ color:var(--cream); }
+  .wa-btn{ display:inline-flex; align-items:center; gap:8px; background:var(--gold);
+    color:#1a1400; font-weight:800; font-size:13px; padding:10px 16px; border-radius:99px;
+    transition:transform .16s var(--ease), filter .16s; }
+  .wa-btn:hover{ transform:translateY(-1px); filter:brightness(1.06); }
+  @media (max-width:640px){ .nav a.link{ display:none; } }
+
+  /* ── Hero ── */
+  .hero{ padding:74px 0 54px; position:relative; }
+  .eyebrow{ display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--gold); margin-bottom:20px; }
+  .eyebrow::before{ content:""; width:26px; height:1px; background:var(--gold); }
+  h1{ font-family:var(--serif); font-weight:600; font-size:clamp(38px,6vw,66px); line-height:1.02;
+    letter-spacing:-.02em; text-wrap:balance; max-width:16ch; }
+  h1 em{ color:var(--gold); font-style:normal; }
+  .lead{ margin-top:22px; font-size:clamp(16px,2vw,19px); color:var(--muted); max-width:52ch; line-height:1.6; }
+  .hero-cta{ margin-top:32px; display:flex; gap:12px; flex-wrap:wrap; }
+  .btn-ghost{ display:inline-flex; align-items:center; gap:8px; padding:12px 20px; border-radius:99px;
+    border:1px solid var(--line-2); color:var(--cream); font-weight:700; font-size:14px; transition:.16s var(--ease); }
+  .btn-ghost:hover{ border-color:var(--gold); color:var(--gold); transform:translateY(-1px); }
+  .promise{ margin-top:44px; display:flex; gap:26px; flex-wrap:wrap; }
+  .promise div{ font-size:13px; color:var(--dim); display:flex; align-items:center; gap:8px; }
+  .promise b{ color:var(--cream); font-weight:700; }
+
+  /* ── Categorie filtro ── */
+  .cats{ display:flex; gap:9px; flex-wrap:wrap; padding:8px 0 26px; }
+  .cat{ padding:8px 16px; border-radius:99px; border:1px solid var(--line-2); background:transparent;
+    color:var(--muted); font-weight:700; font-size:13px; cursor:pointer; transition:.16s var(--ease); font-family:inherit; }
+  .cat:hover{ color:var(--cream); border-color:var(--line-2); }
+  .cat.on{ background:var(--gold); color:#1a1400; border-color:var(--gold); }
+
+  /* ── Sezione titolo ── */
+  .sec-head{ display:flex; align-items:end; justify-content:space-between; margin:8px 0 22px; gap:16px; }
+  .sec-head h2{ font-family:var(--serif); font-weight:600; font-size:clamp(24px,3.4vw,34px); letter-spacing:-.02em; }
+  .sec-head p{ color:var(--dim); font-size:14px; }
+
+  /* ── Griglia prodotti ── */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:18px; padding-bottom:20px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden;
+    display:flex; flex-direction:column; transition:transform .24s var(--ease), box-shadow .24s var(--ease), border-color .24s; }
+  .card:hover{ transform:translateY(-4px); box-shadow:0 18px 44px -12px rgba(0,0,0,.5); border-color:var(--line-2); }
+  .thumb{ aspect-ratio:4/3; background:linear-gradient(135deg,var(--ink-2),var(--card));
+    display:flex; align-items:center; justify-content:center; font-size:60px; position:relative; }
+  .thumb .tag{ position:absolute; top:12px; left:12px; background:var(--gold); color:#1a1400;
+    font-size:10px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:4px 9px; border-radius:99px; }
+  .card-body{ padding:16px 16px 18px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .card-cat{ font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--dim); }
+  .card-name{ font-size:16px; font-weight:700; letter-spacing:-.01em; line-height:1.25; }
+  .card-desc{ font-size:13px; color:var(--muted); line-height:1.5; flex:1; }
+  .card-foot{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; gap:10px; }
+  .price{ font-weight:800; font-size:19px; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .price small{ font-size:12px; color:var(--dim); font-weight:600; }
+  .order{ display:inline-flex; align-items:center; gap:6px; background:var(--gold-soft); color:var(--gold);
+    border:1px solid var(--gold)33; font-weight:800; font-size:12px; padding:9px 13px; border-radius:99px;
+    cursor:pointer; transition:.16s var(--ease); font-family:inherit; }
+  .order:hover{ background:var(--gold); color:#1a1400; transform:translateY(-1px); }
+
+  /* ── Pacchetti eventi ── */
+  .packs{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:18px; margin:14px 0 20px; }
+  .pack{ background:linear-gradient(180deg,var(--card),var(--ink-2)); border:1px solid var(--line);
+    border-radius:var(--radius); padding:24px; display:flex; flex-direction:column; gap:8px; transition:.22s var(--ease); }
+  .pack:hover{ border-color:var(--gold)55; transform:translateY(-3px); }
+  .pack.hot{ border-color:var(--gold); }
+  .pack .badge{ align-self:flex-start; font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase;
+    background:var(--gold); color:#1a1400; padding:3px 9px; border-radius:99px; }
+  .pack h3{ font-family:var(--serif); font-size:22px; font-weight:600; }
+  .pack .pk-price{ font-size:30px; font-weight:800; letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+  .pack ul{ list-style:none; display:flex; flex-direction:column; gap:7px; margin:6px 0 14px; }
+  .pack li{ font-size:13.5px; color:var(--muted); padding-left:22px; position:relative; }
+  .pack li::before{ content:"✓"; position:absolute; left:0; color:var(--gold); font-weight:800; }
+
+  /* ── Sezioni ── */
+  section.blk{ padding:56px 0; border-top:1px solid var(--line); }
+  section.blk:first-of-type{ border-top:0; }
+
+  /* ── Footer ── */
+  footer{ border-top:1px solid var(--line); padding:48px 0 60px; color:var(--muted); }
+  .foot-grid{ display:grid; grid-template-columns:2fr 1fr 1fr; gap:30px; }
+  @media (max-width:640px){ .foot-grid{ grid-template-columns:1fr; gap:22px; } }
+  footer h4{ color:var(--cream); font-size:13px; text-transform:uppercase; letter-spacing:.08em; margin-bottom:12px; }
+  footer a.f{ display:block; color:var(--muted); font-size:14px; padding:3px 0; transition:color .15s; }
+  footer a.f:hover{ color:var(--gold); }
+  .copy{ margin-top:34px; padding-top:22px; border-top:1px solid var(--line); font-size:12px; color:var(--dim); }
+
+  /* ── Barra WhatsApp mobile ── */
+  .wa-float{ position:fixed; right:18px; bottom:18px; z-index:60; background:#25D366; color:#04310f;
+    width:56px; height:56px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+    font-size:26px; box-shadow:0 10px 30px rgba(37,211,102,.4); transition:transform .18s var(--ease); }
+  .wa-float:hover{ transform:scale(1.08); }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none!important; animation:none!important; } }
+</style>
+</head>
+<body>
+
+<!-- ⚠️ CONFIGURA: sostituisci con il TUO numero WhatsApp (formato internazionale, senza + né spazi) -->
+<script>window.INGLY_WA = "393000000000";</script>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">INGLY<b>·</b>Design</div>
+    <a class="link" href="#evergreen">Prodotti</a>
+    <a class="link" href="#eventi">Eventi</a>
+    <a class="link" href="#aziende">Aziende</a>
+    <div class="spacer"></div>
+    <a class="wa-btn" id="wa-head" target="_blank" rel="noopener">💬 Ordina ora</a>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="wrap hero">
+    <div class="eyebrow">Valle del Belice · Made in Sicily</div>
+    <h1>Personalizzazioni <em>laser</em> che fanno dire wow.</h1>
+    <p class="lead">Cake topper, targhe, bomboniere e gadget su misura — design moderno, precisione tecnica e consegna in <b>48–72h</b>. Ogni pezzo, come lo passeresti a un amico.</p>
+    <div class="hero-cta">
+      <a class="wa-btn" id="wa-hero" target="_blank" rel="noopener">💬 Chiedi un preventivo</a>
+      <a class="btn-ghost" href="#evergreen">Sfoglia i prodotti ↓</a>
+    </div>
+    <div class="promise">
+      <div>⚡ <b>48–72h</b> consegna</div>
+      <div>🎨 <b>Design</b> incluso</div>
+      <div>✨ <b>Anteprima</b> prima di produrre</div>
+      <div>📍 <b>Valle del Belice</b> + spedizioni</div>
+    </div>
+  </section>
+
+  <!-- EVERGREEN -->
+  <section class="wrap blk" id="evergreen">
+    <div class="sec-head">
+      <div><h2>Listino Evergreen</h2><p>Prezzi fissi · pronti in 48h</p></div>
+    </div>
+    <div class="cats" id="cats"></div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <!-- EVENTI (pacchetti) -->
+  <section class="wrap blk" id="eventi">
+    <div class="sec-head"><div><h2>Pacchetti Eventi</h2><p>Battesimi · Compleanni · Matrimoni</p></div></div>
+    <div class="packs">
+      <div class="pack">
+        <span class="badge">Base</span>
+        <h3>Battesimo / Compleanno</h3>
+        <div class="pk-price">€89</div>
+        <ul><li>Cake topper premium</li><li>10 segnaposto coordinati</li><li>Decorazione torta</li><li>Consegna 72h</li></ul>
+        <a class="order pk" data-item="Pacchetto Base €89" target="_blank" rel="noopener">💬 Prenota</a>
+      </div>
+      <div class="pack hot">
+        <span class="badge">Premium · più scelto</span>
+        <h3>Battesimo / Compleanno</h3>
+        <div class="pk-price">€189</div>
+        <ul><li>Topper + 20 segnaposto</li><li>Centrotavola plexi</li><li>Targa benvenuto</li><li>Confezione ricordo</li></ul>
+        <a class="order pk" data-item="Pacchetto Premium €189" target="_blank" rel="noopener">💬 Prenota</a>
+      </div>
+      <div class="pack">
+        <span class="badge">Su misura</span>
+        <h3>Matrimonio</h3>
+        <div class="pk-price">da €290</div>
+        <ul><li>Sopralluogo + moodboard</li><li>Topper + tableau</li><li>Segnaposto ospiti</li><li>Targhe dedicate</li></ul>
+        <a class="order pk" data-item="Matrimonio su misura" target="_blank" rel="noopener">💬 Richiedi</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- AZIENDE -->
+  <section class="wrap blk" id="aziende">
+    <div class="sec-head"><div><h2>Per le Aziende</h2><p>Targhe · QR menu · gadget brandizzati</p></div></div>
+    <div class="packs">
+      <div class="pack"><span class="badge">Starter</span><h3>Starter Locale</h3><div class="pk-price">€149</div>
+        <ul><li>Targa esterna/interna</li><li>QR menu ×5</li><li>25 portachiavi logo</li></ul>
+        <a class="order pk" data-item="Starter Locale €149" target="_blank" rel="noopener">💬 Info</a></div>
+      <div class="pack"><span class="badge">Brand</span><h3>Brand Refresh</h3><div class="pk-price">€349</div>
+        <ul><li>Audit + targa</li><li>Espositori ×2 · QR menu ×10</li><li>50 gadget brandizzati</li></ul>
+        <a class="order pk" data-item="Brand Refresh €349" target="_blank" rel="noopener">💬 Info</a></div>
+      <div class="pack"><span class="badge">Ricorrente</span><h3>Abbonamento Gadget</h3><div class="pk-price">€59<small style="font-size:15px;color:var(--dim)">/mese</small></div>
+        <ul><li>25 gadget/mese</li><li>A rotazione</li><li>Ricavo ricorrente</li></ul>
+        <a class="order pk" data-item="Abbonamento Gadget €59/mese" target="_blank" rel="noopener">💬 Info</a></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="font-size:20px;margin-bottom:10px">INGLY<b style="color:var(--gold)">·</b>Design</div>
+        <p style="max-width:38ch;font-size:14px;line-height:1.6">Laboratorio creativo di personalizzazioni premium. Laser CO₂/MOPA, stampa UV, DTF e sublimazione. San Cipirello (PA), Valle del Belice.</p>
+      </div>
+      <div><h4>Prodotti</h4>
+        <a class="f" href="#evergreen">Evergreen</a><a class="f" href="#eventi">Eventi</a><a class="f" href="#aziende">Aziende</a></div>
+      <div><h4>Contatti</h4>
+        <a class="f" id="wa-foot" target="_blank" rel="noopener">💬 WhatsApp</a>
+        <a class="f" href="#">📍 San Cipirello (PA)</a>
+        <a class="f" href="#">⚡ Consegna 48–72h</a></div>
+    </div>
+    <div class="copy">© <span id="yr"></span> Ingly Design · Giuseppe Inglima · Personalizzazioni laser — Valle del Belice 🇮🇹</div>
+  </div>
+</footer>
+
+<a class="wa-float" id="wa-float" target="_blank" rel="noopener" title="Scrivici su WhatsApp">💬</a>
+
+<script>
+(function(){
+  "use strict";
+  var WA = window.INGLY_WA || "393000000000";
+  function waLink(text){ return "https://wa.me/"+WA+"?text="+encodeURIComponent(text); }
+
+  // Prodotti demo — SOSTITUIBILI con l'export del catalogo dal gestionale (stesso formato).
+  var PRODOTTI = [
+    {name:"Cake Topper Premium", cat:"Eventi", price:"49,90", emoji:"🎂", tag:"Bestseller", desc:"Plexi specchiato o legno, doppio strato. Nome + età personalizzati."},
+    {name:"Portachiavi Apribottiglie", cat:"Evergreen", price:"8,90", emoji:"🍾", tag:"", desc:"Legno/bambù inciso. Bomboniera alternativa, gadget aziendale."},
+    {name:"Portachiavi Plexi Nome", cat:"Evergreen", price:"6,90", emoji:"🔑", tag:"", desc:"Plexi colorato con nome inciso. Da 3 pezzi €15,90."},
+    {name:"Targa Plexi A5", cat:"Aziende", price:"29,90", emoji:"🏷️", tag:"", desc:"Targa professionale con distanziali. Logo o testo inciso."},
+    {name:"QR Menu Plexiglass", cat:"Aziende", price:"19,90", emoji:"📱", tag:"", desc:"Per bar e ristoranti. Set 5+ a €14,90/pz."},
+    {name:"Decorazione Nome Bimbo", cat:"Eventi", price:"19,90", emoji:"🧸", tag:"", desc:"Cameretta o evento. Legno naturale, luce LED opzionale +€15."},
+    {name:"Set 6 Sottobicchieri Incisi", cat:"Evergreen", price:"24,90", emoji:"🥃", tag:"", desc:"Legno o ardesia, incisione personalizzata."},
+    {name:"Tazza Personalizzata", cat:"Evergreen", price:"14,90", emoji:"☕", tag:"", desc:"Sublimazione full-color. Foto, nome, frase."},
+  ];
+
+  // Categorie
+  var cats = ["Tutti"].concat(PRODOTTI.map(function(p){return p.cat;}).filter(function(v,i,a){return a.indexOf(v)===i;}));
+  var curCat = "Tutti";
+  var catsEl = document.getElementById("cats");
+  var gridEl = document.getElementById("grid");
+
+  function renderCats(){
+    catsEl.innerHTML = cats.map(function(c){
+      return '<button class="cat'+(c===curCat?' on':'')+'" data-c="'+c+'">'+c+'</button>';
+    }).join("");
+    catsEl.querySelectorAll(".cat").forEach(function(b){
+      b.onclick=function(){ curCat=this.getAttribute("data-c"); renderCats(); renderGrid(); };
+    });
+  }
+  function renderGrid(){
+    var list = PRODOTTI.filter(function(p){ return curCat==="Tutti"||p.cat===curCat; });
+    gridEl.innerHTML = list.map(function(p){
+      return '<article class="card">'
+        +'<div class="thumb">'+(p.tag?'<span class="tag">'+p.tag+'</span>':'')+p.emoji+'</div>'
+        +'<div class="card-body">'
+          +'<div class="card-cat">'+p.cat+'</div>'
+          +'<div class="card-name">'+p.name+'</div>'
+          +'<div class="card-desc">'+p.desc+'</div>'
+          +'<div class="card-foot"><div class="price">€'+p.price+'</div>'
+          +'<a class="order" target="_blank" rel="noopener" href="'+waLink("Ciao Ingly! Vorrei ordinare: "+p.name+" (€"+p.price+"). Puoi darmi info?")+'">💬 Ordina</a></div>'
+        +'</div></article>';
+    }).join("");
+  }
+  renderCats(); renderGrid();
+
+  // Link WhatsApp header/hero/footer/float + pacchetti
+  document.getElementById("wa-head").href = waLink("Ciao Ingly! Vorrei informazioni sui vostri prodotti personalizzati.");
+  document.getElementById("wa-hero").href = waLink("Ciao Ingly! Vorrei un preventivo. Occasione: ___ · Quando mi serve: ___");
+  document.getElementById("wa-foot").href = waLink("Ciao Ingly!");
+  document.getElementById("wa-float").href = waLink("Ciao Ingly! 👋");
+  document.querySelectorAll(".order.pk").forEach(function(a){
+    a.href = waLink("Ciao Ingly! Sono interessato/a al pacchetto: "+a.getAttribute("data-item")+". Info?");
+  });
+  document.getElementById("yr").textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
