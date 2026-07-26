@@ -24,9 +24,9 @@
   --text2:    #a0a0c0;
   --text3:    #606080;
   --text4:    #383858;
-  --accent:   #6366f1;
-  --acc2:     #4f52d8;
-  --acc3:     #818cf8;
+  --accent:   #fbbf24;
+  --acc2:     #f59e0b;
+  --acc3:     #fcd34d;
   --green:    #10b981;
   --green2:   #34d399;
   --yellow:   #f59e0b;
@@ -5682,6 +5682,10 @@ function saveStripeConfig() {
 
 </script>
 <style id="admin-premium-polish">
+/* Fase 6: accento ambra — contrasto bottoni pieni (testo scuro) */
+.btn-primary{ background:linear-gradient(180deg,var(--accent),var(--acc2)) !important; color:#1a1400 !important; font-weight:800 !important; }
+.btn-primary:hover{ filter:brightness(1.06); }
+
 /* ═══ INGLY ENTERPRISE ADMIN — PREMIUM POLISH (allineato al gestionale) ═══
    Stessi effetti d'interazione del main OS (hover-lift, press, focus ring,
    easing, scrollbar) mappati sui token dell'Admin. Solo transform/shadow/
