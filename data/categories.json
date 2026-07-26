@@ -40,9 +40,10 @@
     "en": "House keychains"
    }
   ],
-  "big": 1,
+  "big": "1",
   "bg": "linear-gradient(150deg,#f3e7d3,#e2c9a2)",
-  "icon": "casa"
+  "icon": "casa",
+  "img": "img/cat-casa.webp"
  },
  {
   "id": "eventi",
@@ -85,9 +86,10 @@
     "en": "Mother's/Father's day"
    }
   ],
-  "big": 1,
+  "big": "1",
   "bg": "linear-gradient(150deg,#fdf1f3,#fadde3)",
-  "icon": "eventi"
+  "icon": "eventi",
+  "img": "img/cat-eventi.webp"
  },
  {
   "id": "animali",
@@ -118,7 +120,10 @@
     "en": "Pet plaques"
    }
   ],
-  "icon": "animali"
+  "icon": "animali",
+  "img": "img/cat-animali.webp",
+  "big": "",
+  "bg": ""
  },
  {
   "id": "accessori",
@@ -157,7 +162,10 @@
     "en": "Covers"
    }
   ],
-  "icon": "accessori"
+  "icon": "accessori",
+  "img": "img/cat-accessori.webp",
+  "big": "",
+  "bg": ""
  },
  {
   "id": "b2b",
@@ -201,7 +209,10 @@
    }
   ],
   "w": 1,
-  "icon": "aziendale"
+  "icon": "aziendale",
+  "img": "img/cat-b2b.webp",
+  "big": "",
+  "bg": ""
  },
  {
   "id": "bambini",
@@ -237,7 +248,9 @@
    }
   ],
   "bg": "linear-gradient(150deg,#eefaf1,#d6f2df)",
-  "icon": "bambini"
+  "icon": "bambini",
+  "img": "img/cat-bambini.webp",
+  "big": ""
  },
  {
   "id": "stagionale",
@@ -277,7 +290,9 @@
    }
   ],
   "bg": "linear-gradient(150deg,#fdeaea,#f6cfcf)",
-  "icon": "stagionale"
+  "icon": "stagionale",
+  "img": "img/cat-stagionale.webp",
+  "big": ""
  },
  {
   "id": "digitale",
@@ -314,7 +329,9 @@
   ],
   "bg": "linear-gradient(150deg,#f4f0ff,#e3daf8)",
   "go": "digital",
-  "icon": "digitale"
+  "icon": "digitale",
+  "img": "img/cat-digitale.webp",
+  "big": ""
  },
  {
   "id": "custom",
@@ -332,7 +349,9 @@
   "darkc": 1,
   "go": "quote",
   "w": 1,
-  "icon": "custom"
+  "icon": "custom",
+  "img": "img/cat-custom.webp",
+  "big": ""
  },
  {
   "id": "materiali",
@@ -347,7 +366,10 @@
   },
   "sub": [],
   "go": "about",
-  "icon": "materiali"
+  "icon": "materiali",
+  "img": "img/cat-materiali.webp",
+  "big": "",
+  "bg": ""
  },
  {
   "id": "tecnologie",
@@ -362,7 +384,10 @@
   },
   "sub": [],
   "go": "about",
-  "icon": "tecnologie"
+  "icon": "tecnologie",
+  "img": "img/cat-tecnologie.webp",
+  "big": "",
+  "bg": ""
  },
  {
   "id": "limited",
@@ -390,6 +415,8 @@
    }
   ],
   "bg": "linear-gradient(150deg,#fff8e0,#fdeeb5)",
-  "icon": "limited"
+  "icon": "limited",
+  "img": "img/cat-limited.webp",
+  "big": ""
  }
 ]
