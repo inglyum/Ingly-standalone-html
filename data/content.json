@@ -3412,6 +3412,16 @@
      "en": ""
     },
     "logo": "img/sponsor-2.webp"
+   },
+   {
+    "nome": "Nuovo partner",
+    "link": "https://www.facebook.com/profile.php?id=61571904102246",
+    "livello": "",
+    "desc": {
+     "it": " Via Roma 300, San Cipirello, Italy, 90040",
+     "en": ""
+    },
+    "logo": "img/sponsor-3.webp"
    }
   ]
  },
@@ -3504,6 +3514,13 @@
   "img/port-3.webp": [
    400,
    800
+  ],
+  "img/sponsor-2.webp": [
+   400,
+   800
+  ],
+  "img/sponsor-3.webp": [
+   400
   ]
  },
  "SOCIAL_HUB": {
@@ -3519,7 +3536,9 @@
    { "id": "pt", "piattaforma": "pinterest", "attivo": true, "titolo": { "it": "Pinterest", "en": "Pinterest" }, "desc": { "it": "Idee regalo e ispirazioni per personalizzazioni.", "en": "Gift ideas and customisation inspiration." }, "url": "https://pinterest.com/inglydesign", "img": "", "badge": "inglydesign", "colore": "#E60023,#AD081B", "emoji": "📌" }
   ]
  },
- "FOCAL": {},
+ "FOCAL": {
+  "img/1.webp": "52% 42%"
+ },
  "POPUP": {
   "attivo": false,
   "id": "welcome2026",
