@@ -17,3 +17,17 @@ Data · Decisione · Motivo · Esito atteso. Alla review (trimestrale) aggiorna
 l'esito reale.
 | 2026-07 | Gating moduli via codice licenza offline (non backend) | Scelta utente: funziona su qualsiasi PC senza infrastruttura | Copie clienti limitate al piano, master piena |
 | 2026-07 | Default senza licenza = accesso completo (non Starter) | Non bloccare il proprietario fuori dal proprio tool (regola opt-in) | Nessuna regressione d'uso |
+
+## Enterprise Upgrade (v60–v67) — decisioni chiave
+- **Additività assoluta**: ogni fase è un modulo iniettato prima di `</html>`, mai
+  edit invasivi al monolite. Nessuna funzione/DB/logica esistente rimossa.
+- **SSOT macchine** (`equipment`): Catalogo (Fase 1), sync→quoter (Fase 2),
+  Scheda (Fase 3), ROI/accantonamento (Fase 6) leggono/scrivono lo stesso store.
+- **Design System** (Fase 4): componenti `.ds-*` + `window.DS` (Button/Input/
+  Select/Modal/Toast/Badge/Table/virtualList) — accento ambra `--primary`.
+- **Fase 8 — undo**: scartato l'undo per-scrittura (wrapping globale di IDB.put
+  inaffidabile: il boot satura la history + race sullo snapshot before). Scelto
+  **checkpoint/ripristino dataset** (IDB.exportAll → store `backups`), affidabile
+  e sicuro. Trail audit armato solo +6s dopo il boot per non registrare rumore.
+- **Regola anti-freeze confermata**: nessun modulo tocca `App.navigate`
+  (resta `writable:false, configurable:false`). Nav test v67: 133–185ms/sezione.
