@@ -78,6 +78,19 @@
 
 .engrave .fill{position:absolute;inset:0;color:var(--blue);clip-path:inset(0 100% 0 0);animation:fillin 2.2s var(--ease) 1s forwards}
 
+/* Slogan della hero: una riga sola, scritta dall'Admin, incisa dal laser come
+   l'ultima parola del titolo. Campo vuoto = elemento [hidden]: la hero torna
+   esattamente com'era, senza spazi vuoti né salti di layout. */
+.hero-slogan{font-family:var(--fd);font-size:clamp(1.15rem,2.1vw,1.72rem);font-weight:600;
+ letter-spacing:-.01em;line-height:1.15;margin:-8px 0 22px;color:var(--ink);max-width:22ch}
+.hero-slogan[hidden]{display:none}
+/* parte dopo le parole del titolo, così i due effetti si leggono in sequenza */
+.hero-slogan .engrave::before,.hero-slogan .engrave .fill{animation-delay:1.9s}
+@media (prefers-reduced-motion:reduce){
+  .hero-slogan .engrave::before{animation:none;opacity:0}
+  .hero-slogan .engrave .fill{animation:none;clip-path:none}
+}
+
 .hero-ctas{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
 .hero-meta{display:flex;gap:34px;margin-top:52px;flex-wrap:wrap}
 .hm{font-family:var(--fd)}

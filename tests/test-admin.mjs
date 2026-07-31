@@ -421,6 +421,44 @@ doc.querySelector('.nit[data-go="pub"]').click(); await wait(120);
 check('import backup: le immagini verranno ripubblicate',
   /restored-1\.webp/.test($('pubList').innerHTML), $('pubList').textContent.slice(0,90));
 
+console.log('\n=== Slogan della Hero ===');
+doc.querySelector('.nit[data-go="hero"]').click(); await wait(200);
+check('campi slogan IT/EN presenti', !!$('slIt') && !!$('slEn'));
+$('slIt').value = 'Fatto a mano, una volta sola.';
+$('slIt').dispatchEvent(new win.Event('input', { bubbles:true }));
+await wait(200);
+check('anteprima dello slogan aggiornata mentre scrivi', /Fatto a mano/.test($('slPrev').innerHTML));
+check('lo slogan entra in bozza da pubblicare', pendingHas('config'));
+
+console.log('\n=== Popup offerta: sconto, codice e prodotto ===');
+doc.querySelector('.nit[data-go="set"]').click(); await wait(300);
+check('campo sconto presente', !!$('sPopSconto'));
+check('scelta percentuale/euro presente', !!$('sPopScontoTipo'));
+check('campo codice sconto presente', !!$('sPopCodice'));
+check('scelta di cosa mostrare presente', !!$('sPopSfondoTipo'));
+check('elenco prodotti del catalogo caricato', $('sPopProd') && $('sPopProd').options.length > 1,
+  $('sPopProd') ? $('sPopProd').options.length + ' voci' : 'assente');
+
+/* Scegliendo un prodotto, foto nome e prezzo scontato devono nascere dal
+   catalogo: chi gestisce il sito decide solo quale prodotto mettere in offerta. */
+$('sPopSfondoTipo').value = 'prodotto';
+$('sPopSfondoTipo').dispatchEvent(new win.Event('change'));
+await wait(150);
+check('scegliendo «prodotto» compare il selettore', $('sPopProdRow').style.display !== 'none');
+check('scegliendo «prodotto» sparisce il campo immagine', $('sPopImgRow').style.display === 'none');
+const primo = [...$('sPopProd').options].find(o => o.value !== '0');
+$('sPopProd').value = primo.value; $('sPopProd').dispatchEvent(new win.Event('change'));
+$('sPopSconto').value = '30'; $('sPopSconto').dispatchEvent(new win.Event('input'));
+$('sPopCodice').value = 'estate30'; $('sPopCodice').dispatchEvent(new win.Event('input'));
+await wait(250);
+check('anteprima mostra il prezzo barrato e lo scontato', /<s /.test($('sPopProdPrev').innerHTML),
+  $('sPopProdPrev').textContent.replace(/\s+/g,' ').slice(0,80));
+check('anteprima mostra il codice in maiuscolo', /ESTATE30/.test($('sPopProdPrev').innerHTML));
+$('sPopScontoTipo').value = 'euro'; $('sPopScontoTipo').dispatchEvent(new win.Event('change'));
+await wait(200);
+check('sconto in euro invece che in percentuale',
+  $('sPopProdPrev').textContent.replace(/\s+/g,' ').length > 0);
+
 console.log(`\n=========== RISULTATO: ${pass} passati, ${fail} falliti ===========`);
 if (errors.length) { console.log('\nErrori raccolti:'); errors.slice(0, 8).forEach(e => console.log(' - ' + e.slice(0, 200))); }
 process.exit(fail ? 1 : 0);

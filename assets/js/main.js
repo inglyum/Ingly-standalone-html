@@ -34,7 +34,10 @@ function applyConfig(){
   const s=CONFIG.social, map=[s.instagram,s.facebook,s.tiktok,s.pinterest,s.whatsapp,s.etsy];
   map.forEach((u,i)=>{ if(u&&SOCIALS[i]) SOCIALS[i][1]=u });
   document.querySelectorAll('a[href^="https://instagram.com"]').forEach(a=>a.href=s.instagram);
-  document.querySelectorAll('a[href^="https://wa.me"]').forEach(a=>a.href=CONFIG.whatsapp);
+  /* [data-wa-keep] = link con un messaggio già scritto dentro (il popup offerta
+     porta con sé nome del prodotto, sconto e codice). Sovrascriverlo con il
+     numero nudo cancellava proprio la parte utile del link. */
+  document.querySelectorAll('a[href^="https://wa.me"]:not([data-wa-keep])').forEach(a=>a.href=CONFIG.whatsapp);
   document.querySelectorAll('a[href^="mailto:"]').forEach(a=>{a.href='mailto:'+CONFIG.email;a.textContent=CONFIG.email});
   $('ftCopy').textContent=CONFIG.copyright;
   $('ftLegal').textContent=CONFIG.legale;
@@ -50,12 +53,32 @@ function applyI18n(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{const v=D[L][el.dataset.i18n];if(v!==undefined)el.innerHTML=v});
   document.querySelectorAll('[data-ph]').forEach(el=>{const v=D[L][el.dataset.ph];if(v!==undefined)el.placeholder=v});
   $('heroH1').innerHTML=T('heroH1');
+  renderSlogan();
   $('langIT').classList.toggle('on',L==='it');
   $('langEN').classList.toggle('on',L==='en');
   prod.fillSort();
   const l=$('ldrTxt');if(l)l.textContent=T('ldr');
   const sb=$('sbBtn');if(sb)sb.firstChild.textContent=T('ppAdd')+' ';
 }
+/* Slogan della hero.
+   Il testo arriva da CONFIG.slogan ed è scritto a mano nell'Admin: va trattato
+   come testo, mai come HTML. Il duplicato .fill è la parte «incisa» che il
+   raggio scopre da sinistra, lo stesso meccanismo dell'ultima parola del
+   titolo. Campo vuoto = elemento nascosto: lo slogan è un'aggiunta, non un obbligo. */
+function renderSlogan(){
+  const el=$('heroSlogan'); if(!el) return;
+  const testo=String((CONFIG.slogan&&(CONFIG.slogan[L]||CONFIG.slogan.it))||'').trim();
+  el.innerHTML='';
+  if(!testo){ el.hidden=true; return }
+  el.hidden=false;
+  const w=document.createElement('span'); w.className='engrave';
+  w.appendChild(document.createTextNode(testo));
+  const fill=document.createElement('span');
+  fill.className='fill'; fill.setAttribute('aria-hidden','true'); fill.textContent=testo;
+  w.appendChild(fill);
+  el.appendChild(w);
+}
+
 function setLang(l){setL(l);applyI18n();renderAll();const pg=currentPage();updateSeo(pg,L,T,pg==='product'?prod.currentProduct():null)}
 
 /* ---- contenuti statici ---- */

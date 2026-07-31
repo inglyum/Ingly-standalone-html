@@ -112,6 +112,28 @@ console.log('\n=== SITO PUBBLICO ===');
 check('nessun errore JS', errors.length === 0, errors.slice(0, 2).join(' | '));
 check('nessun errore fatale nel loader', !/Impossibile caricare/.test(loaderTxt), loaderTxt.slice(0,120));
 
+console.log('\n=== SLOGAN DELLA HERO ===');
+const slo = doc.getElementById('heroSlogan');
+check('contenitore slogan presente', !!slo);
+check('slogan scritto dal CONFIG', slo && /Ogni pezzo/.test(slo.textContent), slo && slo.textContent.slice(0,40));
+check('slogan inciso dal laser', slo && !!slo.querySelector('.engrave .fill'));
+check('slogan subito dopo il titolo', slo && slo.previousElementSibling && slo.previousElementSibling.id === 'heroH1');
+/* Lo slogan lo scrive l'Admin: deve entrare nel DOM come testo, mai come
+   markup, altrimenti un incolla sbagliato diventa codice eseguito. */
+check('slogan inserito come testo, mai come HTML', !/<(script|img|svg)/i.test(slo ? slo.innerHTML : ''));
+
+console.log('\n=== POPUP OFFERTA (exit-intent) ===');
+const pop = doc.getElementById('exitPopup');
+check('contenitore popup presente', !!pop);
+check('vetrina del prodotto presente', !!doc.getElementById('exitPopProdName') && !!doc.getElementById('exitPopProdPrice'));
+check('riquadro del codice sconto presente', !!doc.getElementById('exitPopCodeTxt'));
+check('popup nascosto finché non serve', pop && pop.style.display === 'none');
+/* Il link WhatsApp del popup porta con sé prodotto, sconto e codice:
+   applyConfig() non deve sovrascriverlo con il numero nudo. */
+const wa = doc.getElementById('exitWaBtn');
+check('link WhatsApp del popup protetto da applyConfig', wa && wa.hasAttribute('data-wa-keep'));
+
+
 const bento = $('catBento');
 check('griglia "12 mondi" renderizzata', bento && bento.querySelectorAll('.bcard').length >= 12, bento ? bento.querySelectorAll('.bcard').length + ' card' : 'assente');
 check('categoria CON immagine mostra la foto', bento && bento.querySelector('.bcard--photo img.bimg') !== null);
@@ -321,8 +343,11 @@ check('Product include tutte le immagini della gallery', Array.isArray(prodData.
 check('Product ha offerta con prezzo e valuta', prodData.offers && prodData.offers.priceCurrency === 'EUR');
 check('Product ha priceValidUntil (richiesto da Google)', !!(prodData.offers && prodData.offers.priceValidUntil));
 check('Breadcrumb JSON-LD presente', !!doc.getElementById('ld-crumbs'));
-const crumbs = JSON.parse(doc.getElementById('ld-crumbs').textContent);
-check('Breadcrumb ha Home › Categoria › Prodotto', crumbs.itemListElement.length === 3);
+const crumbsEl = doc.getElementById('ld-crumbs');
+const crumbs = crumbsEl ? JSON.parse(crumbsEl.textContent) : null;
+check('Breadcrumb ha Home › Categoria › Prodotto',
+  !!crumbs && crumbs.itemListElement.length === 3,
+  crumbs ? '' : 'blocco ld-crumbs assente');
 win.location.hash = '#/faq';
 await wait(200);
 const ldFaq = doc.getElementById('ld-faq');
