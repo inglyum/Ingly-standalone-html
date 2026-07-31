@@ -94,7 +94,12 @@
   },
   "emoji": "🎁",
   "delaySecondi": 45,
-  "mostraSoloUnaVolta": true
+  "mostraSoloUnaVolta": true,
+  "sfondoTipo": "nessuno",
+  "prodotto": 0,
+  "sconto": 10,
+  "scontoTipo": "perc",
+  "codice": "BENVENUTO10"
  },
  "siteBg": "sunset"
 }
