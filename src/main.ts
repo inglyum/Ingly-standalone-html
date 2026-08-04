@@ -14,6 +14,7 @@ import { installDataTools } from './modules/data-tools';
 // riesporta il core così è disponibile ai consumer del bundle
 export * as format from './core/format';
 export * as globals from './core/globals';
+export * as pricing from './core/pricing';
 
 export function boot(): void {
   installDesignSystem();

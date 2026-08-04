@@ -21,7 +21,14 @@ describe('Bundle modulare (Fase 1)', (s) => {
         const r = await page.evaluate(() => {
           const g = window.InglyModules || {};
           const fmt = g.format || {};
+          const pr = g.pricing || {};
+          const priced = pr.computePrice ? pr.computePrice({ material: 2, machine: 1, laborHours: 0.5, channel: 'b2c' }) : null;
+          const minKey = pr.computePrice ? pr.computePrice({ material: 0.1, laborHours: 0.02, channel: 'b2c', category: 'portachiavi' }) : null;
           return {
+            pricePriced: priced ? priced.price : null,
+            priceMinApplied: minKey ? minKey.price : null,
+            qty10: pr.qtyDiscount ? pr.qtyDiscount(10) : null,
+            qty50: pr.qtyDiscount ? pr.qtyDiscount(50) : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -46,6 +53,11 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assert(r.mh, 'window.MarketHub non installato dal bundle');
         assert(r.dirCats >= 5, 'MarketHub.DIR dovrebbe avere ≥5 categorie fornitori');
         assert(r.dt, 'window.DataTools non installato dal bundle');
+        // pricing KB: (2*1.15 + 1 + 0.5*18) * 3 = 12.3*3 = 36.9 → 36.90
+        assertEq(r.pricePriced, 36.9, 'pricing.computePrice errato (atteso 36.90)');
+        assertEq(r.priceMinApplied, 6.90, 'minimo psicologico portachiavi non applicato (atteso 6.90)');
+        assertEq(r.qty10, 0.10, 'sconto quantità 10+ errato');
+        assertEq(r.qty50, 0.20, 'sconto quantità 50+ errato');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');
