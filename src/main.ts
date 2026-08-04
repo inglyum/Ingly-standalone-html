@@ -1,12 +1,19 @@
-/* Entry point del bundle modulare INGLY OS (Fase 1 — proof of concept).
-   Man mano che i moduli vengono estratti dal monolite (strangler-fig), si
-   registrano qui. Oggi: Design System. Il build produce UN singolo file JS
-   (vite-plugin-singlefile) iniettabile nel monolite o usabile stand-alone. */
+/* Entry point del bundle modulare INGLY OS (Fase 1 — strangler-fig).
+   Man mano che i moduli vengono estratti dal monolite, si registrano qui.
+   Il build produce UN singolo file JS (vite-plugin-singlefile) iniettabile nel
+   monolite o usabile stand-alone. Le utility core (`format`, `globals`) sono
+   condivise dai moduli. */
 import { installDesignSystem } from './modules/design-system';
+import { installIcons } from './modules/icons';
+
+// riesporta il core così è disponibile ai consumer del bundle
+export * as format from './core/format';
+export * as globals from './core/globals';
 
 export function boot(): void {
   installDesignSystem();
-  // Prossime estrazioni: data-tools, market-hub, audit-log, ...
+  installIcons();
+  // Prossime estrazioni: data-tools, market-hub, audit-log, machine-invest, erp-intel
 }
 
 boot();
