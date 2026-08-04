@@ -29,5 +29,11 @@ jobs:
       - name: Verifica sintassi monolite
         run: npm run verify
 
+      - name: Typecheck moduli (Fase 1)
+        run: npm run typecheck
+
+      - name: Build a file singolo (Fase 1)
+        run: npm run build
+
       - name: Test flussi critici
         run: npm run test

@@ -2,18 +2,28 @@
 // Gira sia in sandbox (playwright globale in /opt) sia in CI (playwright locale).
 import { createRequire } from 'node:module';
 
-// Carica `playwright` in modo robusto: bare specifier (CI/node_modules),
-// poi fallback al pacchetto globale della sandbox.
+// Carica `playwright` in modo robusto. Se in sandbox esiste il pacchetto globale
+// (con browser preinstallato in PLAYWRIGHT_BROWSERS_PATH), usalo per primo;
+// altrimenti il bare specifier del node_modules locale (CI, dopo `playwright install`).
 async function loadPlaywright() {
-  try { return (await import('playwright')); } catch {}
   const req = createRequire(import.meta.url);
+  const sandboxHasBrowsers = !!process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (sandboxHasBrowsers) {
+    for (const p of [
+      '/opt/node22/lib/node_modules/playwright/index.js',
+      '/usr/lib/node_modules/playwright/index.js',
+    ]) {
+      try { return req(p); } catch {}
+    }
+  }
+  try { return (await import('playwright')); } catch {}
   for (const p of [
     '/opt/node22/lib/node_modules/playwright/index.js',
     '/usr/lib/node_modules/playwright/index.js',
   ]) {
     try { return req(p); } catch {}
   }
-  throw new Error('Impossibile caricare playwright. In CI: `npm ci`. In locale: pacchetto globale mancante.');
+  throw new Error('Impossibile caricare playwright. In CI: `npm ci` + `npx playwright install chromium`.');
 }
 
 const suites = [];
