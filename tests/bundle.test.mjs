@@ -24,6 +24,8 @@ describe('Bundle modulare (Fase 1)', (s) => {
           return {
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
+            mi: !!(window.MachineInvest && window.MachineInvest.__v65),
+            payback: window.MachineInvest ? window.MachineInvest.metrics({ costBuy: 5000, roiMonthly: 800 }).payback : null,
             icon: window.InglyIcons ? window.InglyIcons.get('user', 20).tagName.toLowerCase() : null,
             eur: fmt.eur ? fmt.eur(1234) : null,
             to90: fmt.to90 ? fmt.to90(24.2) : null,
@@ -32,6 +34,8 @@ describe('Bundle modulare (Fase 1)', (s) => {
         });
         assert(r.DS, 'window.DS non installato dal bundle');
         assert(r.audit, 'window.AuditLog non installato dal bundle');
+        assert(r.mi, 'window.MachineInvest non installato dal bundle');
+        assertEq(r.payback, 7, 'metrics.payback errato (5000/800 → 7)');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');
