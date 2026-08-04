@@ -30,6 +30,7 @@ describe('Bundle modulare (Fase 1)', (s) => {
             actionsN: window.ERPIntel ? window.ERPIntel.actions({ onTrack: false, weekRev: 100, target: 375, pending: 2, quotesTot: 300, low: [], notPaid: [] }).length : 0,
             mh: !!(window.MarketHub && window.MarketHub.__v69),
             dirCats: window.MarketHub ? Object.keys(window.MarketHub.DIR).length : 0,
+            dt: !!(window.DataTools && window.DataTools.__v64),
             icon: window.InglyIcons ? window.InglyIcons.get('user', 20).tagName.toLowerCase() : null,
             eur: fmt.eur ? fmt.eur(1234) : null,
             to90: fmt.to90 ? fmt.to90(24.2) : null,
@@ -44,6 +45,7 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assert(r.actionsN >= 2, 'ERPIntel.actions dovrebbe produrre azioni (sotto target + pending)');
         assert(r.mh, 'window.MarketHub non installato dal bundle');
         assert(r.dirCats >= 5, 'MarketHub.DIR dovrebbe avere ≥5 categorie fornitori');
+        assert(r.dt, 'window.DataTools non installato dal bundle');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');

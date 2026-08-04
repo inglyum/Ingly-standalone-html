@@ -9,6 +9,7 @@ import { installAuditLog } from './modules/audit-log';
 import { installMachineInvest } from './modules/machine-invest';
 import { installERPIntel } from './modules/erp-intel';
 import { installMarketHub } from './modules/market-hub';
+import { installDataTools } from './modules/data-tools';
 
 // riesporta il core così è disponibile ai consumer del bundle
 export * as format from './core/format';
@@ -21,7 +22,7 @@ export function boot(): void {
   installMachineInvest();
   installERPIntel();
   installMarketHub();
-  // Prossime estrazioni: data-tools
+  installDataTools();
 }
 
 boot();

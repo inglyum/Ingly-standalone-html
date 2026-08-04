@@ -38,14 +38,27 @@ src/
 3. **Core contratti** (`IDB`, `Bus`, `AppStore`, `App` tipizzati) — ✅ `src/core/globals.ts`.
 4. **Icone** (`InglyIcons`) — ✅ `src/modules/icons.ts`.
 5. **AuditLog / Checkpoint** (stateful + wrapper IDB) — ✅ `src/modules/audit-log.ts`.
-6. **Moduli enterprise restanti** — ⏳ MarketHub, DataTools, MachineInvest, ERPIntel
-   (stesso pattern: già isolati/additivi nel monolite).
-7. **Sezioni di dominio** (preventivatore, ordini, clienti) — le più accoppiate,
-   per ultime, una alla volta con test di regressione a protezione.
+6. **Moduli enterprise** — ✅ tutti estratti:
+   - MachineInvest `src/modules/machine-invest.ts`
+   - ERPIntel `src/modules/erp-intel.ts`
+   - MarketHub `src/modules/market-hub.ts`
+   - DataTools `src/modules/data-tools.ts`
+7. **Sezioni di dominio** (preventivatore, ordini, clienti) — ⏳ le più accoppiate,
+   per ultime, una alla volta con test di regressione a protezione. È il prossimo
+   fronte di lavoro.
 
 Ogni modulo estratto è coperto dal test del bundle (`tests/bundle.test.mjs`) che
-verifica in browser l'installazione dei `window.*` e le utility pure. Bundle
-attuale: ~10 kB (DS + icone + core + AuditLog).
+verifica in browser l'installazione dei `window.*` e la logica pura. Bundle
+attuale: ~37 kB (DS + icone + core + AuditLog + MachineInvest + ERPIntel +
+MarketHub + DataTools).
+
+## Integrazione col monolite (passo successivo)
+Il bundle `dist/ingly-modules.js` espone le stesse API globali del monolite. Per
+completare la migrazione, si sostituiscono i relativi blocchi `<script>` inline
+del monolite con un unico `<script src>`/inline del bundle, un modulo alla volta,
+verificando con `npm run check` a ogni sostituzione. Finché non avviene, i due
+convivono senza conflitto (gli `install*` sono idempotenti: non sovrascrivono un
+`window.*` già presente).
 
 ## Regole
 - Ogni modulo estratto **mantiene l'API globale** usata dal monolite finché la
