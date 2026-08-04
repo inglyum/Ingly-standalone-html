@@ -23,6 +23,7 @@ describe('Bundle modulare (Fase 1)', (s) => {
           const fmt = g.format || {};
           return {
             DS: !!window.DS,
+            audit: !!(window.AuditLog && window.AuditLog.__v67),
             icon: window.InglyIcons ? window.InglyIcons.get('user', 20).tagName.toLowerCase() : null,
             eur: fmt.eur ? fmt.eur(1234) : null,
             to90: fmt.to90 ? fmt.to90(24.2) : null,
@@ -30,6 +31,7 @@ describe('Bundle modulare (Fase 1)', (s) => {
           };
         });
         assert(r.DS, 'window.DS non installato dal bundle');
+        assert(r.audit, 'window.AuditLog non installato dal bundle');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');

@@ -5,6 +5,7 @@
    condivise dai moduli. */
 import { installDesignSystem } from './modules/design-system';
 import { installIcons } from './modules/icons';
+import { installAuditLog } from './modules/audit-log';
 
 // riesporta il core così è disponibile ai consumer del bundle
 export * as format from './core/format';
@@ -13,7 +14,8 @@ export * as globals from './core/globals';
 export function boot(): void {
   installDesignSystem();
   installIcons();
-  // Prossime estrazioni: data-tools, market-hub, audit-log, machine-invest, erp-intel
+  installAuditLog();
+  // Prossime estrazioni: data-tools, market-hub, machine-invest, erp-intel
 }
 
 boot();
