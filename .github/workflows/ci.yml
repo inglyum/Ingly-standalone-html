@@ -1,0 +1,33 @@
+name: CI — INGLY OS
+
+# Fase 0: rete di sicurezza. Ogni push/PR verifica la sintassi di tutti i blocchi
+# <script> del monolite ed esegue la suite di test dei flussi critici.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Installa dipendenze
+        run: npm ci || npm install
+
+      - name: Installa Chromium per Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Verifica sintassi monolite
+        run: npm run verify
+
+      - name: Test flussi critici
+        run: npm run test

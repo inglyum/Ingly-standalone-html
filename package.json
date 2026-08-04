@@ -1,0 +1,16 @@
+{
+  "name": "ingly-os",
+  "version": "0.1.0",
+  "private": true,
+  "description": "INGLY OS — gestionale artigiano laser & personalizzazione (monolite offline-first) + toolchain di qualità",
+  "type": "module",
+  "scripts": {
+    "verify": "node .claude/scripts/verify-syntax.mjs \"$(node scripts/find-latest.mjs | sed 's/ .*//')\"",
+    "test": "node tests/run.mjs",
+    "check": "npm run verify && npm run test",
+    "latest": "node scripts/find-latest.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.48.0"
+  }
+}
