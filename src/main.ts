@@ -15,6 +15,8 @@ import * as quoteNS from './domain/quote';
 import * as ordersNS from './domain/orders';
 import * as clientsNS from './domain/clients';
 import * as formatNS from './core/format';
+import * as fiscalNS from './domain/fiscal';
+import * as paymentsNS from './domain/payments';
 
 // riesporta il core così è disponibile ai consumer del bundle
 export * as format from './core/format';
@@ -23,6 +25,8 @@ export * as pricing from './core/pricing';
 export * as quote from './domain/quote';
 export * as orders from './domain/orders';
 export * as clients from './domain/clients';
+export * as fiscal from './domain/fiscal';
+export * as payments from './domain/payments';
 
 export function boot(): void {
   installDesignSystem();
@@ -34,7 +38,7 @@ export function boot(): void {
   installDataTools();
   // Espone i motori di dominio puri per l'aggancio delle UI del monolite.
   if (typeof window !== 'undefined') {
-    (window as any).InglyDomain = { pricing: pricingNS, quote: quoteNS, orders: ordersNS, clients: clientsNS, format: formatNS };
+    (window as any).InglyDomain = { pricing: pricingNS, quote: quoteNS, orders: ordersNS, clients: clientsNS, format: formatNS, fiscal: fiscalNS, payments: paymentsNS };
   }
 }
 

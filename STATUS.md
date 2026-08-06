@@ -54,10 +54,12 @@
 - ⚠️ **Nota:** richiede infrastruttura esterna (DB, hosting, auth) non attivabile
   nell'ambiente offline attuale — qui si possono preparare schema e contratti tipizzati.
 
-## Fase 3 — Fisco IT & pagamenti ⏳
-- ⏳ Fattura Elettronica SDI (intermediario: Fatture in Cloud / ACube / Aruba).
-- ⏳ Corrispettivi, IVA, numerazione, acconti 50%.
-- ⏳ Stripe + riconciliazione bancaria (PSD2).
+## Fase 3 — Fisco IT & pagamenti 🟡 (contratti pronti)
+- ✅ Logica IVA + numerazione + fattura da preventivo (`src/domain/fiscal.ts`) — testata.
+- ✅ Contratti pagamenti provider-agnostici + piano acconto/saldo (`src/domain/payments.ts`) — testati.
+- 📄 Approccio d'integrazione documentato in `.claude/docs/FASE3-FISCO.md`.
+- ⏳ Fattura Elettronica SDI via intermediario (Fatture in Cloud / ACube / Aruba) — richiede backend.
+- ⏳ Stripe (delega PCI) + riconciliazione bancaria (PSD2) — richiede backend.
 
 ## Fase 4 — Integrazioni & omnichannel ⏳
 - ⏳ Canali e-commerce (Etsy/Shopify/WooCommerce) + vetrina pubblica collegata.

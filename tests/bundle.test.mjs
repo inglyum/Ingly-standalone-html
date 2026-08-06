@@ -18,7 +18,7 @@ describe('Bundle modulare (Fase 1)', (s) => {
     writeFileSync(html, '<!doctype html><html><head><meta charset="utf-8"></head><body><script src="./dist/ingly-modules.js"></script></body></html>');
     try {
       await withPage('file://' + html, async (page) => {
-        const r = await page.evaluate(() => {
+        const r = await page.evaluate(async () => {
           const g = window.InglyModules || {};
           const fmt = g.format || {};
           const pr = g.pricing || {};
@@ -35,6 +35,11 @@ describe('Bundle modulare (Fase 1)', (s) => {
             trNo: g.orders ? g.orders.canTransition('venduto', 'preventivo') : null,
             kpi: g.orders ? g.orders.computeKpi([{ status: 'venduto', total: 200 }, { status: 'venduto', total: 200 }, { status: 'preventivo' }]) : null,
             cli: g.clients ? g.clients.clientStats([{ total: 100, date: Date.now() }, { total: 100, date: Date.now() }, { total: 100, date: Date.now() }, { total: 100, date: Date.now() }]) : null,
+            vat: g.fiscal ? g.fiscal.splitFromGross(122, 0.22) : null,
+            docNo: g.fiscal ? g.fiscal.formatDocNumber(123, 2026) : null,
+            inv: (g.fiscal && g.quote) ? g.fiscal.buildInvoiceFromQuote(g.quote.computeQuote([{ material: 2, machine: 1, laborHours: 0.5, qty: 10 }], 'b2c'), { seq: 5, year: 2026 }) : null,
+            plan: g.payments ? g.payments.paymentPlan(100, 50) : null,
+            intent: g.payments ? await g.payments.mockProvider('stripe').createIntent(50, { orderId: 1 }) : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -81,6 +86,15 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assertEq(r.cli.segment, 'champion', 'segmento cliente errato (atteso champion)');
         assertEq(r.cli.revenue, 400, 'revenue cliente errato');
         assertEq(r.cli.clv, 600, 'CLV cliente errato (atteso 600)');
+        // fisco: IVA 22% scorporo, numerazione, fattura da preventivo
+        assertEq(r.vat.imponibile, 100, 'scorporo IVA imponibile errato (122→100)');
+        assertEq(r.vat.imposta, 22, 'scorporo IVA imposta errata (22)');
+        assertEq(r.docNo, '2026/000123', 'numerazione documento errata');
+        assert(r.inv && r.inv.totale > 0 && Math.abs((r.inv.imponibile + r.inv.imposta) - r.inv.totale) < 0.02, 'fattura: imponibile+imposta deve dare il totale');
+        // pagamenti: piano acconto/saldo + intent mock
+        assertEq(r.plan.deposit, 50, 'piano pagamento acconto errato');
+        assertEq(r.plan.balance, 50, 'piano pagamento saldo errato');
+        assertEq(r.intent.status, 'in_attesa', 'stato intent mock errato');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');
