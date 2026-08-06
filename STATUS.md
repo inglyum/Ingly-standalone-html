@@ -34,7 +34,9 @@
 - ✅ Motore di preventivo (`src/domain/quote.ts`) — righe, sconti quantità,
   totale, minimo ordine, acconto 50% (personalizzati >€50), validità 7 giorni.
 - ⏳ UI Preventivatore (aggancio al motore) — da collegare nel monolite.
-- ⏳ Ordini / Pipeline — da estrarre.
+- ✅ Motore Ordini (`src/domain/orders.ts`) — stati canonici + alias legacy,
+  transizioni valide, KPI KB (ricavi settimana/conversione/ticket medio).
+- ⏳ UI Ordini/Pipeline (aggancio al motore) — da collegare nel monolite.
 - ⏳ Clienti / CRM — da estrarre.
 
 **Integrazione col monolite** ⏳

@@ -16,6 +16,7 @@ export * as format from './core/format';
 export * as globals from './core/globals';
 export * as pricing from './core/pricing';
 export * as quote from './domain/quote';
+export * as orders from './domain/orders';
 
 export function boot(): void {
   installDesignSystem();

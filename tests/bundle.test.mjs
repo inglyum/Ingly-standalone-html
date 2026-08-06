@@ -30,6 +30,10 @@ describe('Bundle modulare (Fase 1)', (s) => {
             qty10: pr.qtyDiscount ? pr.qtyDiscount(10) : null,
             qty50: pr.qtyDiscount ? pr.qtyDiscount(50) : null,
             quote: (g.quote && g.quote.computeQuote) ? g.quote.computeQuote([{ label: 'PC', material: 2, machine: 1, laborHours: 0.5, qty: 10, custom: true }], 'b2c') : null,
+            canon: g.orders ? g.orders.canonicalStatus('paid') : null,
+            trOk: g.orders ? g.orders.canTransition('preventivo', 'inviato') : null,
+            trNo: g.orders ? g.orders.canTransition('venduto', 'preventivo') : null,
+            kpi: g.orders ? g.orders.computeKpi([{ status: 'venduto', total: 200 }, { status: 'venduto', total: 200 }, { status: 'preventivo' }]) : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -65,6 +69,13 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assertEq(r.quote.subtotal, 332.9, 'subtotale preventivo errato');
         assertEq(r.quote.deposit, 166.9, 'acconto 50% errato');
         assert(r.quote.meetsOrderMinimum === true, 'minimo ordine dovrebbe essere soddisfatto');
+        // ordini: modello di stato + KPI
+        assertEq(r.canon, 'venduto', "canonicalStatus('paid') dovrebbe essere 'venduto'");
+        assert(r.trOk === true, 'transizione preventivo→inviato ammessa');
+        assert(r.trNo === false, 'transizione venduto→preventivo NON ammessa');
+        assertEq(r.kpi.won, 2, 'KPI won errato');
+        assertEq(r.kpi.revenue, 400, 'KPI revenue errato');
+        assert(r.kpi.meetsRevenue === true, 'KPI meetsRevenue (400≥375) errato');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');
