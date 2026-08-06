@@ -29,6 +29,7 @@ describe('Bundle modulare (Fase 1)', (s) => {
             priceMinApplied: minKey ? minKey.price : null,
             qty10: pr.qtyDiscount ? pr.qtyDiscount(10) : null,
             qty50: pr.qtyDiscount ? pr.qtyDiscount(50) : null,
+            quote: (g.quote && g.quote.computeQuote) ? g.quote.computeQuote([{ label: 'PC', material: 2, machine: 1, laborHours: 0.5, qty: 10, custom: true }], 'b2c') : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -58,6 +59,12 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assertEq(r.priceMinApplied, 6.90, 'minimo psicologico portachiavi non applicato (atteso 6.90)');
         assertEq(r.qty10, 0.10, 'sconto quantità 10+ errato');
         assertEq(r.qty50, 0.20, 'sconto quantità 50+ errato');
+        // preventivo: 10× a 36.90 con −10% = to90(332.1)=332.9; acconto 50% (custom>50)
+        assert(r.quote, 'quote.computeQuote non disponibile dal bundle');
+        assertEq(r.quote.lines[0].lineTotal, 332.9, 'lineTotal preventivo errato');
+        assertEq(r.quote.subtotal, 332.9, 'subtotale preventivo errato');
+        assertEq(r.quote.deposit, 166.9, 'acconto 50% errato');
+        assert(r.quote.meetsOrderMinimum === true, 'minimo ordine dovrebbe essere soddisfatto');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');
