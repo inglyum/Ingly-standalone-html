@@ -27,6 +27,8 @@ export * as orders from './domain/orders';
 export * as clients from './domain/clients';
 export * as fiscal from './domain/fiscal';
 export * as payments from './domain/payments';
+export * as auth from './core/auth';
+export * as sync from './core/sync';
 
 export function boot(): void {
   installDesignSystem();

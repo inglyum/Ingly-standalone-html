@@ -8,7 +8,7 @@
 |---|---|---|
 | 0 | Rete di sicurezza (test + CI) | ✅ **completa** |
 | 1 | Modularizzazione (Vite+TS, file singolo) | 🟡 **in corso** — moduli enterprise estratti; dominio iniziato |
-| 2 | Backend, sync local-first, auth/RBAC | ⏳ da fare (richiede infrastruttura esterna) |
+| 2 | Backend, sync local-first, auth/RBAC | 🟡 **schema + contratti pronti** (manca infra) |
 | 3 | Fisco IT (SDI) + pagamenti | ⏳ da fare |
 | 4 | Integrazioni & omnichannel | ⏳ da fare |
 | 5 | BI, SaaS multi-tenant, ops | ⏳ da fare |
@@ -47,12 +47,12 @@
 - ⏳ Sostituire i blocchi `<script>` inline con il bundle, un modulo alla volta,
   con `npm run check` a ogni passo (gli `install*` sono idempotenti → convivono).
 
-## Fase 2 — Backend & local-first ⏳
-- ⏳ Schema Postgres derivato dai ~58 store.
-- ⏳ Motore di sync IndexedDB ↔ server (ElectricSQL/PowerSync).
-- ⏳ Auth OIDC + RBAC + audit per utente.
-- ⚠️ **Nota:** richiede infrastruttura esterna (DB, hosting, auth) non attivabile
-  nell'ambiente offline attuale — qui si possono preparare schema e contratti tipizzati.
+## Fase 2 — Backend & local-first 🟡 (schema + contratti pronti)
+- ✅ Schema **Postgres multi-tenant** (`db/schema.sql`) derivato dagli store, con RLS.
+- ✅ Contratti **sync local-first** (`src/core/sync.ts`) — push/pull + LWW, testati.
+- ✅ **Auth/RBAC** (`src/core/auth.ts`) — ruoli + `can()` puro, testato.
+- 📄 Architettura documentata in `.claude/docs/FASE2-BACKEND.md`.
+- ⏳ Far girare DB/sync/auth reali — richiede infrastruttura (Postgres, hosting, OIDC).
 
 ## Fase 3 — Fisco IT & pagamenti 🟡 (contratti pronti)
 - ✅ Logica IVA + numerazione + fattura da preventivo (`src/domain/fiscal.ts`) — testata.

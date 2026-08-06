@@ -40,6 +40,11 @@ describe('Bundle modulare (Fase 1)', (s) => {
             inv: (g.fiscal && g.quote) ? g.fiscal.buildInvoiceFromQuote(g.quote.computeQuote([{ material: 2, machine: 1, laborHours: 0.5, qty: 10 }], 'b2c'), { seq: 5, year: 2026 }) : null,
             plan: g.payments ? g.payments.paymentPlan(100, 50) : null,
             intent: g.payments ? await g.payments.mockProvider('stripe').createIntent(50, { orderId: 1 }) : null,
+            rbacOwner: g.auth ? g.auth.can('owner', 'invoices', 'delete') : null,
+            rbacViewerRead: g.auth ? g.auth.can('viewer', 'orders', 'read') : null,
+            rbacViewerWrite: g.auth ? g.auth.can('viewer', 'orders', 'write') : null,
+            rbacAcct: g.auth ? g.auth.can('accountant', 'invoices', 'write') : null,
+            merged: g.sync ? g.sync.mergeChanges([{ store: 'clients', key: 1, op: 'put', updatedAt: 100 }, { store: 'clients', key: 1, op: 'put', updatedAt: 200 }]) : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -95,6 +100,14 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assertEq(r.plan.deposit, 50, 'piano pagamento acconto errato');
         assertEq(r.plan.balance, 50, 'piano pagamento saldo errato');
         assertEq(r.intent.status, 'in_attesa', 'stato intent mock errato');
+        // auth/RBAC
+        assert(r.rbacOwner === true, 'owner deve poter eliminare fatture');
+        assert(r.rbacViewerRead === true, 'viewer deve poter leggere ordini');
+        assert(r.rbacViewerWrite === false, 'viewer NON deve poter scrivere ordini');
+        assert(r.rbacAcct === true, 'contabile deve poter scrivere fatture');
+        // sync LWW: fonde per (store,key) tenendo updatedAt più recente
+        assertEq(r.merged.length, 1, 'mergeChanges dovrebbe fondere la stessa chiave');
+        assertEq(r.merged[0].updatedAt, 200, 'LWW deve tenere il timestamp più recente');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');
