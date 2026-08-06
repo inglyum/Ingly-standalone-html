@@ -34,6 +34,7 @@ describe('Bundle modulare (Fase 1)', (s) => {
             trOk: g.orders ? g.orders.canTransition('preventivo', 'inviato') : null,
             trNo: g.orders ? g.orders.canTransition('venduto', 'preventivo') : null,
             kpi: g.orders ? g.orders.computeKpi([{ status: 'venduto', total: 200 }, { status: 'venduto', total: 200 }, { status: 'preventivo' }]) : null,
+            cli: g.clients ? g.clients.clientStats([{ total: 100, date: Date.now() }, { total: 100, date: Date.now() }, { total: 100, date: Date.now() }, { total: 100, date: Date.now() }]) : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -76,6 +77,10 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assertEq(r.kpi.won, 2, 'KPI won errato');
         assertEq(r.kpi.revenue, 400, 'KPI revenue errato');
         assert(r.kpi.meetsRevenue === true, 'KPI meetsRevenue (400≥375) errato');
+        // clienti: 4 ordini da €100 recenti → Champion, CLV 100*4*1.5=600
+        assertEq(r.cli.segment, 'champion', 'segmento cliente errato (atteso champion)');
+        assertEq(r.cli.revenue, 400, 'revenue cliente errato');
+        assertEq(r.cli.clv, 600, 'CLV cliente errato (atteso 600)');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');

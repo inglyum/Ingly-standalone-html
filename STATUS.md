@@ -37,7 +37,9 @@
 - ✅ Motore Ordini (`src/domain/orders.ts`) — stati canonici + alias legacy,
   transizioni valide, KPI KB (ricavi settimana/conversione/ticket medio).
 - ⏳ UI Ordini/Pipeline (aggancio al motore) — da collegare nel monolite.
-- ⏳ Clienti / CRM — da estrarre.
+- ✅ Motore Clienti/CRM (`src/domain/clients.ts`) — segmentazione RFM-lite
+  (Champion/Fedele/A rischio/Nuovo/Inattivo) + stima CLV + ranking.
+- ⏳ UI Clienti (aggancio al motore) — da collegare nel monolite.
 
 **Integrazione col monolite** ⏳
 - ⏳ Sostituire i blocchi `<script>` inline con il bundle, un modulo alla volta,
@@ -66,9 +68,11 @@
 
 ## Metriche correnti
 - Monolite: **v74** · 133 blocchi `<script>` · 0 errori sintassi.
-- Bundle modulare: ~37 kB (8 moduli + core).
-- Test: **7/7 verdi** (+ unit pricing).
+- Bundle modulare: ~38 kB (8 moduli UI + core + dominio: pricing/quote/orders/clients).
+- Motori di dominio puri e testati: **pricing · preventivo · ordini · clienti**.
+- Test: **7/7 verdi** con assert sui valori KB (36.90, acconto 166.90, KPI, CLV 600).
 
 ## Prossimo passo consigliato
-Estrarre il **preventivatore** appoggiandolo al nuovo `pricing.ts`, con test di
-regressione che bloccano ogni divergenza dai valori KB.
+Collegare la **UI del preventivatore** del monolite al motore `quote.ts` (un
+aggancio alla volta, con test di regressione), poi Ordini e Clienti. In parallelo,
+preparare **schema dati + contratti Fase 2** (backend) pronti per l'infrastruttura.

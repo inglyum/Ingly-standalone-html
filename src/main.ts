@@ -17,6 +17,7 @@ export * as globals from './core/globals';
 export * as pricing from './core/pricing';
 export * as quote from './domain/quote';
 export * as orders from './domain/orders';
+export * as clients from './domain/clients';
 
 export function boot(): void {
   installDesignSystem();
