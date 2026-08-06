@@ -61,9 +61,14 @@
 - ⏳ Fattura Elettronica SDI via intermediario (Fatture in Cloud / ACube / Aruba) — richiede backend.
 - ⏳ Stripe (delega PCI) + riconciliazione bancaria (PSD2) — richiede backend.
 
-## Fase 4 — Integrazioni & omnichannel ⏳
-- ⏳ Canali e-commerce (Etsy/Shopify/WooCommerce) + vetrina pubblica collegata.
-- ⏳ Spedizioni (Qapla'/Spedire) · Marketing (GA4/Meta) dentro Intelligence.
+## Fase 4 — Integrazioni & omnichannel 🟡 (contratti pronti)
+- ✅ E-commerce (`src/integrations/ecommerce.ts`) — `SalesChannel` + normalizzatori
+  Etsy/Shopify (stato→canonico, righe, totale), testati.
+- ✅ Spedizioni (`src/integrations/shipping.ts`) — `ShippingProvider` + peso
+  volumetrico/tassabile, testati.
+- ✅ Marketing (`src/integrations/marketing.ts`) — `MarketingSource` + ROAS/CPA/CTR
+  + aggregazione (compat connettori Windsor), testati.
+- ⏳ Fetch reale (OAuth/rete) + vetrina pubblica collegata — richiede backend.
 
 ## Fase 5 — BI, SaaS, ops ⏳
 - ⏳ Cruscotti direzionali/marginalità · multi-tenant + licenze · Sentry/monitoraggio · mobile (PWA).

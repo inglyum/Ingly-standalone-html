@@ -45,6 +45,10 @@ describe('Bundle modulare (Fase 1)', (s) => {
             rbacViewerWrite: g.auth ? g.auth.can('viewer', 'orders', 'write') : null,
             rbacAcct: g.auth ? g.auth.can('accountant', 'invoices', 'write') : null,
             merged: g.sync ? g.sync.mergeChanges([{ store: 'clients', key: 1, op: 'put', updatedAt: 100 }, { store: 'clients', key: 1, op: 'put', updatedAt: 200 }]) : null,
+            shop: g.ecommerce ? g.ecommerce.normalizeShopifyOrder({ id: 5, total_price: '50', financial_status: 'paid', line_items: [{ title: 'X', quantity: 2, price: '25' }] }) : null,
+            roas: g.marketing ? g.marketing.roas({ revenue: 300, spend: 100 }) : null,
+            cpa: g.marketing ? g.marketing.cpa({ spend: 100, conversions: 5 }) : null,
+            vol: g.shipping ? g.shipping.volumetricWeight(50, 40, 30) : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -108,6 +112,13 @@ describe('Bundle modulare (Fase 1)', (s) => {
         // sync LWW: fonde per (store,key) tenendo updatedAt più recente
         assertEq(r.merged.length, 1, 'mergeChanges dovrebbe fondere la stessa chiave');
         assertEq(r.merged[0].updatedAt, 200, 'LWW deve tenere il timestamp più recente');
+        // integrazioni Fase 4
+        assertEq(r.shop.status, 'venduto', 'mappa stato Shopify paid→venduto errata');
+        assertEq(r.shop.total, 50, 'totale ordine Shopify errato');
+        assertEq(r.shop.lines[0].qty, 2, 'quantità riga Shopify errata');
+        assertEq(r.roas, 3, 'ROAS errato (300/100)');
+        assertEq(r.cpa, 20, 'CPA errato (100/5)');
+        assertEq(r.vol, 12, 'peso volumetrico errato (50×40×30/5000)');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');
