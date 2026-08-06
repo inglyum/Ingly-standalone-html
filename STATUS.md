@@ -38,10 +38,10 @@
   (bundle iniettato, installer idempotenti → nessun override dei moduli esistenti).
 - ✅ Motore Ordini (`src/domain/orders.ts`) — stati canonici + alias legacy,
   transizioni valide, KPI KB (ricavi settimana/conversione/ticket medio).
-- ⏳ UI Ordini/Pipeline (aggancio al motore) — da collegare nel monolite.
+- ✅ UI Ordini collegata (v76): "📊 KPI Ordini (motore KB)" calcola con `InglyDomain.orders`.
 - ✅ Motore Clienti/CRM (`src/domain/clients.ts`) — segmentazione RFM-lite
   (Champion/Fedele/A rischio/Nuovo/Inattivo) + stima CLV + ranking.
-- ⏳ UI Clienti (aggancio al motore) — da collegare nel monolite.
+- ✅ UI Clienti collegata (v76): "🏆 Segmentazione (motore KB)" con CLV e ranking.
 
 **Integrazione col monolite** ⏳
 - ⏳ Sostituire i blocchi `<script>` inline con il bundle, un modulo alla volta,
