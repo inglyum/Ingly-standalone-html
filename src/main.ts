@@ -10,6 +10,11 @@ import { installMachineInvest } from './modules/machine-invest';
 import { installERPIntel } from './modules/erp-intel';
 import { installMarketHub } from './modules/market-hub';
 import { installDataTools } from './modules/data-tools';
+import * as pricingNS from './core/pricing';
+import * as quoteNS from './domain/quote';
+import * as ordersNS from './domain/orders';
+import * as clientsNS from './domain/clients';
+import * as formatNS from './core/format';
 
 // riesporta il core così è disponibile ai consumer del bundle
 export * as format from './core/format';
@@ -27,6 +32,10 @@ export function boot(): void {
   installERPIntel();
   installMarketHub();
   installDataTools();
+  // Espone i motori di dominio puri per l'aggancio delle UI del monolite.
+  if (typeof window !== 'undefined') {
+    (window as any).InglyDomain = { pricing: pricingNS, quote: quoteNS, orders: ordersNS, clients: clientsNS, format: formatNS };
+  }
 }
 
 boot();

@@ -33,7 +33,9 @@
 - ✅ Motore di pricing KB (`src/core/pricing.ts`) — estratto e testato.
 - ✅ Motore di preventivo (`src/domain/quote.ts`) — righe, sconti quantità,
   totale, minimo ordine, acconto 50% (personalizzati >€50), validità 7 giorni.
-- ⏳ UI Preventivatore (aggancio al motore) — da collegare nel monolite.
+- ✅ UI Preventivatore collegata al motore (v75): pannello "⚡ Preventivo rapido
+  (motore KB)" nel preventivatore, calcola con `window.InglyDomain.quote`
+  (bundle iniettato, installer idempotenti → nessun override dei moduli esistenti).
 - ✅ Motore Ordini (`src/domain/orders.ts`) — stati canonici + alias legacy,
   transizioni valide, KPI KB (ricavi settimana/conversione/ticket medio).
 - ⏳ UI Ordini/Pipeline (aggancio al motore) — da collegare nel monolite.
