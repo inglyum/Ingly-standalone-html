@@ -73,7 +73,9 @@
 ## Fase 5 — BI, SaaS, ops 🟡 (BI iniziata)
 - ✅ Motore BI/reporting (`src/domain/reporting.ts`) — ricavi per canale/mese,
   margine, ripartizione cassa profit-first (KB), forecast media mobile. Testato.
-- ⏳ Cruscotto direzionale UI (aggancio) · multi-tenant + licenze · Sentry · PWA.
+- ✅ Cruscotto BI UI collegato (v80): "📊 Report direzionale (BI)" in dashboard/analytics.
+- ✅ Bundle iniettato nel monolite AGGIORNATO (v80): tutti i motori in `window.InglyDomain`.
+- ⏳ Multi-tenant + licenze · Sentry · PWA — richiedono infra/lavoro dedicato.
 
 ---
 

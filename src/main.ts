@@ -17,6 +17,12 @@ import * as clientsNS from './domain/clients';
 import * as formatNS from './core/format';
 import * as fiscalNS from './domain/fiscal';
 import * as paymentsNS from './domain/payments';
+import * as authNS from './core/auth';
+import * as syncNS from './core/sync';
+import * as reportingNS from './domain/reporting';
+import * as ecommerceNS from './integrations/ecommerce';
+import * as shippingNS from './integrations/shipping';
+import * as marketingNS from './integrations/marketing';
 
 // riesporta il core così è disponibile ai consumer del bundle
 export * as format from './core/format';
@@ -44,7 +50,11 @@ export function boot(): void {
   installDataTools();
   // Espone i motori di dominio puri per l'aggancio delle UI del monolite.
   if (typeof window !== 'undefined') {
-    (window as any).InglyDomain = { pricing: pricingNS, quote: quoteNS, orders: ordersNS, clients: clientsNS, format: formatNS, fiscal: fiscalNS, payments: paymentsNS };
+    (window as any).InglyDomain = {
+      pricing: pricingNS, quote: quoteNS, orders: ordersNS, clients: clientsNS, format: formatNS,
+      fiscal: fiscalNS, payments: paymentsNS, auth: authNS, sync: syncNS, reporting: reportingNS,
+      ecommerce: ecommerceNS, shipping: shippingNS, marketing: marketingNS,
+    };
   }
 }
 
