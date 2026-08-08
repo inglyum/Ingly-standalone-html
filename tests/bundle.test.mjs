@@ -49,6 +49,9 @@ describe('Bundle modulare (Fase 1)', (s) => {
             roas: g.marketing ? g.marketing.roas({ revenue: 300, spend: 100 }) : null,
             cpa: g.marketing ? g.marketing.cpa({ spend: 100, conversions: 5 }) : null,
             vol: g.shipping ? g.shipping.volumetricWeight(50, 40, 30) : null,
+            cash: g.reporting ? g.reporting.profitFirstSplit(1000) : null,
+            chan: g.reporting ? g.reporting.revenueByChannel([{ total: 100, channel: 'etsy' }, { total: 50, channel: 'etsy' }, { total: 30, channel: 'b2b' }]) : null,
+            fcast: g.reporting ? g.reporting.forecastNextMonth([{ month: '2026-05', revenue: 300 }, { month: '2026-06', revenue: 300 }, { month: '2026-07', revenue: 600 }]) : null,
             DS: !!window.DS,
             audit: !!(window.AuditLog && window.AuditLog.__v67),
             mi: !!(window.MachineInvest && window.MachineInvest.__v65),
@@ -119,6 +122,11 @@ describe('Bundle modulare (Fase 1)', (s) => {
         assertEq(r.roas, 3, 'ROAS errato (300/100)');
         assertEq(r.cpa, 20, 'CPA errato (100/5)');
         assertEq(r.vol, 12, 'peso volumetrico errato (50×40×30/5000)');
+        // BI / reporting (Fase 5)
+        assertEq(r.cash.tasse, 150, 'ripartizione cassa tasse errata (15%)');
+        assertEq(r.cash.operativo, 600, 'ripartizione cassa operativo errata (60%)');
+        assertEq(r.chan.etsy, 150, 'ricavi per canale Etsy errati');
+        assertEq(r.fcast, 400, 'forecast media mobile errato ((300+300+600)/3)');
         assertEq(r.icon, 'svg', 'icona non è un <svg>');
         assertEq(r.eur, '€1.234', 'eur() errato');
         assertEq(r.to90, 24.9, 'to90() errato');

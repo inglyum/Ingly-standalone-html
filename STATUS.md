@@ -70,8 +70,10 @@
   + aggregazione (compat connettori Windsor), testati.
 - ⏳ Fetch reale (OAuth/rete) + vetrina pubblica collegata — richiede backend.
 
-## Fase 5 — BI, SaaS, ops ⏳
-- ⏳ Cruscotti direzionali/marginalità · multi-tenant + licenze · Sentry/monitoraggio · mobile (PWA).
+## Fase 5 — BI, SaaS, ops 🟡 (BI iniziata)
+- ✅ Motore BI/reporting (`src/domain/reporting.ts`) — ricavi per canale/mese,
+  margine, ripartizione cassa profit-first (KB), forecast media mobile. Testato.
+- ⏳ Cruscotto direzionale UI (aggancio) · multi-tenant + licenze · Sentry · PWA.
 
 ---
 

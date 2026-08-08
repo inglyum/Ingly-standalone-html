@@ -32,6 +32,7 @@ export * as sync from './core/sync';
 export * as ecommerce from './integrations/ecommerce';
 export * as shipping from './integrations/shipping';
 export * as marketing from './integrations/marketing';
+export * as reporting from './domain/reporting';
 
 export function boot(): void {
   installDesignSystem();
