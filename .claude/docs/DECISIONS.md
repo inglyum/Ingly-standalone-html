@@ -92,3 +92,11 @@ l'esito reale.
 - Version bump app-v2 → 0.2.0: milestone ERP (Smart Quoter Studio + Configura
   Lavorazione a parità V96, Attrezzature €/min, Materiali master-data). Schema
   fino a migr. 0030, suite 422+ verde.
+- Notification Center (migr. 0031): centro notifiche a EVENTI con CONSEGNE
+  TRACCIATE a stati distinti (queued→processing→accepted→delivered/failed/
+  cancelled). Canali in_app/email/whatsapp/webhook. L'adapter è MOCK e
+  SIMULA il workflow: nessun invio reale dichiarato finché i provider non sono
+  configurati server-side (command §6/§12). "accepted" ≠ "delivered"; wa.me =
+  apertura MANUALE, mai consegna automatica. Due tabelle (notification +
+  notification_delivery) perché il registro tentativi è 1→N rispetto alla
+  notifica. RBAC 'system.notification'. Route 'smartnotif'. Suite 433 verde.

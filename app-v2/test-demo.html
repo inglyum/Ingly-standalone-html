@@ -167,6 +167,15 @@ function seed(){
       { id:'eq1', tenant_id:'t1', name:'xTool P2 (laser CO2)', category:'laser', cost_per_min:0.45, hourly_cost:27, power_w:55, active:true, deleted_at:null },
       { id:'eq2', tenant_id:'t1', name:'Roland UV', category:'uv', cost_per_min:0.60, hourly_cost:36, active:true, deleted_at:null },
     ],
+    notification:[
+      { id:'nt1', tenant_id:'t1', event:'renewal', channel:'email', recipient:'maria.russo@example.it', subject:'Rinnovo abbonamento', body:'Il tuo piano si rinnova il 01/09.', status:'queued', provider:null, error:null, attempts:0, created_at:'2026-08-22T08:00:00Z', deleted_at:null },
+      { id:'nt2', tenant_id:'t1', event:'suspicious_login', channel:'whatsapp', recipient:'+393331112233', subject:'Accesso sospetto', body:'Nuovo accesso da dispositivo sconosciuto.', status:'accepted', provider:'mock', error:null, attempts:1, created_at:'2026-08-21T19:30:00Z', deleted_at:null },
+      { id:'nt3', tenant_id:'t1', event:'payment_failed', channel:'email', recipient:null, subject:'Pagamento fallito', body:null, status:'failed', provider:'mock', error:'Destinatario mancante per canale email (mock).', attempts:1, created_at:'2026-08-20T11:00:00Z', deleted_at:null },
+    ],
+    notification_delivery:[
+      { id:'nd1', tenant_id:'t1', notification_id:'nt2', provider:'mock', status:'processing', detail:'Presa in carico (mock).', at:'2026-08-21T19:30:05Z' },
+      { id:'nd2', tenant_id:'t1', notification_id:'nt2', provider:'mock', status:'accepted', detail:'wa.me: apertura manuale — consegna NON confermata (mock).', at:'2026-08-21T19:30:06Z' },
+    ],
     audit_log:[
       { id:'au1', tenant_id:'t1', table_name:'sales_invoice', op:'INSERT', row_id:'inv1', actor:'demo', at:'2026-08-20T09:15:00Z' },
       { id:'au2', tenant_id:'t1', table_name:'tenant_settings', op:'UPDATE', row_id:'t1', actor:'demo', at:'2026-08-21T14:30:00Z' },

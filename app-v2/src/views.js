@@ -120,6 +120,11 @@ function viewEquipment() {
     <div data-equipment-root><div class="v2-loading">⏳ Inizializzazione attrezzature…</div></div>`;
 }
 
+function viewNotifications() {
+  return `${head({ icon: '🔔', n: 'Notifiche Smart' }, 'Centro notifiche a eventi · consegne tracciate · adapter MOCK (simulazione, nessun invio reale)')}
+    <div data-notifications-root><div class="v2-loading">⏳ Inizializzazione notifiche…</div></div>`;
+}
+
 function viewBackup() {
   return `${head({ icon: '\u{1F4BE}', n: 'Backup & Export' }, 'Backup JSON completo · export CSV per entità · portabilità dati')}
     <div data-export-root><div class="v2-loading">⏳ Inizializzazione export…</div></div>`;
@@ -170,7 +175,7 @@ function viewLogistics() {
     <div data-logistics-root><div class="v2-loading">⏳ Inizializzazione logistica…</div></div>`;
 }
 
-const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
+const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
 
 export function renderView(section, ctx) {
   const fn = SPECIAL[section];
