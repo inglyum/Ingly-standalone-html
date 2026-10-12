@@ -31,6 +31,7 @@ import { mount as mountMaterials } from './materials-ui.js';
 import { mount as mountNotifications } from './notifications-ui.js';
 import { mountKpi, mountForecaster, mountOpportunity, mountGrowth } from './analytics-ui.js';
 import { mountClientIntel, mountClv, mountLeadScorer, mountB2BPitch } from './clientanalytics-ui.js';
+import { mountPaints, mountComponents, mountGadgets, mountSupplierIntel } from './stockviews-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -80,6 +81,10 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'clv' && sb) { try { mountClv(view, { sb }); } catch (_) {} }
     if (r === 'leadscorer' && sb) { try { mountLeadScorer(view, { sb }); } catch (_) {} }
     if (r === 'b2bpitch' && sb) { try { mountB2BPitch(view, { sb }); } catch (_) {} }
+    if (r === 'paints' && sb) { try { mountPaints(view, { sb }); } catch (_) {} }
+    if (r === 'components' && sb) { try { mountComponents(view, { sb }); } catch (_) {} }
+    if (r === 'gadgets' && sb) { try { mountGadgets(view, { sb }); } catch (_) {} }
+    if (r === 'supplierintel' && sb) { try { mountSupplierIntel(view, { sb }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');

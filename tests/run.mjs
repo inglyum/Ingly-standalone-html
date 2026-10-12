@@ -42,5 +42,6 @@ import './materials.test.mjs';
 import './notifications.test.mjs';
 import './analytics.test.mjs';
 import './clientanalytics.test.mjs';
+import './stockviews.test.mjs';
 import { run } from './harness.mjs';
 await run();
