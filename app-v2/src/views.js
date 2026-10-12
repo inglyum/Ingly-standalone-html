@@ -137,6 +137,23 @@ function viewGrowth() {
     <div data-growth-root><div class="v2-loading">⏳ Growth engine…</div></div>`;
 }
 
+function viewClientIntel() {
+  return `${head({ icon: '🧠', n: 'Client Intelligence' }, 'Segmentazione RFM dei clienti · deterministica, con fonte')}
+    <div data-clientintel-root><div class="v2-loading">⏳ Segmentazione…</div></div>`;
+}
+function viewClv() {
+  return `${head({ icon: '💎', n: 'Customer Lifetime Value' }, 'CLV storico e proiezione annua per cliente · dai dati reali ordini')}
+    <div data-clv-root><div class="v2-loading">⏳ Calcolo CLV…</div></div>`;
+}
+function viewLeadScorer() {
+  return `${head({ icon: '⭐', n: 'Lead Scorer' }, 'Punteggio 0–100 e priorità da RFM · spiegabile, con motivo')}
+    <div data-leadscorer-root><div class="v2-loading">⏳ Scoring…</div></div>`;
+}
+function viewB2BPitch() {
+  return `${head({ icon: '🤝', n: 'Pitch B2B' }, 'Bozza proposta B2B dai dati reali del cliente + termini KB (no AI finta)')}
+    <div data-b2bpitch-root><div class="v2-loading">⏳ Carico clienti…</div></div>`;
+}
+
 function viewNotifications() {
   return `${head({ icon: '🔔', n: 'Notifiche Smart' }, 'Centro notifiche a eventi · consegne tracciate · adapter MOCK (simulazione, nessun invio reale)')}
     <div data-notifications-root><div class="v2-loading">⏳ Inizializzazione notifiche…</div></div>`;
@@ -192,7 +209,7 @@ function viewLogistics() {
     <div data-logistics-root><div class="v2-loading">⏳ Inizializzazione logistica…</div></div>`;
 }
 
-const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
+const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
 
 export function renderView(section, ctx) {
   const fn = SPECIAL[section];
