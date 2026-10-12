@@ -40,5 +40,6 @@ import './exporter.test.mjs';
 import './equipment.test.mjs';
 import './materials.test.mjs';
 import './notifications.test.mjs';
+import './analytics.test.mjs';
 import { run } from './harness.mjs';
 await run();

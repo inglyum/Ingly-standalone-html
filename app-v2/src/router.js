@@ -29,6 +29,7 @@ import { mount as mountBackup } from './exporter-ui.js';
 import { mount as mountEquipment } from './equipment-ui.js';
 import { mount as mountMaterials } from './materials-ui.js';
 import { mount as mountNotifications } from './notifications-ui.js';
+import { mountKpi, mountForecaster, mountOpportunity, mountGrowth } from './analytics-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -70,6 +71,10 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'equipment' && sb) { try { mountEquipment(view, { sb, ctx }); } catch (_) {} }
     if (r === 'materials' && sb) { try { mountMaterials(view, { sb, ctx }); } catch (_) {} }
     if (r === 'smartnotif' && sb) { try { mountNotifications(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'kpi' && sb) { try { mountKpi(view, { sb }); } catch (_) {} }
+    if (r === 'forecaster' && sb) { try { mountForecaster(view, { sb }); } catch (_) {} }
+    if (r === 'opportunity' && sb) { try { mountOpportunity(view, { sb }); } catch (_) {} }
+    if (r === 'growthengine' && sb) { try { mountGrowth(view, { sb }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');
