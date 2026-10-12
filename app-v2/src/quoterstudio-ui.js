@@ -34,9 +34,10 @@ function newWorking(cat) {
   if (cat === 'painting') return { ...b, surface_mq: 1, cost_per_mq: 0, coats: 1 };
   if (cat === 'design') return { ...b, amount: 0 };
   if (cat === 'gadget' || cat === 'catalog' || cat === 'extra') return { ...b, quantity: 1, unit_cost: 0 };
-  return { ...b, mq: 1, sfrido_pct: 15, cost_per_mq: 0 }; // material
+  return { ...b, mq: 1, sfrido_pct: 0, cost_per_mq: 0 }; // material — sfrido esplicito (v96), default 0: nessun +15% automatico
 }
-const newLine = () => ({ description: 'Prodotto', product_id: null, quantity: 1, markup_pct: 200, discount_pct: 0, vat_rate: 22, spec: '', image_url: '', workings: [newWorking('material')] });
+// Markup default +100% (×2) come INGLY OS v96: prezzi non gonfiati.
+const newLine = () => ({ description: 'Prodotto', product_id: null, quantity: 1, markup_pct: 100, discount_pct: 0, vat_rate: 22, spec: '', image_url: '', workings: [newWorking('material')] });
 
 export function mount(container, { sb, ctx }) {
   if (!container) return;
@@ -308,7 +309,7 @@ export function mount(container, { sb, ctx }) {
         valid_until: quote.valid_until || '', deposit_pct: quote.deposit_pct || 0,
         lines: (lines.length ? lines : [null]).map((l) => l ? {
           description: l.description || '', product_id: l.product_id || null, quantity: l.quantity != null ? l.quantity : 1,
-          markup_pct: l.markup_pct != null ? l.markup_pct : 200, discount_pct: l.discount_pct || 0, vat_rate: l.vat_rate != null ? l.vat_rate : 22,
+          markup_pct: l.markup_pct != null ? l.markup_pct : 100, discount_pct: l.discount_pct || 0, vat_rate: l.vat_rate != null ? l.vat_rate : 22,
           spec: l.spec || '', image_url: l.image_url || '',
           workings: Array.isArray(l.workings) && l.workings.length ? l.workings.map((x) => ({ ...x })) : [newWorking('material')],
         } : newLine()),

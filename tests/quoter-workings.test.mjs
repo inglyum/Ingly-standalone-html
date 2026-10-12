@@ -149,6 +149,26 @@ describe('Configura Lavorazione — persistenza + snapshot storico', (s) => {
   });
 });
 
+describe('Prezzo — default v96 (anti-regressione prezzi gonfiati)', (s) => {
+  it(s, 'markup di default +100% (×2), non ×3 (percorso lavorazioni live)', async () => {
+    // Lavorazione materiale 1mq × 10€/mq = 10 (costo esatto, nessun sfrido auto).
+    // Prezzo = roundTo90(10 × (1+100/100)) = roundTo90(20) = 20.90 (non 30,90 come ×3).
+    const c = Q.computeLine({ workings: [{ category: 'material', mq: 1, cost_per_mq: 10 }], quantity: 1 });
+    assertEq(c.unitCost, 10);
+    assertEq(c.markupPct, 100);
+    assertEq(c.unitPrice, Q.roundTo90(20));
+  });
+  it(s, 'materiale senza sfrido esplicito = costo esatto (nessun +15% automatico)', async () => {
+    // Il costo di produzione del materiale è mq × cost_per_mq, esatto.
+    const w = Q.computeWorking({ category: 'material', mq: 2, cost_per_mq: 10 }); // sfrido assente → 0
+    assertEq(w.cost, 20);
+  });
+  it(s, 'lo sfrido resta applicabile quando dichiarato per riga', async () => {
+    const w = Q.computeWorking({ category: 'material', mq: 2, sfrido_pct: 15, cost_per_mq: 10 });
+    assertEq(w.cost, r2(2 * 1.15 * 10)); // 23 — esplicito, non automatico
+  });
+});
+
 describe('Configura Lavorazione — migration 0028 (statica)', (s) => {
   const sql = readFileSync(new URL('../supabase/migrations/20260101000028_quote_workings.sql', import.meta.url), 'utf8');
   it(s, 'colonna workings jsonb additiva, nessuna tabella nuova', async () => {

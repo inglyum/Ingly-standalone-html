@@ -100,3 +100,13 @@ l'esito reale.
   apertura MANUALE, mai consegna automatica. Due tabelle (notification +
   notification_delivery) perché il registro tentativi è 1→N rispetto alla
   notifica. RBAC 'system.notification'. Route 'smartnotif'. Suite 433 verde.
+- Smart Quoter — allineamento prezzi a INGLY OS v96 (richiesta esplicita del
+  titolare: "i costi sono troppo alti"). Default di prezzo del Quoter Studio
+  portati a quelli del v96: markup di default +100% (×2), NON +200% (×3); sfrido
+  materiale di default 0 (applicabile per riga, non più +15% automatico). Il
+  costo di produzione (mq × €/mq, min × €/min, manodopera €/h) resta esatto. I
+  markup di canale KB (B2C ×3, B2B ×2–2.5, Etsy ×3.5) restano SELEZIONABILI per
+  riga: cambia solo il default, non le opzioni. Il percorso "flat" legacy
+  mantiene lo sfrido +15% documentato per retro-compatibilità; il percorso live
+  è "Configura Lavorazione" (workings). Esempio: costo 11,70€ → prezzo 23,90€
+  (prima 35,90€). Test anti-regressione aggiunti. Suite 436 verde.

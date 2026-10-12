@@ -184,7 +184,10 @@ export function computeLine(l = {}, opts = {}) {
     extra = r2(max0(l.cost_extra));
     unitCost = r2(material + machine + labor + design + extra);
   }
-  const markupPct = Number(l.markup_pct != null ? l.markup_pct : (opts.defaultMarkupPct != null ? opts.defaultMarkupPct : 200));
+  // Markup in PERCENTUALE, semantica v96: 100 = +100% = ×2 (prezzo = costo ×
+  // (1 + markup/100)). Default +100% come INGLY OS v96 (non ×3): evita prezzi
+  // gonfiati. Il canale/markup resta regolabile per riga.
+  const markupPct = Number(l.markup_pct != null ? l.markup_pct : (opts.defaultMarkupPct != null ? opts.defaultMarkupPct : 100));
   // prezzo unitario: esplicito (unit_price) se fornito e useStoredPrice, altrimenti da markup
   const priceFromMarkup = roundTo90(unitCost * (1 + markupPct / 100));
   const unitPrice = (opts.useStoredPrice && l.unit_price != null) ? r2(l.unit_price) : priceFromMarkup;
