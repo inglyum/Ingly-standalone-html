@@ -137,6 +137,31 @@ function viewGrowth() {
     <div data-growth-root><div class="v2-loading">⏳ Growth engine…</div></div>`;
 }
 
+function viewLaserCalc() {
+  return `${head({ icon: '🔦', n: 'Calcolatore Laser' }, 'Materiale + laser (€/min) + manodopera · motore quoter · prezzo ×2 KB')}
+    <div data-lasercalc-root><div class="v2-loading">⏳…</div></div>`;
+}
+function viewPrint3D() {
+  return `${head({ icon: '🧊', n: 'Calcolatore Stampa 3D' }, 'Filamento + ore stampa + post-lavoro · deterministico')}
+    <div data-print3d-root><div class="v2-loading">⏳…</div></div>`;
+}
+function viewApparel() {
+  return `${head({ icon: '👕', n: 'Calcolatore Apparel' }, 'Capo + stampa (DTF/transfer) + manodopera · deterministico')}
+    <div data-apparel-root><div class="v2-loading">⏳…</div></div>`;
+}
+function viewListino() {
+  return `${head({ icon: '📋', n: 'Listino Prezzi' }, 'Prezzi del catalogo con margine attuale · dai dati reali')}
+    <div data-listino-root><div class="v2-loading">⏳ Carico listino…</div></div>`;
+}
+function viewTemplateDocs() {
+  return `${head({ icon: '📝', n: 'Template Documenti' }, 'Testi standard pronti (validità, acconto, express…) · preset KB')}
+    <div data-template_docs-root><div class="v2-loading">⏳…</div></div>`;
+}
+function viewQuoteIntel() {
+  return `${head({ icon: '🧩', n: 'Quote Intelligence' }, 'Conversione, valore medio, preventivi aperti · dai dati reali')}
+    <div data-quoteintel-root><div class="v2-loading">⏳ Analisi preventivi…</div></div>`;
+}
+
 function viewGoals() {
   return `${head({ icon: '🎯', n: 'Obiettivi' }, 'Target ufficiali KB vs valori reali · avanzamento con fonte')}
     <div data-goals-root><div class="v2-loading">⏳ Carico obiettivi…</div></div>`;
@@ -247,7 +272,7 @@ function viewLogistics() {
     <div data-logistics-root><div class="v2-loading">⏳ Inizializzazione logistica…</div></div>`;
 }
 
-const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
+const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
 
 export function renderView(section, ctx) {
   const fn = SPECIAL[section];

@@ -33,6 +33,7 @@ import { mountKpi, mountForecaster, mountOpportunity, mountGrowth } from './anal
 import { mountClientIntel, mountClv, mountLeadScorer, mountB2BPitch } from './clientanalytics-ui.js';
 import { mountPaints, mountComponents, mountGadgets, mountSupplierIntel } from './stockviews-ui.js';
 import { mountGoals, mountProfitScope, mountProfitLeak, mountRevSim, mountDynamicPrice } from './financeanalytics-ui.js';
+import { mountLaser, mountPrint3D, mountApparel, mountListino, mountTemplates, mountQuoteIntel } from './quotetools-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -91,6 +92,12 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'profitleak' && sb) { try { mountProfitLeak(view, { sb }); } catch (_) {} }
     if (r === 'revsim' && sb) { try { mountRevSim(view, { sb }); } catch (_) {} }
     if (r === 'dynamicprice' && sb) { try { mountDynamicPrice(view, { sb }); } catch (_) {} }
+    if (r === 'lasercalc') { try { mountLaser(view, { sb }); } catch (_) {} }
+    if (r === 'print3d') { try { mountPrint3D(view, { sb }); } catch (_) {} }
+    if (r === 'apparel') { try { mountApparel(view, { sb }); } catch (_) {} }
+    if (r === 'listino' && sb) { try { mountListino(view, { sb }); } catch (_) {} }
+    if (r === 'template_docs') { try { mountTemplates(view, { sb }); } catch (_) {} }
+    if (r === 'quoteintel' && sb) { try { mountQuoteIntel(view, { sb }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');
