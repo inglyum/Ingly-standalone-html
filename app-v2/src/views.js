@@ -137,6 +137,27 @@ function viewGrowth() {
     <div data-growth-root><div class="v2-loading">⏳ Growth engine…</div></div>`;
 }
 
+function viewReportHub() {
+  return `${head({ icon: '📑', n: 'Report' }, 'Sintesi report reali cross-modulo · export completo dal modulo Backup')}
+    <div data-reports-root><div class="v2-loading">⏳ Carico report…</div></div>`;
+}
+function viewCalendar() {
+  return `${head({ icon: '📅', n: 'Calendario' }, 'Agenda dalle scadenze reali di preventivi e fatture · nessun evento finto')}
+    <div data-calendar-root><div class="v2-loading">⏳ Carico agenda…</div></div>`;
+}
+function viewLaserResources() {
+  return `${head({ icon: '🛠️', n: 'Risorse Laser' }, 'Macchine (€/min) e materiali (€/mq) di riferimento · dai dati reali')}
+    <div data-laserresources-root><div class="v2-loading">⏳ Carico risorse…</div></div>`;
+}
+function viewBrandIdentity() {
+  return `${head({ icon: '✨', n: 'Brand Identity' }, 'Valori, riferimenti, tecniche, tone of voice · riferimento brand')}
+    <div data-brand_identity-root><div class="v2-loading">⏳…</div></div>`;
+}
+function viewLegal() {
+  return `${head({ icon: '⚖️', n: 'Legale' }, 'Modelli di testo standard (privacy, condizioni, garanzia) · non è consulenza')}
+    <div data-legal-root><div class="v2-loading">⏳…</div></div>`;
+}
+
 function viewMarketing() {
   return `${head({ icon: '📣', n: 'Marketing Pro' }, 'Piano azioni + calendario editoriale dai dati reali · regole KB')}
     <div data-marketing-root><div class="v2-loading">⏳ Preparo il piano…</div></div>`;
@@ -315,7 +336,7 @@ function viewLogistics() {
     <div data-logistics-root><div class="v2-loading">⏳ Inizializzazione logistica…</div></div>`;
 }
 
-const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, marketing: viewMarketing, etsy_seo_wizard: viewEtsySeo, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
+const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, marketing: viewMarketing, etsy_seo_wizard: viewEtsySeo, reports: viewReportHub, calendar: viewCalendar, laserresources: viewLaserResources, brand_identity: viewBrandIdentity, legal: viewLegal, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
 
 export function renderView(section, ctx) {
   const fn = SPECIAL[section];
