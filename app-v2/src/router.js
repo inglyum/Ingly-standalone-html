@@ -34,6 +34,7 @@ import { mountClientIntel, mountClv, mountLeadScorer, mountB2BPitch } from './cl
 import { mountPaints, mountComponents, mountGadgets, mountSupplierIntel } from './stockviews-ui.js';
 import { mountGoals, mountProfitScope, mountProfitLeak, mountRevSim, mountDynamicPrice } from './financeanalytics-ui.js';
 import { mountLaser, mountPrint3D, mountApparel, mountListino, mountTemplates, mountQuoteIntel } from './quotetools-ui.js';
+import { mountBriefing, mountBizAi, mountCoach, mountDecision, mountForecasting } from './aiadvisor-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -98,6 +99,11 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'listino' && sb) { try { mountListino(view, { sb }); } catch (_) {} }
     if (r === 'template_docs') { try { mountTemplates(view, { sb }); } catch (_) {} }
     if (r === 'quoteintel' && sb) { try { mountQuoteIntel(view, { sb }); } catch (_) {} }
+    if (r === 'ai' && sb) { try { mountBriefing(view, { sb }); } catch (_) {} }
+    if (r === 'bizai' && sb) { try { mountBizAi(view, { sb }); } catch (_) {} }
+    if (r === 'aicoach' && sb) { try { mountCoach(view, { sb }); } catch (_) {} }
+    if (r === 'decision' && sb) { try { mountDecision(view, { sb }); } catch (_) {} }
+    if (r === 'forecasting' && sb) { try { mountForecasting(view, { sb }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');
