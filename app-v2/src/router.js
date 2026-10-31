@@ -38,6 +38,7 @@ import { mountBriefing, mountBizAi, mountCoach, mountDecision, mountForecasting 
 import { mountWorkflow, mountSalesOverview, mountSalesArchive } from './salesops-ui.js';
 import { mountMarketing, mountEtsySeo } from './marketingtools-ui.js';
 import { mountReportHub, mountAgenda, mountLaserResources, mountBrand, mountLegal } from './systools-ui.js';
+import { mountIdeas, mountInnovation, mountStrategy, mountFiera } from './workspace-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -117,6 +118,10 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'laserresources' && sb) { try { mountLaserResources(view, { sb }); } catch (_) {} }
     if (r === 'brand_identity') { try { mountBrand(view, { sb }); } catch (_) {} }
     if (r === 'legal') { try { mountLegal(view, { sb }); } catch (_) {} }
+    if (r === 'ideas' && sb) { try { mountIdeas(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'innovation' && sb) { try { mountInnovation(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'strategy' && sb) { try { mountStrategy(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'fiera' && sb) { try { mountFiera(view, { sb, ctx }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');

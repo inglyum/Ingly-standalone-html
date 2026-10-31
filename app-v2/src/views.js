@@ -137,6 +137,23 @@ function viewGrowth() {
     <div data-growth-root><div class="v2-loading">⏳ Growth engine…</div></div>`;
 }
 
+function viewIdeas() {
+  return `${head({ icon: '💡', n: 'Idee & Ispirazione' }, 'Appunti e idee · CRUD reale (tabella workspace_note)')}
+    <div data-ideas-root><div class="v2-loading">⏳ Carico…</div></div>`;
+}
+function viewInnovation() {
+  return `${head({ icon: '🧪', n: 'Innovazione' }, 'Progetti di innovazione · CRUD reale · stessa tabella tipizzata')}
+    <div data-innovation-root><div class="v2-loading">⏳ Carico…</div></div>`;
+}
+function viewStrategy() {
+  return `${head({ icon: '♟️', n: 'Strategia' }, 'Note strategiche e obiettivi · CRUD reale')}
+    <div data-strategy-root><div class="v2-loading">⏳ Carico…</div></div>`;
+}
+function viewFiera() {
+  return `${head({ icon: '🎪', n: 'Fiera Assistant' }, 'Checklist e note per fiere/eventi · CRUD reale')}
+    <div data-fiera-root><div class="v2-loading">⏳ Carico…</div></div>`;
+}
+
 function viewReportHub() {
   return `${head({ icon: '📑', n: 'Report' }, 'Sintesi report reali cross-modulo · export completo dal modulo Backup')}
     <div data-reports-root><div class="v2-loading">⏳ Carico report…</div></div>`;
@@ -336,7 +353,7 @@ function viewLogistics() {
     <div data-logistics-root><div class="v2-loading">⏳ Inizializzazione logistica…</div></div>`;
 }
 
-const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, marketing: viewMarketing, etsy_seo_wizard: viewEtsySeo, reports: viewReportHub, calendar: viewCalendar, laserresources: viewLaserResources, brand_identity: viewBrandIdentity, legal: viewLegal, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
+const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, marketing: viewMarketing, etsy_seo_wizard: viewEtsySeo, reports: viewReportHub, calendar: viewCalendar, laserresources: viewLaserResources, brand_identity: viewBrandIdentity, legal: viewLegal, ideas: viewIdeas, innovation: viewInnovation, strategy: viewStrategy, fiera: viewFiera, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
 
 export function renderView(section, ctx) {
   const fn = SPECIAL[section];
