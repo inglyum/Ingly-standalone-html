@@ -39,6 +39,7 @@ import { mountWorkflow, mountSalesOverview, mountSalesArchive } from './salesops
 import { mountMarketing, mountEtsySeo } from './marketingtools-ui.js';
 import { mountReportHub, mountAgenda, mountLaserResources, mountBrand, mountLegal } from './systools-ui.js';
 import { mountIdeas, mountInnovation, mountStrategy, mountFiera } from './workspace-ui.js';
+import { mount as mountTeam } from './team-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -122,6 +123,7 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'innovation' && sb) { try { mountInnovation(view, { sb, ctx }); } catch (_) {} }
     if (r === 'strategy' && sb) { try { mountStrategy(view, { sb, ctx }); } catch (_) {} }
     if (r === 'fiera' && sb) { try { mountFiera(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'team' && sb) { try { mountTeam(view, { sb, ctx }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');
