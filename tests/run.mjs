@@ -51,5 +51,6 @@ import './marketingtools.test.mjs';
 import './systools.test.mjs';
 import './workspace.test.mjs';
 import './team.test.mjs';
+import './booking.test.mjs';
 import { run } from './harness.mjs';
 await run();
