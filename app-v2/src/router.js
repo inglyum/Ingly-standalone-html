@@ -32,6 +32,7 @@ import { mount as mountNotifications } from './notifications-ui.js';
 import { mountKpi, mountForecaster, mountOpportunity, mountGrowth } from './analytics-ui.js';
 import { mountClientIntel, mountClv, mountLeadScorer, mountB2BPitch } from './clientanalytics-ui.js';
 import { mountPaints, mountComponents, mountGadgets, mountSupplierIntel } from './stockviews-ui.js';
+import { mountGoals, mountProfitScope, mountProfitLeak, mountRevSim, mountDynamicPrice } from './financeanalytics-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -85,6 +86,11 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'components' && sb) { try { mountComponents(view, { sb }); } catch (_) {} }
     if (r === 'gadgets' && sb) { try { mountGadgets(view, { sb }); } catch (_) {} }
     if (r === 'supplierintel' && sb) { try { mountSupplierIntel(view, { sb }); } catch (_) {} }
+    if (r === 'goals' && sb) { try { mountGoals(view, { sb }); } catch (_) {} }
+    if (r === 'profitscope' && sb) { try { mountProfitScope(view, { sb }); } catch (_) {} }
+    if (r === 'profitleak' && sb) { try { mountProfitLeak(view, { sb }); } catch (_) {} }
+    if (r === 'revsim' && sb) { try { mountRevSim(view, { sb }); } catch (_) {} }
+    if (r === 'dynamicprice' && sb) { try { mountDynamicPrice(view, { sb }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');
