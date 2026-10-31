@@ -137,6 +137,15 @@ function viewGrowth() {
     <div data-growth-root><div class="v2-loading">⏳ Growth engine…</div></div>`;
 }
 
+function viewMarketing() {
+  return `${head({ icon: '📣', n: 'Marketing Pro' }, 'Piano azioni + calendario editoriale dai dati reali · regole KB')}
+    <div data-marketing-root><div class="v2-loading">⏳ Preparo il piano…</div></div>`;
+}
+function viewEtsySeo() {
+  return `${head({ icon: '🔑', n: 'Etsy SEO Wizard' }, 'Ottimizzatore titolo/tag per regole Etsy · deterministico, nessuna AI')}
+    <div data-etsy_seo_wizard-root><div class="v2-loading">⏳…</div></div>`;
+}
+
 function viewWorkflow() {
   return `${head({ icon: '🗂️', n: 'Workflow Overview' }, 'Ordini di produzione per stato · kanban deterministico dai dati reali')}
     <div data-workflow_dashboard-root><div class="v2-loading">⏳ Carico workflow…</div></div>`;
@@ -306,7 +315,7 @@ function viewLogistics() {
     <div data-logistics-root><div class="v2-loading">⏳ Inizializzazione logistica…</div></div>`;
 }
 
-const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
+const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, marketing: viewMarketing, etsy_seo_wizard: viewEtsySeo, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
 
 export function renderView(section, ctx) {
   const fn = SPECIAL[section];

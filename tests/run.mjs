@@ -47,5 +47,6 @@ import './financeanalytics.test.mjs';
 import './quotetools.test.mjs';
 import './aiadvisor.test.mjs';
 import './salesops.test.mjs';
+import './marketingtools.test.mjs';
 import { run } from './harness.mjs';
 await run();
