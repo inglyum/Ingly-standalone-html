@@ -53,5 +53,6 @@ import './workspace.test.mjs';
 import './team.test.mjs';
 import './booking.test.mjs';
 import './bankfunds.test.mjs';
+import './extratools.test.mjs';
 import { run } from './harness.mjs';
 await run();

@@ -110,3 +110,12 @@ l'esito reale.
   mantiene lo sfrido +15% documentato per retro-compatibilità; il percorso live
   è "Configura Lavorazione" (workings). Esempio: costo 11,70€ → prezzo 23,90€
   (prima 35,90€). Test anti-regressione aggiunti. Suite 436 verde.
+- Copertura completa navigazione (perfezionamento): tutte le 102 sezioni del
+  registro ora rispondono. 80 implementate live (deterministiche, con fonte) +
+  22 con PANNELLO INTEGRAZIONE onesto (servizi esterni/generativi: social,
+  Etsy, immagini AI, SdI, hardware scanner/barcode) che dichiara servizio
+  richiesto e cosa sblocca, SENZA interfacce finte (command §6). Nuove reali:
+  Scadenze Fiscali (date IT note, deterministiche), Fiscale (stima IVA da
+  finanza+aliquota, limite SdI dichiarato), Laser B2B (quoter markup ×2,5),
+  Esporta Portatile (riusa Backup), Ingly Design (riusa Brand), items→Magazzino
+  (alias warehouse). 0 moduli con badge generico residuo. Suite 507 verde.

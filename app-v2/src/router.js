@@ -43,6 +43,7 @@ import { mount as mountTeam } from './team-ui.js';
 import { mount as mountBooking } from './booking-ui.js';
 import { mount as mountBankFunds } from './bankfunds-ui.js';
 import { mount as mountLabSetup } from './labsetup-ui.js';
+import { mountTaxCalendar, mountFiscal, mountLaserB2B } from './extratools-ui.js';
 
 export function currentRoute() {
   const h = (typeof location !== 'undefined' && location.hash || '').replace(/^#\/?/, '');
@@ -65,7 +66,7 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'aging' && sb) { try { mountAging(view, { sb }); } catch (_) {} }
     if (r === 'suppliers' && sb) { try { mountSuppliers(view, { sb, ctx }); } catch (_) {} }
     if (r === 'purchases' && sb) { try { mountPurchases(view, { sb, ctx }); } catch (_) {} }
-    if (r === 'inventory' && sb) { try { mountWarehouse(view, { sb, ctx }); } catch (_) {} }
+    if ((r === 'inventory' || r === 'items') && sb) { try { mountWarehouse(view, { sb, ctx }); } catch (_) {} }
     if (r === 'projects' && sb) { try { mountProjects(view, { sb, ctx }); } catch (_) {} }
     if (r === 'finance' && sb) { try { mountFinance(view, { sb, ctx }); } catch (_) {} }
     if (r === 'analytics' && sb) { try { mountReports(view, { sb }); } catch (_) {} }
@@ -130,6 +131,11 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'booking' && sb) { try { mountBooking(view, { sb, ctx }); } catch (_) {} }
     if (r === 'bank_funds' && sb) { try { mountBankFunds(view, { sb, ctx }); } catch (_) {} }
     if (r === 'lab_setup' && sb) { try { mountLabSetup(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'taxcalendar') { try { mountTaxCalendar(view, { sb }); } catch (_) {} }
+    if (r === 'fiscal' && sb) { try { mountFiscal(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'laser_b2b') { try { mountLaserB2B(view, { sb }); } catch (_) {} }
+    if (r === 'portabile' && sb) { try { mountBackup(view, { sb, ctx }); } catch (_) {} }
+    if (r === 'inglydesign') { try { mountBrand(view, { sb }); } catch (_) {} }
     root.querySelectorAll('[data-route]').forEach((b) =>
       b.classList.toggle('active', b.getAttribute('data-route') === r));
     const crumb = root.querySelector('#v2-crumb');

@@ -42,6 +42,50 @@ function viewOrders() {
     <div data-orders-root><div class="v2-loading">⏳ Inizializzazione ordini…</div></div>`;
 }
 
+// ── MODULI CHE RICHIEDONO INTEGRAZIONE ESTERNA ───────────────────────────
+// Onestà (command §6): niente controlli finti. Questi moduli dipendono da un
+// servizio esterno/generativo non configurato: mostriamo cosa serve e cosa
+// sbloccano, NON un'interfaccia che finge di funzionare.
+const INTEGRATION = {
+  social: { service: 'API social (Meta/Instagram/TikTok)', unlocks: 'pubblicazione e metriche post' },
+  socialstudio: { service: 'Generatore contenuti/immagini AI', unlocks: 'creazione post multi-formato' },
+  etsy: { service: 'API Etsy (OAuth negozio)', unlocks: 'sincronizzazione listini e ordini Etsy' },
+  etsy_pulse: { service: 'API Etsy', unlocks: 'metriche vendite/visite in tempo reale' },
+  etsyai: { service: 'API Etsy + AI', unlocks: 'ottimizzazioni automatiche listing' },
+  trendscanner: { service: 'Fonte dati trend (es. Google Trends)', unlocks: 'scansione trend di mercato' },
+  demand_map: { service: 'Dati geografici/vendite esterni', unlocks: 'mappa della domanda' },
+  product_hunter: { service: 'Dati marketplace esterni', unlocks: 'scouting prodotti' },
+  live_intel: { service: 'Feed dati esterni', unlocks: 'intelligence in tempo reale' },
+  price_radar: { service: 'Scraping/API prezzi concorrenti', unlocks: 'monitoraggio prezzi' },
+  photostudio: { service: 'Generatore immagini AI', unlocks: 'foto prodotto generate' },
+  imagelib: { service: 'Storage media (bucket)', unlocks: 'libreria immagini' },
+  contentperf: { service: 'API social/analytics', unlocks: 'performance dei contenuti' },
+  replyai: { service: 'Modello generativo + casella messaggi', unlocks: 'bozze di risposta' },
+  socialproof: { service: 'Fonte recensioni esterne', unlocks: 'raccolta social proof' },
+  marketintel: { service: 'Dati di mercato esterni', unlocks: 'market intelligence' },
+  competitors: { service: 'Scraping/API concorrenti', unlocks: 'monitoraggio competitor' },
+  market_agent: { service: 'Agente AI + fonti dati esterne', unlocks: 'analisi di mercato autonoma' },
+  studio_ai: { service: 'Generatore immagini/video AI', unlocks: 'studio creativo AI' },
+  xmlsdi: { service: 'Provider SdI / fatturazione elettronica', unlocks: 'invio XML allo SdI' },
+  scanner: { service: 'Fotocamera/scanner dispositivo', unlocks: 'scansione scontrini/spese' },
+  barcode: { service: 'Fotocamera/lettore barcode dispositivo', unlocks: 'lettura codici a barre prodotti' },
+};
+export const INTEGRATION_KEYS = Object.keys(INTEGRATION);
+
+function viewIntegration(section) {
+  const m = findModule(section) || { icon: '🔌', n: section, group: '' };
+  const info = INTEGRATION[section];
+  return `${head(m, 'Categoria: ' + esc(m.group))}
+    <div class="v2-card">
+      <div class="v2-badge-nyc">Non ancora connesso · richiede integrazione</div>
+      <p>Questo modulo fornirebbe: <b>${esc(info.unlocks)}</b>.</p>
+      <p>Per attivarlo serve un servizio esterno: <b>${esc(info.service)}</b>. In coerenza con le
+      regole del progetto, non viene mostrata un'interfaccia dimostrativa che finge di funzionare:
+      la sezione resta onesta finché l'integrazione non è configurata.</p>
+      <p class="v2-muted">Route: <code>#/${esc(section)}</code> · fornisci le credenziali/accessi per abilitarlo.</p>
+    </div>`;
+}
+
 // ── GENERICO (modulo non ancora connesso) ────────────────────────────────
 function viewGeneric(section) {
   const m = findModule(section) || { icon: '📦', n: section, group: '' };
@@ -135,6 +179,27 @@ function viewOpportunity() {
 function viewGrowth() {
   return `${head({ icon: '🚀', n: 'Growth Engine' }, 'Sintesi crescita: forecast + opportunità + alert · score deterministico')}
     <div data-growth-root><div class="v2-loading">⏳ Growth engine…</div></div>`;
+}
+
+function viewTaxCalendar() {
+  return `${head({ icon: '🗓️', n: 'Scadenze Fiscali' }, 'Scadenzario fiscale IT ricorrente · date note, deterministico · riferimento')}
+    <div data-taxcalendar-root><div class="v2-loading">⏳…</div></div>`;
+}
+function viewFiscal() {
+  return `${head({ icon: '🧾', n: 'Fiscale' }, 'Sintesi IVA sull incassato all aliquota configurata · stima, non invio SdI')}
+    <div data-fiscal-root><div class="v2-loading">⏳ Carico dati fiscali…</div></div>`;
+}
+function viewLaserB2B() {
+  return `${head({ icon: '🏭', n: 'Laser B2B' }, 'Calcolatore laser con markup B2B KB (×2,5) · motore quoter')}
+    <div data-laser_b2b-root><div class="v2-loading">⏳…</div></div>`;
+}
+function viewPortabile() {
+  return `${head({ icon: '💾', n: 'Esporta Portatile' }, 'Backup JSON completo ed export CSV · portabilità dati (riusa Backup)')}
+    <div data-export-root><div class="v2-loading">⏳ Inizializzazione export…</div></div>`;
+}
+function viewInglyDesign() {
+  return `${head({ icon: '✨', n: 'Ingly Design' }, 'Identità e riferimenti del brand · scheda di riferimento')}
+    <div data-brand_identity-root><div class="v2-loading">⏳…</div></div>`;
 }
 
 function viewBankFunds() {
@@ -372,11 +437,12 @@ function viewLogistics() {
     <div data-logistics-root><div class="v2-loading">⏳ Inizializzazione logistica…</div></div>`;
 }
 
-const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, marketing: viewMarketing, etsy_seo_wizard: viewEtsySeo, reports: viewReportHub, calendar: viewCalendar, laserresources: viewLaserResources, brand_identity: viewBrandIdentity, legal: viewLegal, ideas: viewIdeas, innovation: viewInnovation, strategy: viewStrategy, fiera: viewFiera, team: viewTeam, booking: viewBooking, bank_funds: viewBankFunds, lab_setup: viewLabSetup, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
+const SPECIAL = { dashboard: viewDashboard, search: viewSearch, quoter: viewQuoter, settings: viewSettings, cashflow: viewCashflow, recurring: viewRecurring, timetracker: viewTimeTracker, fixed_costs: viewFixedCosts, history: viewAudit, backup: viewBackup, equipment: viewEquipment, materials: viewMaterials, smartnotif: viewNotifications, kpi: viewKpi, forecaster: viewForecaster, opportunity: viewOpportunity, growthengine: viewGrowth, clientintel: viewClientIntel, clv: viewClv, leadscorer: viewLeadScorer, b2bpitch: viewB2BPitch, paints: viewPaints, components: viewComponents, gadgets: viewGadgets, supplierintel: viewSupplierIntel, goals: viewGoals, profitscope: viewProfitScope, profitleak: viewProfitLeak, revsim: viewRevSim, dynamicprice: viewDynamicPrice, lasercalc: viewLaserCalc, print3d: viewPrint3D, apparel: viewApparel, listino: viewListino, template_docs: viewTemplateDocs, quoteintel: viewQuoteIntel, ai: viewAiBusiness, bizai: viewBizAi, aicoach: viewAiCoach, decision: viewDecision, forecasting: viewForecasting, workflow_dashboard: viewWorkflow, sales: viewSales, sales_archive: viewSalesArchive, marketing: viewMarketing, etsy_seo_wizard: viewEtsySeo, reports: viewReportHub, calendar: viewCalendar, laserresources: viewLaserResources, brand_identity: viewBrandIdentity, legal: viewLegal, ideas: viewIdeas, innovation: viewInnovation, strategy: viewStrategy, fiera: viewFiera, team: viewTeam, booking: viewBooking, bank_funds: viewBankFunds, lab_setup: viewLabSetup, taxcalendar: viewTaxCalendar, fiscal: viewFiscal, laser_b2b: viewLaserB2B, portabile: viewPortabile, inglydesign: viewInglyDesign, clients: viewClients, catalog: viewCatalog, quotes: viewQuotes, gestione_ordini: viewOrders, invoices: viewInvoices, aging: viewAging, suppliers: viewSuppliers, purchases: viewPurchases, inventory: viewWarehouse, items: viewWarehouse, projects: viewProjects, finance: viewFinance, analytics: viewReports, intel: viewIntel, production: viewProduction, logistics: viewLogistics };
 
 export function renderView(section, ctx) {
   const fn = SPECIAL[section];
-  return `<div class="v2-page" data-page="${esc(section)}">${fn ? fn(ctx) : viewGeneric(section)}</div>`;
+  const body = fn ? fn(ctx) : (INTEGRATION[section] ? viewIntegration(section) : viewGeneric(section));
+  return `<div class="v2-page" data-page="${esc(section)}">${body}</div>`;
 }
 export const IMPLEMENTED = Object.keys(SPECIAL);
 

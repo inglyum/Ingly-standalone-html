@@ -107,13 +107,15 @@ describe('V2 Routing / rendering moduli (offline)', (s) => {
     assert(/data-orders-root/.test(renderView('gestione_ordini', ctx)), 'Ordini senza root live');
     assert(/data-catalog-root/.test(renderView('catalog', ctx)), 'Catalogo senza root live');
   });
-  it(s, 'i moduli non implementati sono marcati "non ancora connesso" (nessun controllo finto)', async () => {
-    const html = renderView('social', ctx); // modulo reale non ancora implementato
-    assert(/non ancora connesso a V2/i.test(html), 'manca badge non-connesso');
+  it(s, 'i moduli che richiedono integrazione esterna mostrano un pannello onesto (nessun controllo finto)', async () => {
+    const html = renderView('social', ctx); // richiede API social
+    assert(/non ancora connesso/i.test(html), 'manca badge non-connesso');
+    assert(/richiede integrazione|servizio esterno/i.test(html), 'manca spiegazione integrazione');
   });
-  it(s, 'i moduli non ancora connessi mostrano il badge (nessun controllo finto)', async () => {
-    const html = renderView('scanner', ctx); // modulo backend non ancora implementato
+  it(s, 'un modulo hardware (scanner) è marcato come non connesso, non finto-funzionante', async () => {
+    const html = renderView('scanner', ctx);
     assert(/non ancora connesso/i.test(html), 'modulo non marcato');
+    assert(!/data-\w+-root/.test(html), 'non deve montare un pannello finto');
   });
 });
 
