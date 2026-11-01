@@ -1,6 +1,7 @@
 // INGLY OS V2 — Produzione & Vendite UI (live). Workflow Overview, Vendite &
 // Fatture, Archivio Vendite. Read-only, con fonte. Link ai moduli operativi.
 import * as SO from './salesops.js';
+import { mountAutomations } from './automations-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -16,7 +17,8 @@ export function renderWorkflow(d) {
       <div class="v2-card" style="flex:1;min-width:180px">
         <div class="module-header">${esc(c.label)} (${c.items.length})</div>
         ${c.items.length ? c.items.map((o) => `<div class="v2-chip" style="display:block;margin:4px 0">${esc(o.number)} · ${esc(o.product)} ×${o.qty}</div>`).join('') : '<div class="v2-empty">—</div>'}
-      </div>`).join('')}</div>`;
+      </div>`).join('')}</div>
+    <div data-wf-automations style="margin-top:12px"></div>`;
 }
 
 export function renderSalesOverview(d) {
@@ -52,6 +54,16 @@ const mk = (loader, renderer, rootSel, msg) => function mount(container, { sb })
   (async () => { try { root.innerHTML = renderer(await loader(sb)); goto(root); } catch (e) { root.innerHTML = errorBox(SO.friendlyError(e)); } })();
 };
 
-export const mountWorkflow = mk(SO.loadWorkflow, renderWorkflow, '[data-workflow_dashboard-root]', 'Carico workflow…');
+export function mountWorkflow(container, { sb, ctx }) {
+  if (!container) return;
+  const root = container.querySelector('[data-workflow_dashboard-root]') || container;
+  root.innerHTML = loading('Carico workflow…');
+  (async () => {
+    try {
+      root.innerHTML = renderWorkflow(await SO.loadWorkflow(sb)); goto(root);
+      mountAutomations(root.querySelector('[data-wf-automations]'), { sb, ctx }); // automazioni applicabili
+    } catch (e) { root.innerHTML = errorBox(SO.friendlyError(e)); }
+  })();
+}
 export const mountSalesOverview = mk(SO.loadSalesOverview, renderSalesOverview, '[data-sales-root]', 'Carico vendite…');
 export const mountSalesArchive = mk(SO.loadSalesArchive, renderSalesArchive, '[data-sales_archive-root]', 'Carico archivio…');

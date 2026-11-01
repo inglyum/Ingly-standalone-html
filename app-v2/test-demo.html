@@ -135,9 +135,11 @@ function seed(){
     sales_quote_counter:[{ tenant_id:'t1', next_val:3 }],
     sales_order:[
       { id:'o1', tenant_id:'t1', number:'ORD-000001', customer_id:'c3', customer_name:'Chef Nino', quote_id:'q2', project_id:'prj1', status:'IN_PRODUCTION', order_date:'2026-08-16', subtotal:19.90, discount:0, tax:0, total:19.90, deleted_at:null },
+      { id:'o2', tenant_id:'t1', number:'ORD-000002', customer_id:'c1', customer_name:'Maria Russo', status:'DELIVERED', order_date:'2026-08-20', subtotal:60, discount:0, tax:0, total:60, deleted_at:null },
     ],
     sales_order_line:[
       { id:'ol1', tenant_id:'t1', order_id:'o1', product_id:'p2', description:'QR Menu ristorante', quantity:1, unit_price:19.90, discount:0, tax:0, line_total:19.90, sort_order:0 },
+      { id:'ol2', tenant_id:'t1', order_id:'o2', product_id:'p1', description:'Targa A5 incisa', quantity:1, unit_price:60, discount:0, tax:0, line_total:60, sort_order:0 },
     ],
     sales_invoice:[
       { id:'inv1', tenant_id:'t1', number:'FATT-2026-000001', customer_id:'c1', customer_name:'Maria Russo', order_id:null, year:2026, status:'ISSUED', issue_date:'2026-08-05', due_date:'2026-09-04', subtotal:100, discount:0, tax:22, total:122, paid_total:0, deleted_at:null },
