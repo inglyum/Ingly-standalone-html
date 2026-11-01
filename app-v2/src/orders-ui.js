@@ -6,6 +6,8 @@ import * as CRM from './crm.js';
 import { convertOrderToInvoice } from './invoices.js';
 import { createShipmentFromOrder } from './logistics.js';
 import { roleForTenant } from './context.js';
+import { renderStatusbar, wireStatusbar } from './workflow-ui.js';
+import { validateTransition } from './workflow.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -51,6 +53,7 @@ export function renderOrderDetail(bundle, role) {
         ${d ? `<button class="v2-btn v2-danger" data-del="${esc(o.id)}">Archivia</button>` : ''}
       </div></div>
     <h2>${esc(o.number || 'Ordine')} <span class="v2-chip">${esc(SL[o.status] || o.status)}</span></h2>
+    ${renderStatusbar('order', o.status, w)}
     <div class="v2-kv"><div><span>Cliente</span>${esc(o.customer_name || '—')}</div>
       <div><span>Data</span>${day(o.order_date)}</div>
       <div><span>Da preventivo</span>${o.quote_id ? 'sì' : '—'}</div>
@@ -113,9 +116,15 @@ export function mount(container, { sb, ctx }) {
         catch (e) { alert(ORD.friendlyError(e)); }
       });
       const st = pane.querySelector('[data-status]'); if (st) st.addEventListener('change', async () => {
+        const v = validateTransition('order', bundle.order.status, st.value);
+        if (!v.ok) { toast(root, v.reason); st.value = bundle.order.status; return; } // transizione non ammessa → ripristina
         try { await ORD.changeStatus(sb, id, st.value); toast(root, 'Stato aggiornato'); detail(id); }
         catch (e) { alert(ORD.friendlyError(e)); }
       });
+      // statusbar: pulsanti "avanza a" (solo stati ammessi, validati)
+      wireStatusbar(pane.querySelector('[data-wf]'), 'order', bundle.order.status,
+        async (to) => { try { await ORD.changeStatus(sb, id, to); toast(root, 'Stato aggiornato'); detail(id); } catch (e) { alert(ORD.friendlyError(e)); } },
+        (reason) => toast(root, reason));
       const iv = pane.querySelector('[data-invoice]'); if (iv) iv.addEventListener('click', async () => {
         if (!window.confirm('Creare una fattura da questo ordine?')) return;
         try { const inv = await convertOrderToInvoice(sb, (ctx || {}).activeTenant || null, id); toast(root, 'Fattura creata: ' + (inv.number || '')); location.hash = '#/invoices'; }
