@@ -101,13 +101,34 @@ export function whatsappLink(doc, computed, phone) {
   return `${base}?text=${encodeURIComponent(shareText(doc, computed))}`;
 }
 
-// Apre l'HTML in una nuova finestra e lancia la stampa (→ PDF via browser).
+// Stampa il documento (→ PDF via browser) in modo AFFIDABILE anche quando i
+// popup sono bloccati: usa un iframe nascosto same-origin (nessuna finestra),
+// con fallback a window.open. Ritorna 'iframe' | 'window' | false così il
+// chiamante può dare feedback all'utente (niente bottone "morto").
 export function printDoc(html) {
+  // 1) Via preferita: iframe nascosto — non richiede popup.
+  try {
+    const iframe = document.createElement('iframe');
+    iframe.setAttribute('aria-hidden', 'true');
+    iframe.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentWindow && iframe.contentWindow.document;
+    if (doc) {
+      doc.open(); doc.write(html); doc.close();
+      const go = () => { try { iframe.contentWindow.focus(); iframe.contentWindow.print(); } catch (_) {} setTimeout(() => { try { iframe.remove(); } catch (_) {} }, 1500); };
+      // attende il caricamento (immagini/font) prima di stampare
+      if (iframe.contentWindow.document.readyState === 'complete') setTimeout(go, 300);
+      else iframe.addEventListener('load', () => setTimeout(go, 300), { once: true });
+      return 'iframe';
+    }
+    iframe.remove();
+  } catch (_) { /* fallback */ }
+  // 2) Fallback: nuova finestra (se il browser la consente).
   try {
     const w = window.open('', '_blank');
     if (!w) return false;
     w.document.open(); w.document.write(html); w.document.close();
     w.focus(); setTimeout(() => { try { w.print(); } catch (_) {} }, 250);
-    return true;
+    return 'window';
   } catch (_) { return false; }
 }

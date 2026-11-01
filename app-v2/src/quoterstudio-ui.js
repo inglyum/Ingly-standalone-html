@@ -240,9 +240,18 @@ export function mount(container, { sb, ctx }) {
     // azioni
     const save = root.querySelector('[data-save]'); if (save) save.addEventListener('click', onSave);
     const dup = root.querySelector('[data-dup]'); if (dup) dup.addEventListener('click', onDuplicate);
-    const pc = root.querySelector('[data-pdf-client]'); if (pc) pc.addEventListener('click', () => DOC.printDoc(DOC.clientDocHTML(docForPdf(), computedDoc(), settings, S.doc.category === 'B2B' ? 'b2b' : 'premium')));
-    const pi = root.querySelector('[data-pdf-internal]'); if (pi) pi.addEventListener('click', () => DOC.printDoc(DOC.internalDocHTML(docForPdf(), computedDoc(), settings)));
-    const sh = root.querySelector('[data-share]'); if (sh) sh.addEventListener('click', () => { const cust = customers.find((x) => String(x.id) === String(S.doc.customer_id)); try { window.open(DOC.whatsappLink(docForPdf(), computedDoc(), cust && cust.phone), '_blank'); } catch (_) {} toast('Link WhatsApp pronto'); });
+    const pc = root.querySelector('[data-pdf-client]'); if (pc) pc.addEventListener('click', () => { const r = DOC.printDoc(DOC.clientDocHTML(docForPdf(), computedDoc(), settings, S.doc.category === 'B2B' ? 'b2b' : 'premium')); toast(r ? 'PDF cliente: scegli "Salva come PDF" nella stampa' : 'Stampa bloccata dal browser: consenti i popup e riprova'); });
+    const pi = root.querySelector('[data-pdf-internal]'); if (pi) pi.addEventListener('click', () => { const r = DOC.printDoc(DOC.internalDocHTML(docForPdf(), computedDoc(), settings)); toast(r ? 'PDF interno: scegli "Salva come PDF" nella stampa' : 'Stampa bloccata dal browser: consenti i popup e riprova'); });
+    const sh = root.querySelector('[data-share]'); if (sh) sh.addEventListener('click', () => {
+      const cust = customers.find((x) => String(x.id) === String(S.doc.customer_id));
+      const link = DOC.whatsappLink(docForPdf(), computedDoc(), cust && cust.phone);
+      let win = null; try { win = window.open(link, '_blank'); } catch (_) { win = null; }
+      // wa.me = apertura MANUALE (non invio automatico). Se il popup è bloccato,
+      // copia il link negli appunti come fallback, con feedback esplicito.
+      if (win) { toast('WhatsApp aperto: rivedi e invia tu il messaggio'); }
+      else if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(link).then(() => toast('Popup bloccato: link WhatsApp copiato negli appunti'), () => toast('Popup bloccato: consenti i popup per WhatsApp')); }
+      else { toast('Popup bloccato: consenti i popup per aprire WhatsApp'); }
+    });
     const acc = root.querySelector('[data-accept]'); if (acc) acc.addEventListener('click', async () => { try { await changeStatus(sb, S.id, 'ACCEPTED'); toast('Preventivo accettato'); } catch (e) { toast(Q.friendlyError(e)); } });
     const conv = root.querySelector('[data-convert]'); if (conv) conv.addEventListener('click', async () => { try { const o = await convertQuoteToOrder(sb, tenantId, S.id); toast('Ordine creato: ' + (o.number || '')); setTimeout(() => { location.hash = '#/gestione_ordini'; }, 500); } catch (e) { toast(Q.friendlyError(e)); } });
     populateOpen();
