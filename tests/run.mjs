@@ -57,5 +57,6 @@ import './extratools.test.mjs';
 import './relations.test.mjs';
 import './workflow.test.mjs';
 import './automations.test.mjs';
+import './chatter.test.mjs';
 import { run } from './harness.mjs';
 await run();

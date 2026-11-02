@@ -8,6 +8,7 @@ import { createShipmentFromOrder } from './logistics.js';
 import { roleForTenant } from './context.js';
 import { renderStatusbar, wireStatusbar } from './workflow-ui.js';
 import { validateTransition } from './workflow.js';
+import { mountChatter } from './chatter-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -67,7 +68,8 @@ export function renderOrderDetail(bundle, role) {
       <div><span>Sconto</span><b>-${eur(t.discount)}</b></div>
       <div><span>Imposte</span><b>${eur(t.tax)}</b></div>
       <div class="v2-summary-tot"><span>Totale</span><b>${eur(t.total)}</b></div>
-    </div></div>`;
+    </div>
+    <div data-order-chatter style="margin-top:12px"></div></div>`;
 }
 
 const loading = (m) => `<div class="v2-loading">⏳ ${esc(m || 'Caricamento…')}</div>`;
@@ -125,6 +127,7 @@ export function mount(container, { sb, ctx }) {
       wireStatusbar(pane.querySelector('[data-wf]'), 'order', bundle.order.status,
         async (to) => { try { await ORD.changeStatus(sb, id, to); toast(root, 'Stato aggiornato'); detail(id); } catch (e) { alert(ORD.friendlyError(e)); } },
         (reason) => toast(root, reason));
+      mountChatter(pane.querySelector('[data-order-chatter]'), { sb, ctx, entityType: 'order', entityId: id });
       const iv = pane.querySelector('[data-invoice]'); if (iv) iv.addEventListener('click', async () => {
         if (!window.confirm('Creare una fattura da questo ordine?')) return;
         try { const inv = await convertOrderToInvoice(sb, (ctx || {}).activeTenant || null, id); toast(root, 'Fattura creata: ' + (inv.number || '')); location.hash = '#/invoices'; }

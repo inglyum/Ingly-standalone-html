@@ -5,6 +5,7 @@
 import * as CRM from './crm.js';
 import { roleForTenant } from './context.js';
 import { injectCustomerRelations } from './relations-ui.js';
+import { mountChatter } from './chatter-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -56,6 +57,7 @@ export function renderCustomerDetail(bundle, role) {
       <div><span>Valore</span>${eur(c.value_cached)}</div></div>
     ${c.notes ? `<p class="v2-notes">${esc(c.notes)}</p>` : ''}
     <div data-cust-relations></div>
+    <div data-cust-chatter></div>
     <div class="v2-cols">
       <div class="v2-card"><h3>Contatti</h3><ul class="v2-list">${contacts}</ul>
         ${w ? `<button class="v2-btn v2-sm" data-add-contact="${esc(c.id)}">+ Contatto</button>` : ''}</div>
@@ -174,6 +176,7 @@ export function mount(container, { sb, ctx }) {
         const bundle = await CRM.getCustomer(sb, id);
         pane.innerHTML = renderCustomerDetail(bundle, role);
         injectCustomerRelations(sb, bundle.customer, pane.querySelector('[data-cust-relations]'));
+        mountChatter(pane.querySelector('[data-cust-chatter]'), { sb, ctx, entityType: 'customer', entityId: bundle.customer.id });
         pane.querySelector('[data-back]').addEventListener('click', () => customers.list());
         const ed = pane.querySelector('[data-edit]'); if (ed) ed.addEventListener('click', () => customers.form(bundle.customer));
         const dl = pane.querySelector('[data-del]'); if (dl) dl.addEventListener('click', async () => {
