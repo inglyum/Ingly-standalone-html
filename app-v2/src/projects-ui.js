@@ -4,6 +4,7 @@
 import * as PRJ from './projects.js';
 import * as CRM from './crm.js';
 import { roleForTenant } from './context.js';
+import { mountChatter } from './chatter-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -138,7 +139,8 @@ export function mount(container, { sb, ctx }) {
     pane.innerHTML = loading('Carico commessa…');
     try {
       const bundle = await PRJ.getProject(sb, id);
-      pane.innerHTML = renderProjectDetail(bundle, role);
+      pane.innerHTML = renderProjectDetail(bundle, role) + '<div data-project-chatter style="margin-top:12px"></div>';
+      mountChatter(pane.querySelector('[data-project-chatter]'), { sb, ctx, entityType: 'project', entityId: bundle.project.id });
       pane.querySelector('[data-back]').addEventListener('click', list);
       const ed = pane.querySelector('[data-edit]'); if (ed) ed.addEventListener('click', () => form(bundle.project));
       const dl = pane.querySelector('[data-del]'); if (dl) dl.addEventListener('click', async () => {

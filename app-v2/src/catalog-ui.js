@@ -10,6 +10,7 @@ import { createQuoteFromCalc } from './quoter.js';
 import { openQuoterDrawer } from './quoter-drawer.js';
 import { roleForTenant } from './context.js';
 import { injectProductRelations } from './relations-ui.js';
+import { mountChatter } from './chatter-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -245,6 +246,7 @@ export function mount(container, { sb, ctx }) {
       const p = await CAT.getProduct(sb, id);
       pane.innerHTML = renderProductDetail(p, role);
       injectProductRelations(sb, p, pane.querySelector('[data-prod-relations]'));
+      mountChatter(pane.querySelector('[data-prod-relations]').insertAdjacentElement('afterend', Object.assign(document.createElement('div'), { style: 'margin-top:12px' })), { sb, ctx, entityType: 'product', entityId: p.id });
       pane.querySelector('[data-back]').addEventListener('click', list);
       const ed = pane.querySelector('[data-edit]'); if (ed) ed.addEventListener('click', () => form(p));
       const qp = pane.querySelector('[data-quote-prod]'); if (qp) qp.addEventListener('click', () => {

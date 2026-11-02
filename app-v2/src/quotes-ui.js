@@ -8,6 +8,7 @@ import { convertQuoteToOrder } from './orders.js';
 import { addQuoterLineToQuote } from './quoter.js';
 import { openQuoterDrawer } from './quoter-drawer.js';
 import { roleForTenant } from './context.js';
+import { mountChatter } from './chatter-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -59,7 +60,8 @@ export function renderQuoteDetail(bundle, role) {
       <div><span>Sconto</span><b>-${eur(t.discount)}</b></div>
       <div><span>Imposte</span><b>${eur(t.tax)}</b></div>
       <div class="v2-summary-tot"><span>Totale</span><b>${eur(t.total)}</b></div>
-    </div></div>`;
+    </div>
+    <div data-quote-chatter style="margin-top:12px"></div></div>`;
 }
 
 export function renderQuoteForm(q, customers) {
@@ -157,6 +159,7 @@ export function mount(container, { sb, ctx }) {
     try {
       const bundle = await Q.getQuote(sb, id);
       pane.innerHTML = renderQuoteDetail(bundle, role);
+      mountChatter(pane.querySelector('[data-quote-chatter]'), { sb, ctx, entityType: 'quote', entityId: bundle.quote.id });
       pane.querySelector('[data-back]').addEventListener('click', list);
       const ed = pane.querySelector('[data-edit]'); if (ed) ed.addEventListener('click', () => form(bundle.quote));
       const dp = pane.querySelector('[data-dup]'); if (dp) dp.addEventListener('click', async () => {

@@ -6,6 +6,7 @@ import * as CRM from './crm.js';
 import * as PAY from './payments.js';
 import { openSdiDrawer } from './sdi-ui.js';
 import { roleForTenant } from './context.js';
+import { mountChatter } from './chatter-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -121,7 +122,8 @@ export function mount(container, { sb, ctx }) {
     try {
       const bundle = await INV.getInvoice(sb, id);
       const payments = await PAY.listPayments(sb, id).catch(() => []);
-      pane.innerHTML = renderInvoiceDetail(bundle, role) + renderPayments(payments, bundle.invoice, role);
+      pane.innerHTML = renderInvoiceDetail(bundle, role) + renderPayments(payments, bundle.invoice, role) + '<div data-invoice-chatter style="margin-top:12px"></div>';
+      mountChatter(pane.querySelector('[data-invoice-chatter]'), { sb, ctx, entityType: 'invoice', entityId: bundle.invoice.id });
       pane.querySelector('[data-back]').addEventListener('click', list);
       const sd = pane.querySelector('[data-sdi]'); if (sd) sd.addEventListener('click', () => openSdiDrawer({ sb, tenantId: (ctx || {}).activeTenant || null, invoiceId: id }));
       const dl = pane.querySelector('[data-del]'); if (dl) dl.addEventListener('click', async () => {
