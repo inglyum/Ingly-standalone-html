@@ -7,6 +7,8 @@ import * as PAY from './payments.js';
 import { openSdiDrawer } from './sdi-ui.js';
 import { roleForTenant } from './context.js';
 import { mountChatter } from './chatter-ui.js';
+import { renderStatusbar, wireStatusbar } from './workflow-ui.js';
+import { validateTransition } from './workflow.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -41,6 +43,7 @@ export function renderInvoiceDetail(bundle, role) {
         ${d ? `<button class="v2-btn v2-danger" data-del="${esc(i.id)}">Archivia</button>` : ''}
       </div></div>
     <h2>${esc(i.number || 'Fattura')} <span class="v2-chip">${esc(SL[i.status] || i.status)}</span></h2>
+    ${renderStatusbar('invoice', i.status, w)}
     <div class="v2-kv"><div><span>Cliente</span>${esc(i.customer_name || '—')}</div>
       <div><span>Emissione</span>${day(i.issue_date)}</div>
       <div><span>Scadenza</span>${day(i.due_date)}</div>
@@ -132,9 +135,14 @@ export function mount(container, { sb, ctx }) {
         catch (e) { alert(INV.friendlyError(e)); }
       });
       const st = pane.querySelector('[data-status]'); if (st) st.addEventListener('change', async () => {
+        const v = validateTransition('invoice', bundle.invoice.status, st.value);
+        if (!v.ok) { toast(root, v.reason); st.value = bundle.invoice.status; return; }
         try { await INV.changeStatus(sb, id, st.value); toast(root, 'Stato aggiornato'); detail(id); }
         catch (e) { alert(INV.friendlyError(e)); }
       });
+      wireStatusbar(pane.querySelector('[data-wf]'), 'invoice', bundle.invoice.status,
+        async (to) => { try { await INV.changeStatus(sb, id, to); toast(root, 'Stato aggiornato'); detail(id); } catch (e) { alert(INV.friendlyError(e)); } },
+        (reason) => toast(root, reason));
       const pf = pane.querySelector('[data-pay-form]'); if (pf) pf.addEventListener('submit', async (ev) => {
         ev.preventDefault();
         const msg = pf.querySelector('[data-pay-msg]');

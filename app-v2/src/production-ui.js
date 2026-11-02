@@ -3,6 +3,8 @@
 import * as PRD from './production.js';
 import * as CAT from './catalog.js';
 import { roleForTenant } from './context.js';
+import { renderStatusbar, wireStatusbar } from './workflow-ui.js';
+import { validateTransition } from './workflow.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -30,6 +32,7 @@ export function renderPOrderDetail(bundle, role, pname) {
         ${d ? `<button class="v2-btn v2-danger" data-del="${esc(o.id)}">Archivia</button>` : ''}
       </div></div>
     <h2>${esc(o.number || '')} · ${esc(pname ? pname(o.product_id) : '')} <span class="v2-chip">${esc(SL[o.status] || o.status)}</span></h2>
+    ${renderStatusbar('production', o.status, w)}
     <div class="v2-kv"><div><span>Quantità</span>${o.quantity}</div>
       <div><span>Scadenza</span>${day(o.due_date)}</div>
       <div><span>Distinta</span>${o.bom_id ? 'sì' : '—'}</div>
@@ -114,7 +117,8 @@ export function mount(container, { sb, ctx }) {
       const bundle = await PRD.getProductionOrder(sb, id);
       pane.innerHTML = renderPOrderDetail(bundle, role, pname);
       pane.querySelector('[data-back]').addEventListener('click', orders);
-      const st = pane.querySelector('[data-status]'); if (st) st.addEventListener('change', async () => { try { await PRD.changeStatus(sb, id, st.value); toast(root, 'Stato aggiornato'); orderDetail(id); } catch (e) { alert(PRD.friendlyError(e)); } });
+      const st = pane.querySelector('[data-status]'); if (st) st.addEventListener('change', async () => { const v = validateTransition('production', bundle.order.status, st.value); if (!v.ok) { toast(root, v.reason); st.value = bundle.order.status; return; } try { await PRD.changeStatus(sb, id, st.value); toast(root, 'Stato aggiornato'); orderDetail(id); } catch (e) { alert(PRD.friendlyError(e)); } });
+      wireStatusbar(pane.querySelector('[data-wf]'), 'production', bundle.order.status, async (to) => { try { await PRD.changeStatus(sb, id, to); toast(root, 'Stato aggiornato'); orderDetail(id); } catch (e) { alert(PRD.friendlyError(e)); } }, (reason) => toast(root, reason));
       const cp = pane.querySelector('[data-complete]'); if (cp) cp.addEventListener('click', async () => {
         if (!window.confirm('Completare la produzione? Verranno consumati i componenti e caricato il prodotto finito a magazzino.')) return;
         try { const r = await PRD.completeProduction(sb, tenantId, id); toast(root, `Completato: ${r.consumed} componenti consumati, ${r.produced} prodotti a magazzino`); orderDetail(id); }
