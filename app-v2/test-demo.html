@@ -169,6 +169,11 @@ function seed(){
       { id:'eq1', tenant_id:'t1', name:'xTool P2 (laser CO2)', category:'laser', cost_per_min:0.45, hourly_cost:27, power_w:55, active:true, deleted_at:null },
       { id:'eq2', tenant_id:'t1', name:'Roland UV', category:'uv', cost_per_min:0.60, hourly_cost:36, active:true, deleted_at:null },
     ],
+    record_note:[
+      { id:'rn1', tenant_id:'t1', entity_type:'customer', entity_id:'c1', kind:'activity', activity_type:'call', body:'Richiamare per riordino targhe', due_date:'2026-08-15', done:false, author:'demo@ingly.test', created_at:'2026-08-10T09:00:00Z', deleted_at:null },
+      { id:'rn2', tenant_id:'t1', entity_type:'order', entity_id:'o2', kind:'activity', activity_type:'todo', body:'Emettere fattura consegna', due_date:'2099-01-01', done:false, author:'demo@ingly.test', created_at:'2026-08-21T09:00:00Z', deleted_at:null },
+      { id:'rn3', tenant_id:'t1', entity_type:'customer', entity_id:'c1', kind:'message', body:'Cliente molto soddisfatto del lavoro precedente.', author:'demo@ingly.test', created_at:'2026-08-09T15:00:00Z', deleted_at:null },
+    ],
     notification:[
       { id:'nt1', tenant_id:'t1', event:'renewal', channel:'email', recipient:'maria.russo@example.it', subject:'Rinnovo abbonamento', body:'Il tuo piano si rinnova il 01/09.', status:'queued', provider:null, error:null, attempts:0, created_at:'2026-08-22T08:00:00Z', deleted_at:null },
       { id:'nt2', tenant_id:'t1', event:'suspicious_login', channel:'whatsapp', recipient:'+393331112233', subject:'Accesso sospetto', body:'Nuovo accesso da dispositivo sconosciuto.', status:'accepted', provider:'mock', error:null, attempts:1, created_at:'2026-08-21T19:30:00Z', deleted_at:null },

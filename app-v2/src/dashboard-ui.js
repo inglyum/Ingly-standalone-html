@@ -2,6 +2,7 @@
 // loading/empty/error. Renderer puro testabile + mount runtime.
 import { loadDashboard } from './dashboard.js';
 import * as CRM from './crm.js';
+import { mountTodo } from './todo-ui.js';
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => (
   { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -61,6 +62,7 @@ export function mount(container, { sb }) {
   pane.innerHTML = `<div class="v2-loading">⏳ Carico metriche…</div>`;
   loadDashboard(sb).then((d) => {
     if (d.error) { pane.innerHTML = `<div class="v2-errbox">⚠️ ${esc(CRM.friendlyError(d.error))}</div>`; return; }
-    pane.innerHTML = renderDashboard(d);
+    pane.innerHTML = renderDashboard(d) + '<div data-dash-todo style="margin-top:12px"></div>';
+    mountTodo(pane.querySelector('[data-dash-todo]'), { sb }); // centro "Cose da fare" globale
   }).catch((e) => { pane.innerHTML = `<div class="v2-errbox">⚠️ ${esc(CRM.friendlyError(e))}</div>`; });
 }
