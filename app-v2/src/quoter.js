@@ -188,10 +188,17 @@ export function computeLine(l = {}, opts = {}) {
   // (1 + markup/100)). Default +100% come INGLY OS v96 (non ×3): evita prezzi
   // gonfiati. Il canale/markup resta regolabile per riga.
   const markupPct = Number(l.markup_pct != null ? l.markup_pct : (opts.defaultMarkupPct != null ? opts.defaultMarkupPct : 100));
-  // prezzo unitario: esplicito (unit_price) se fornito e useStoredPrice, altrimenti da markup
+  // prezzo di LISTINO (prima di express e sconti) da markup, arrotondato a ,90.
   const priceFromMarkup = roundTo90(unitCost * (1 + markupPct / 100));
-  const unitPrice = (opts.useStoredPrice && l.unit_price != null) ? r2(l.unit_price) : priceFromMarkup;
-  const discountPct = Math.min(100, Math.max(0, Number(l.discount_pct) || 0));
+  const listPrice = (opts.useStoredPrice && l.unit_price != null) ? r2(l.unit_price) : priceFromMarkup;
+  // Express (urgenza <48h, KB): maggiorazione OPT-IN sul prezzo di listino.
+  const expressPct = Math.max(0, Number(opts.expressPct) || 0);
+  const unitPrice = expressPct > 0 ? roundTo90(listPrice * (1 + expressPct / 100)) : listPrice;
+  // Sconto totale = sconto riga + sconto quantità KB (opt-in) + sconto globale.
+  const baseDiscount = Math.max(0, Number(l.discount_pct) || 0);
+  const qtyDisc = opts.applyQtyTiers ? qtyDiscountPct(qty) * 100 : 0;
+  const extraDisc = Math.max(0, Number(opts.extraDiscountPct) || 0);
+  const discountPct = Math.min(95, r2(baseDiscount + qtyDisc + extraDisc));
   const netUnit = r2(unitPrice * (1 - discountPct / 100));
   const vatRate = Number(l.vat_rate != null ? l.vat_rate : (opts.defaultVat != null ? opts.defaultVat : 22));
   const imponibile = r2(netUnit * qty);
@@ -201,8 +208,8 @@ export function computeLine(l = {}, opts = {}) {
   const margin = r2(imponibile - cost);
   const marginPct = imponibile > 0 ? r2((margin / imponibile) * 100) : 0;
   return {
-    qty, material, machine, labor, design, extra, unitCost, markupPct, unitPrice, workings,
-    discountPct, netUnit, vatRate, imponibile, iva, total, cost, margin, marginPct,
+    qty, material, machine, labor, design, extra, unitCost, markupPct, listPrice, unitPrice, workings,
+    expressPct, qtyDiscPct: r2(qtyDisc), discountPct, netUnit, vatRate, imponibile, iva, total, cost, margin, marginPct,
     minPrice: unitCost, // prezzo minimo vitale = break-even unitario
   };
 }
@@ -232,8 +239,19 @@ export function marginRisk(marginPct, minMarginPct = 55) {
   return 'low';
 }
 
+// Preset canale (KB): markup di default e margine minimo. Il canale imposta il
+// markup delle righe e la soglia di allerta margine; resta tutto regolabile.
+export const CHANNEL_PRESETS = {
+  B2C: { label: 'B2C (dettaglio)', markupPct: 200, minMarginPct: 65 },
+  B2B: { label: 'B2B (rivendita)', markupPct: 150, minMarginPct: 55 },
+  ETSY: { label: 'Etsy', markupPct: 250, minMarginPct: 65 },
+  CUSTOM: { label: 'Personalizzato', markupPct: 100, minMarginPct: 55 },
+};
+export function channelPreset(key) { return CHANNEL_PRESETS[key] || CHANNEL_PRESETS.CUSTOM; }
+
 // Aggregazione documento: somma righe (product+extra), sconto/IVA/margine e
-// acconto. lines = array di righe grezze (col breakdown); opts.depositPct.
+// acconto. lines = array di righe grezze (col breakdown); opts.depositPct,
+// expressPct, extraDiscountPct, applyQtyTiers, minMarginPct (allerta margine).
 export function computeDocument(lines = [], opts = {}) {
   const rows = (lines || []).map((l) => ({ ...computeLine(l, opts), kind: l.kind || 'product', description: l.description }));
   const sum = (f) => r2(rows.reduce((s, r) => s + r[f], 0));
@@ -242,7 +260,11 @@ export function computeDocument(lines = [], opts = {}) {
   const marginPct = imponibile > 0 ? r2((margin / imponibile) * 100) : 0;
   const depositPct = opts.depositPct != null ? Number(opts.depositPct) : 0;
   const deposit = depositPct > 0 ? r2(total * depositPct / 100) : 0;
-  return { rows, imponibile, iva, total, cost, margin, marginPct, deposit, depositPct, risk: marginRisk(marginPct, opts.minMarginPct) };
+  const minMarginPct = opts.minMarginPct != null ? Number(opts.minMarginPct) : 55;
+  // Righe sotto la soglia di margine del canale (allerta professionale).
+  const belowMin = rows.filter((r) => r.imponibile > 0 && r.marginPct < minMarginPct)
+    .map((r) => ({ description: r.description, marginPct: r.marginPct }));
+  return { rows, imponibile, iva, total, cost, margin, marginPct, deposit, depositPct, minMarginPct, belowMin, marginOk: marginPct >= minMarginPct, risk: marginRisk(marginPct, minMarginPct) };
 }
 
 // Descrizione-SNAPSHOT: congela nel testo della riga il dettaglio del calcolo,

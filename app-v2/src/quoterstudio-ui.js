@@ -47,12 +47,23 @@ export function mount(container, { sb, ctx }) {
   const root = container.querySelector('[data-quoterstudio-root]') || container;
   root.innerHTML = loading('Inizializzazione Smart Quoter…');
 
-  const S = { doc: { title: '', customer_id: '', customer_name: '', priority: 'normal', category: '', notes: '', valid_until: '', deposit_pct: 0, lines: [newLine()] }, sel: 0, selW: 0, id: null };
+  const S = { doc: { title: '', customer_id: '', customer_name: '', priority: 'normal', category: '', channel: 'CUSTOM', notes: '', valid_until: '', deposit_pct: 0, express: false, global_discount_pct: 0, apply_qty_tiers: false, lines: [newLine()] }, sel: 0, selW: 0, id: null };
   let customers = [], products = [], equipment = [], settings = {}, prodById = {}, eqById = {};
 
   const line = () => S.doc.lines[S.sel];
   const working = () => { const l = line(); return l && l.workings[S.selW]; };
-  function computedDoc() { return Q.computeDocument(S.doc.lines, { depositPct: S.doc.deposit_pct, minMarginPct: 55 }); }
+  // Opzioni prezzo documento (versatili, KB): express +25%, sconto globale,
+  // sconti quantità, soglia margine di canale. Passate al motore quoter.
+  function docOpts() {
+    return {
+      depositPct: S.doc.deposit_pct,
+      expressPct: S.doc.express ? 25 : 0,
+      extraDiscountPct: Number(S.doc.global_discount_pct) || 0,
+      applyQtyTiers: !!S.doc.apply_qty_tiers,
+      minMarginPct: Q.channelPreset(S.doc.channel).minMarginPct,
+    };
+  }
+  function computedDoc() { return Q.computeDocument(S.doc.lines, docOpts()); }
 
   Promise.all([
     CRM.listCustomers(sb, { limit: 500 }).catch(() => []),
@@ -98,6 +109,16 @@ export function mount(container, { sb, ctx }) {
         <label>Categoria<input data-h="category" value="${esc(S.doc.category)}"></label>
         <label>Acconto %<input data-h="deposit_pct" type="number" min="0" max="100" value="${esc(S.doc.deposit_pct || 0)}"></label>
       </div>
+      <h3 style="margin-top:12px">Opzioni prezzo</h3>
+      <div class="v2-form-row">
+        <label>Canale<select data-h="channel">${Object.entries(Q.CHANNEL_PRESETS).map(([k, v]) => `<option value="${k}"${S.doc.channel === k ? ' selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
+        <label>Sconto globale %<input data-h="global_discount_pct" type="number" min="0" max="95" step="1" value="${esc(S.doc.global_discount_pct || 0)}"></label>
+      </div>
+      <div class="v2-form-row" style="align-items:center">
+        <label class="v2-check"><input type="checkbox" data-hc="express" ${S.doc.express ? 'checked' : ''}> Express +25% (urgenza &lt;48h)</label>
+        <label class="v2-check"><input type="checkbox" data-hc="apply_qty_tiers" ${S.doc.apply_qty_tiers ? 'checked' : ''}> Sconti quantità KB</label>
+      </div>
+      <button class="v2-btn v2-xs v2-ghost" data-apply-channel title="Imposta il markup di tutte le righe al canale scelto">Applica markup canale a tutte le righe</button>
       <div class="v2-studio-lines-h"><h3>Prodotti</h3><button class="v2-btn v2-xs" data-addprod>+ Prodotto</button></div>
       <div class="v2-studio-lines">${prods}</div>
       <div class="v2-studio-lines-h"><h3>Lavorazioni</h3><button class="v2-btn v2-xs" data-addwork>+ Aggiungi lavorazione</button></div>
@@ -156,6 +177,14 @@ export function mount(container, { sb, ctx }) {
     </div>`;
   }
 
+  // Allerta professionale: righe sotto la soglia di margine del canale (KB:
+  // mai sotto i minimi; togli valore o aggiungi, non tagliare il margine).
+  function renderMarginAlert(d) {
+    if (!d.belowMin || !d.belowMin.length) return '';
+    const names = d.belowMin.map((b) => `${esc(b.description || 'riga')} (${b.marginPct}%)`).join(', ');
+    return `<div class="v2-note v2-bad" style="margin:6px 0">⚠️ Margine sotto il minimo ${d.minMarginPct}% del canale: ${names}. Rivedi prezzo o costi (mai gara al ribasso — KB).</div>`;
+  }
+
   const BREAK_CATS = ['material', 'machine', 'labor', 'design', 'painting', 'gadget', 'catalog', 'extra'];
   function breakdownRows(cl) {
     const catSum = Object.fromEntries(BREAK_CATS.map((k) => [k, 0]));
@@ -164,10 +193,11 @@ export function mount(container, { sb, ctx }) {
   }
 
   function renderRight() {
-    const l = line(); const cl = Q.computeLine(l, {}); const d = computedDoc();
+    const l = line(); const cl = Q.computeLine(l, docOpts()); const d = computedDoc();
+    const minM = d.minMarginPct;
     const tiers = Q.anchoringTiers(cl.unitCost, Number(l.markup_pct) || 0);
     const sugg = Q.priceForMargin(cl.unitCost, 60);
-    const riskCls = cl.marginPct < 55 ? 'v2-bad' : cl.marginPct < 65 ? '' : 'v2-ok';
+    const riskCls = cl.marginPct < minM ? 'v2-bad' : cl.marginPct < minM + 10 ? '' : 'v2-ok';
     return `<div class="v2-studio-col v2-studio-right">
       <h3>Cost Breakdown <span class="v2-muted">prodotto</span></h3>
       <div data-r="breakdown">${breakdownRows(cl)}</div>
@@ -188,10 +218,13 @@ export function mount(container, { sb, ctx }) {
         <div class="v2-anchor-mid"><span>Consigliato</span><b data-r="consigliato">${eur(tiers.consigliato)}</b></div>
         <div><span>Premium</span><b data-r="premium">${eur(tiers.premium)}</b></div>
       </div>
+      <div class="v2-sum-line"><span>Prezzo netto (unit.)${cl.discountPct ? ` −${cl.discountPct}%` : ''}</span><b data-r="netunit">${eur(cl.netUnit)}</b></div>
       <h4>Totale documento</h4>
+      <div data-r="docalert">${renderMarginAlert(d)}</div>
       <div class="v2-sum-line"><span>Imponibile</span><b data-r="doc-imp">${eur(d.imponibile)}</b></div>
       <div class="v2-sum-line"><span>IVA</span><b data-r="doc-iva">${eur(d.iva)}</b></div>
       <div class="v2-sum-line v2-sum-tot"><span>Totale cliente</span><b data-r="doc-total">${eur(d.total)}</b></div>
+      <div class="v2-sum-line"><span>Margine documento</span><b data-r="doc-margin" class="${d.marginOk ? 'v2-ok' : 'v2-bad'}">${eur(d.margin)} (${d.marginPct}%)</b></div>
       ${d.deposit ? `<div class="v2-sum-line"><span>Acconto ${d.depositPct}%</span><b data-r="doc-dep">${eur(d.deposit)}</b></div>` : '<div class="v2-sum-line"><span>Acconto</span><b data-r="doc-dep">€0,00</b></div>'}
       <div class="v2-studio-actions">
         ${w ? '<button class="v2-btn" data-save>💾 Salva</button>' : ''}
@@ -211,8 +244,13 @@ export function mount(container, { sb, ctx }) {
     root.querySelectorAll('[data-h]').forEach((el) => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
       const k = el.getAttribute('data-h'); S.doc[k] = el.value;
       if (k === 'customer_id') { const c = customers.find((x) => String(x.id) === String(el.value)); S.doc.customer_name = c ? c.name : ''; }
-      if (k === 'deposit_pct') refreshTotals();
+      if (['deposit_pct', 'channel', 'global_discount_pct'].includes(k)) refreshTotals();
     }));
+    // checkbox opzioni prezzo (express, sconti quantità) → ricalcolo live
+    root.querySelectorAll('[data-hc]').forEach((el) => el.addEventListener('change', () => { S.doc[el.getAttribute('data-hc')] = el.checked; refreshTotals(); }));
+    // Applica il markup del canale scelto a TUTTE le righe (versatilità KB)
+    const applyCh = root.querySelector('[data-apply-channel]');
+    if (applyCh) applyCh.addEventListener('click', () => { const mk = Q.channelPreset(S.doc.channel).markupPct; S.doc.lines.forEach((l) => { l.markup_pct = mk; }); toast(`Markup canale ${Q.channelPreset(S.doc.channel).label} (${mk}%) applicato a ${S.doc.lines.length} righe`); draw(); });
     // campi prodotto (line): description/spec/image → no re-render; markup/discount/vat/quantity → refreshTotals
     root.querySelectorAll('[data-l]').forEach((el) => el.addEventListener('input', () => {
       const l = line(); if (!l) return; const k = el.getAttribute('data-l'); l[k] = el.value;
@@ -277,16 +315,18 @@ export function mount(container, { sb, ctx }) {
   function docForPdf() { return { ...S.doc, id: S.id, number: S._number }; }
 
   function refreshTotals() {
-    const l = line(); const cl = Q.computeLine(l, {}); const d = computedDoc();
+    const l = line(); const cl = Q.computeLine(l, docOpts()); const d = computedDoc(); const minM = d.minMarginPct;
     const tiers = Q.anchoringTiers(cl.unitCost, Number(l.markup_pct) || 0);
     const sugg = Q.priceForMargin(cl.unitCost, 60);
-    const riskCls = cl.marginPct < 55 ? 'v2-bad' : cl.marginPct < 65 ? '' : 'v2-ok';
+    const riskCls = cl.marginPct < minM ? 'v2-bad' : cl.marginPct < minM + 10 ? '' : 'v2-ok';
     const set = (k, v) => { const el = root.querySelector(`[data-r="${k}"]`); if (el) el.textContent = v; };
-    set('unitcost', eur(cl.unitCost)); set('unitprice', eur(cl.unitPrice)); set('minprice', eur(cl.minPrice));
+    set('unitcost', eur(cl.unitCost)); set('unitprice', eur(cl.unitPrice)); set('minprice', eur(cl.minPrice)); set('netunit', eur(cl.netUnit));
     set('target', sugg != null ? eur(sugg) : '—'); set('economy', eur(tiers.economy)); set('consigliato', eur(tiers.consigliato)); set('premium', eur(tiers.premium));
     set('doc-imp', eur(d.imponibile)); set('doc-iva', eur(d.iva)); set('doc-total', eur(d.total)); set('doc-dep', eur(d.deposit));
     const mg = root.querySelector('[data-r="margin"]'); if (mg) { mg.textContent = `${eur(cl.margin)} (${cl.marginPct}%)`; mg.className = riskCls; }
-    const rk = root.querySelector('[data-r="risk"]'); if (rk) { rk.textContent = RISK_LABEL[Q.marginRisk(cl.marginPct, 55)]; rk.className = 'v2-note ' + riskCls; }
+    const dm = root.querySelector('[data-r="doc-margin"]'); if (dm) { dm.textContent = `${eur(d.margin)} (${d.marginPct}%)`; dm.className = d.marginOk ? 'v2-ok' : 'v2-bad'; }
+    const al = root.querySelector('[data-r="docalert"]'); if (al) al.innerHTML = renderMarginAlert(d);
+    const rk = root.querySelector('[data-r="risk"]'); if (rk) { rk.textContent = RISK_LABEL[Q.marginRisk(cl.marginPct, minM)]; rk.className = 'v2-note ' + riskCls; }
     const bd = root.querySelector('[data-r="breakdown"]'); if (bd) bd.innerHTML = breakdownRows(cl); // breakdown per categoria LIVE
   }
   function updateProdLabel() { const el = root.querySelector(`.v2-studio-line[data-prod="${S.sel}"] .v2-sl-main b`); if (el) el.textContent = line().description || 'Prodotto ' + (S.sel + 1); }
@@ -316,6 +356,7 @@ export function mount(container, { sb, ctx }) {
         title: quote.title || '', customer_id: quote.customer_id || '', customer_name: quote.customer_name || '',
         priority: quote.priority || 'normal', category: quote.category || '', notes: quote.notes || '',
         valid_until: quote.valid_until || '', deposit_pct: quote.deposit_pct || 0,
+        channel: quote.channel || 'CUSTOM', express: !!quote.express, global_discount_pct: quote.global_discount_pct || 0, apply_qty_tiers: !!quote.apply_qty_tiers,
         lines: (lines.length ? lines : [null]).map((l) => l ? {
           description: l.description || '', product_id: l.product_id || null, quantity: l.quantity != null ? l.quantity : 1,
           markup_pct: l.markup_pct != null ? l.markup_pct : 100, discount_pct: l.discount_pct || 0, vat_rate: l.vat_rate != null ? l.vat_rate : 22,

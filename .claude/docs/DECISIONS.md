@@ -119,3 +119,11 @@ l'esito reale.
   finanza+aliquota, limite SdI dichiarato), Laser B2B (quoter markup ×2,5),
   Esporta Portatile (riusa Backup), Ingly Design (riusa Brand), items→Magazzino
   (alias warehouse). 0 moduli con badge generico residuo. Suite 507 verde.
+- Smart Quoter — opzioni prezzo versatili (migr. 0038, additiva): canale
+  (B2C/B2B/Etsy/Personalizzato con markup+margine minimo KB), Express +25%
+  (urgenza <48h, opt-in), sconto globale documento, sconti quantità KB opt-in
+  (10/25/50 → −10/15/20%), allerta professionale sulle righe sotto la soglia di
+  margine del canale, prezzo netto e margine documento live. computeLine/
+  computeDocument estesi in modo retro-compatibile (expressPct, extraDiscountPct,
+  applyQtyTiers, minMarginPct). Opzioni persistite su sales_quote. Suite 537 verde
+  (1 fallimento ambientale: ICU locale del container, non codice).

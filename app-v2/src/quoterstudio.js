@@ -36,7 +36,7 @@ export function lineDbPayload(l, tenantId, quoteId, sortOrder, opts = {}) {
   };
 }
 
-const HEADER_COLS = ['title', 'priority', 'category', 'deposit_pct', 'customer_id', 'customer_name', 'notes', 'valid_until', 'issue_date', 'status'];
+const HEADER_COLS = ['title', 'priority', 'category', 'deposit_pct', 'customer_id', 'customer_name', 'notes', 'valid_until', 'issue_date', 'status', 'channel', 'express', 'global_discount_pct', 'apply_qty_tiers'];
 function headerPayload(doc) {
   const out = {};
   for (const k of HEADER_COLS) if (k in doc && doc[k] !== undefined) out[k] = doc[k];
@@ -85,6 +85,7 @@ export async function duplicateQuoteDoc(sb, tenantId, id) {
     title: (quote.title || quote.number || 'Preventivo') + ' (copia)',
     priority: quote.priority, category: quote.category, deposit_pct: quote.deposit_pct,
     customer_id: quote.customer_id, customer_name: quote.customer_name, notes: quote.notes,
+    channel: quote.channel, express: quote.express, global_discount_pct: quote.global_discount_pct, apply_qty_tiers: quote.apply_qty_tiers,
     lines: lines.map((l) => ({ ...l, id: undefined })),
   };
   return saveQuoteDoc(sb, tenantId, doc);
