@@ -5,6 +5,7 @@
 // anagrafica. Risponde a "quanto costa produrre" e "a quanto vendere". Snapshot
 // storico congelato. No alert/confirm nativi. Responsive.
 import * as STU from './quoterstudio.js';
+import * as TPL from './quotetemplates.js';
 import * as Q from './quoter.js';
 import * as DOC from './quoterdoc.js';
 import * as CRM from './crm.js';
@@ -236,6 +237,10 @@ export function mount(container, { sb, ctx }) {
         ${w && S.id ? '<button class="v2-btn" data-convert>➡️ Converti in ordine</button>' : ''}
       </div>
       <div class="v2-studio-open"><label>Apri esistente<select data-open><option value="">—</option></select></label></div>
+      <div class="v2-studio-open">
+        <label>Modelli<select data-tpl><option value="">— carica modello —</option></select></label>
+        ${w ? '<button class="v2-btn v2-xs v2-ghost" data-save-tpl title="Salva la configurazione corrente come modello riutilizzabile">💾 Salva come modello</button>' : ''}
+      </div>
     </div>`;
   }
 
@@ -293,6 +298,34 @@ export function mount(container, { sb, ctx }) {
     const acc = root.querySelector('[data-accept]'); if (acc) acc.addEventListener('click', async () => { try { await changeStatus(sb, S.id, 'ACCEPTED'); toast('Preventivo accettato'); } catch (e) { toast(Q.friendlyError(e)); } });
     const conv = root.querySelector('[data-convert]'); if (conv) conv.addEventListener('click', async () => { try { const o = await convertQuoteToOrder(sb, tenantId, S.id); toast('Ordine creato: ' + (o.number || '')); setTimeout(() => { location.hash = '#/gestione_ordini'; }, 500); } catch (e) { toast(Q.friendlyError(e)); } });
     populateOpen();
+    populateTemplates();
+    const saveTpl = root.querySelector('[data-save-tpl]');
+    if (saveTpl) saveTpl.addEventListener('click', onSaveTemplate);
+  }
+
+  // ---------- MODELLI DI PREVENTIVO ----------
+  async function populateTemplates() {
+    const sel = root.querySelector('[data-tpl]'); if (!sel) return;
+    try {
+      const tpls = await TPL.listTemplates(sb, {});
+      tpls.forEach((t) => { const o = document.createElement('option'); o.value = t.id; o.textContent = t.name + (t.category ? ' · ' + t.category : ''); sel.appendChild(o); });
+      sel.addEventListener('change', () => { const t = tpls.find((x) => String(x.id) === String(sel.value)); if (t) applyTemplate(t); sel.value = ''; });
+    } catch (_) { /* lista non disponibile (backend non configurato) */ }
+  }
+  function applyTemplate(t) {
+    const d = TPL.templateToDoc(t);
+    S.id = null; S._number = null;
+    S.doc = { ...S.doc, ...d, lines: (d.lines && d.lines.length) ? d.lines : [newLine()] };
+    S.sel = 0; S.selW = 0; draw();
+    toast('Modello applicato: ' + (t.name || ''));
+  }
+  async function onSaveTemplate() {
+    // Nome = titolo del preventivo (niente prompt nativi, UI premium).
+    const name = (S.doc.title && S.doc.title.trim()) || '';
+    if (!name) { toast('Dai un titolo al preventivo per salvarlo come modello'); return; }
+    try { await TPL.saveTemplate(sb, tenantId, name, S.doc, S.doc.category || null); toast('Modello salvato: ' + name);
+      const sel = root.querySelector('[data-tpl]'); if (sel) { sel.innerHTML = '<option value="">— carica modello —</option>'; } populateTemplates();
+    } catch (e) { toast(Q.friendlyError(e)); }
   }
 
   function applyResource(id) {

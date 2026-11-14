@@ -30,6 +30,7 @@ import './quoter-integration.test.mjs';
 import './quoterstudio.test.mjs';
 import './quoter-workings.test.mjs';
 import './quoter-pricing.test.mjs';
+import './quotetemplates.test.mjs';
 import './settings.test.mjs';
 import './profitfirst.test.mjs';
 import './sdi.test.mjs';
