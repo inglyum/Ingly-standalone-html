@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Confronto ERP</title>
+<meta name="description" content="ERPNext (adozione) vs app-v2 migliorato: infrastruttura, costi, tempi, Smart Quoter.">
+<style>
+  :root{
+    --bg:#0f1115; --card:#171a21; --card2:#1f232c; --text:#e8eaf0; --muted:#9aa2b1;
+    --border:#2a2f3a; --primary:#6ea8fe; --green:#39d98a; --red:#ff6b6b; --amber:#ffc24b; --radius:14px;
+  }
+  :root:not([data-theme="dark"]) @media (prefers-color-scheme: light){}
+  @media (prefers-color-scheme: light){ :root:not([data-theme="dark"]){
+    --bg:#f6f7f9; --card:#ffffff; --card2:#f0f2f6; --text:#1a1e26; --muted:#5b6472; --border:#e2e6ec;
+  }}
+  :root[data-theme="light"]{ --bg:#f6f7f9; --card:#fff; --card2:#f0f2f6; --text:#1a1e26; --muted:#5b6472; --border:#e2e6ec; }
+  *{box-sizing:border-box} html,body{margin:0}
+  body{background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;padding:0 16px}
+  .wrap{max-width:900px;margin:0 auto;padding:28px 0 60px}
+  h1{font-size:28px;margin:0 0 4px} h2{font-size:20px;margin:28px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+  h3{font-size:16px;margin:16px 0 6px}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin:14px 0}
+  .reco{border-left:4px solid var(--green)}
+  table{width:100%;border-collapse:collapse;margin:10px 0;font-size:14px;display:block;overflow-x:auto}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted);font-weight:600;white-space:nowrap}
+  .tag{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+  .t-a{background:rgba(110,168,254,.18);color:var(--primary)} .t-b{background:rgba(57,217,138,.18);color:var(--green)}
+  .ok{color:var(--green);font-weight:700} .no{color:var(--red);font-weight:700} .mid{color:var(--amber);font-weight:700}
+  ul{margin:6px 0 6px 18px;padding:0} li{margin:3px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px} @media(max-width:680px){.grid{grid-template-columns:1fr}}
+  .foot{color:var(--muted);font-size:13px;margin-top:24px}
+  code{background:var(--card2);padding:1px 6px;border-radius:6px;font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Confronto ERP — INGLY</h1>
+  <p class="sub">Due strade per avere l'ERP "migliore e completo": <b>adottare ERPNext/Frappe</b> oppure <b>migliorare app-v2</b> col design professionale di ERPNext. Dati onesti, con costi, tempi e focus sullo Smart Quoter.</p>
+
+  <div class="card reco">
+    <h3>In una riga</h3>
+    <p>ERPNext è un ERP <b>completo e maturo</b> (contabilità, magazzino, produzione, CRM, Quotation/CPQ) ma richiede un <b>server</b> e nuova infrastruttura, e <b>il tuo preventivatore laser va comunque ricostruito in Python</b> perché il "Configura Lavorazione" (materiale mq+sfrido, laser min×€/min, manodopera) <b>non esiste</b> in ERPNext. app-v2 resta leggero, statico e 100% su misura, e lo porto al livello professionale del Quotation ERPNext senza cambiare infrastruttura.</p>
+  </div>
+
+  <h2>1. Quadro generale</h2>
+  <table>
+    <tr><th>Aspetto</th><th><span class="tag t-a">A · ERPNext/Frappe</span></th><th><span class="tag t-b">B · app-v2 migliorato</span></th></tr>
+    <tr><td>Stack</td><td>Python + MariaDB + Redis + bench (server)</td><td>JavaScript vanilla + Supabase (Postgres)</td></tr>
+    <tr><td>Come gira</td><td>Server sempre attivo (no file statico)</td><td>File HTML statico (anche file://) + backend Supabase opzionale</td></tr>
+    <tr><td>Maturità ERP</td><td class="ok">Altissima (10+ anni, migliaia di aziende)</td><td class="mid">Media — costruito su misura, 548 test</td></tr>
+    <tr><td>Contabilità / fisco IT (SdI)</td><td class="ok">Nativo + app italiane della community</td><td class="no">Da costruire (oggi stima/mock)</td></tr>
+    <tr><td>Personalizzazione marchio/UX</td><td class="mid">Possibile ma "opinionata", temi Frappe</td><td class="ok">Totale, pixel per pixel (Linear/Apple-like)</td></tr>
+    <tr><td>Quoter laser "Configura Lavorazione"</td><td class="no">Non esiste — da sviluppare in Python</td><td class="ok">Già presente e su misura</td></tr>
+    <tr><td>Lavoro già fatto che si riusa</td><td class="mid">Dati (clienti/prodotti); logica da riscrivere</td><td class="ok">Tutto (80+ moduli, motore prezzi, KB)</td></tr>
+  </table>
+
+  <h2>2. Infrastruttura & costi (stime oneste)</h2>
+  <table>
+    <tr><th></th><th><span class="tag t-a">A · ERPNext</span></th><th><span class="tag t-b">B · app-v2</span></th></tr>
+    <tr><td>Hosting</td><td>Frappe Cloud gestito ~€10–50/mese, <i>oppure</i> VPS self-host ~€10–20/mese (+ gestione tua)</td><td>GitHub Pages/Cloudflare gratis per il front · Supabase Free→Pro ~€0–25/mese</td></tr>
+    <tr><td>Licenza software</td><td>Open-source GPLv3 (gratis)</td><td>Nostro codice (gratis)</td></tr>
+    <tr><td>Backup/aggiornamenti</td><td>Gestiti (Frappe Cloud) o a carico tuo (self-host)</td><td>Export JSON/CSV già in app; Supabase backup</td></tr>
+    <tr><td>Competenze per manutenerlo</td><td class="mid">Python/Frappe (curva di apprendimento)</td><td class="ok">Nessun server; HTML/JS</td></tr>
+    <tr><td>Setup iniziale (con me)</td><td class="mid">~1–2 giorni infra + migrazione dati + sviluppo quoter custom</td><td class="ok">0 infra — si parte subito</td></tr>
+  </table>
+  <p class="sub">Nota: in questo ambiente cloud attuale <b>non posso installare ERPNext</b> (serve MariaDB/Redis/bench e un server persistente): l'adozione richiede un hosting reale fornito da te.</p>
+
+  <h2>3. Lo Smart Quoter nei due mondi</h2>
+  <div class="grid">
+    <div class="card">
+      <h3><span class="tag t-a">A · ERPNext — Quotation (CPQ)</span></h3>
+      <ul>
+        <li class="">Righe item con prezzo/sconto per riga, <b>Pricing Rules</b> (sconti per quantità/cliente)</li>
+        <li>Template <b>imposte</b>, termini & condizioni, validità, print format PDF, <b>email</b>, approvazioni</li>
+        <li>Flusso Quotation → Sales Order → Delivery → Invoice <b>nativo</b></li>
+        <li class="no">Nessun costo <b>per lavorazione</b> (laser €/min, materiale mq+sfrido, manodopera): da creare come DocType + Server Script (qui servono le skills)</li>
+        <li class="no">I tuoi <b>minimi psicologici / markup canale / arrotondo ,90</b> vanno reimplementati in Python</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="tag t-b">B · app-v2 — Smart Quoter rifatto sul modello ERPNext</span></h3>
+      <ul>
+        <li class="ok"><b>Configura Lavorazione</b> su misura (già tuo) + prezzo/sconto per riga stile ERPNext</li>
+        <li>Pricing rules (canale, express, sconti quantità, <b>listini cliente</b> — già fatti)</li>
+        <li>Template preventivo (già fatti) · PDF/WhatsApp · validità · acconto</li>
+        <li class="mid">Da aggiungere per pareggiare ERPNext: <b>template imposte multiple</b>, termini & condizioni riusabili, print format più ricco, invio <b>email</b>, firma/accettazione</li>
+        <li class="ok">KB INGLY (markup, minimi, sfrido €18/h) <b>già nativa</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>4. Rischi & migrazione</h2>
+  <table>
+    <tr><th>Rischio</th><th><span class="tag t-a">A</span></th><th><span class="tag t-b">B</span></th></tr>
+    <tr><td>Perdere il lavoro fatto</td><td class="mid">La logica app-v2 diventa riferimento, non base</td><td class="ok">Nessuna perdita</td></tr>
+    <tr><td>Blocco su infrastruttura</td><td class="no">Serve server + hosting gestiti</td><td class="ok">Nessuno</td></tr>
+    <tr><td>Dipendenza da competenze</td><td class="mid">Frappe/Python</td><td class="ok">Bassa</td></tr>
+    <tr><td>Scalare a più aziende/contabilità</td><td class="ok">Pronto</td><td class="mid">Da costruire nel tempo</td></tr>
+  </table>
+
+  <h2>5. Raccomandazione</h2>
+  <div class="card reco">
+    <p><b>Per uno studio come Ingly Design</b> (laser/UV/3D, preventivi su misura, hosting leggero, controllo totale del marchio): <b>opzione B</b> — rifaccio lo Smart Quoter sul <b>modello professionale di ERPNext</b> (righe item, pricing rules, imposte, termini, print format, email, firma), restando su app-v2. Zero infrastruttura, nessuna perdita, risultato "pro" in pochi blocchi.</p>
+    <p><b>Scegli l'opzione A (ERPNext)</b> se e quando ti serve un ERP <b>contabile/fiscale completo e certificato</b> (fatturazione SdI nativa, bilanci, magazzino multi-sede, scalabilità aziendale) e sei disposto a gestire un server. In quel caso le 61 skills Frappe servono proprio a personalizzarlo bene (incluso costruire il quoter laser come DocType).</p>
+    <p><b>Via pragmatica consigliata:</b> parti da B adesso (veloce, nessun rischio); teniamo A come upgrade futuro quando la contabilità/scala lo richiede. Posso comunque usare le skills Frappe per prototipare il Quotation laser su ERPNext quando avrai un hosting.</p>
+  </div>
+
+  <p class="foot">Documento generato per decidere la direzione. Le skills caricate (61) sono per Frappe/ERPNext (Python): utili solo nel percorso A.</p>
+</div>
+</body>
+</html>
