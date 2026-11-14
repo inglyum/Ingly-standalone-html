@@ -18,27 +18,80 @@ const shell = (title, accent, body) => `<!doctype html><html lang="it"><head><me
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <style>
   :root{ --accent:${accent} }
-  *{ box-sizing:border-box } body{ font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#111; margin:0; padding:32px; background:#fff }
-  .doc{ max-width:800px; margin:0 auto }
-  .head{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:3px solid var(--accent); padding-bottom:14px; margin-bottom:20px }
-  .brand{ font-size:22px; font-weight:800; color:var(--accent) } .brand small{ display:block; font-weight:400; color:#555; font-size:12px }
-  h1{ font-size:18px; margin:0 0 4px } .muted{ color:#666; font-size:13px }
-  table{ width:100%; border-collapse:collapse; margin:16px 0; font-size:13px }
-  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid #e5e7eb } th{ background:#f9fafb }
-  td.n,th.n{ text-align:right } .tot{ margin-top:12px; margin-left:auto; width:280px; font-size:14px }
-  .tot div{ display:flex; justify-content:space-between; padding:4px 0 } .tot .g{ border-top:2px solid var(--accent); font-weight:800; font-size:16px; margin-top:6px; padding-top:8px }
-  .notes{ margin-top:18px; font-size:12px; color:#444 } .badge{ display:inline-block; padding:2px 8px; border-radius:6px; background:var(--accent); color:#fff; font-size:11px }
+  *{ box-sizing:border-box } body{ font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#1a1a1a; margin:0; padding:34px 40px; background:#fff; font-size:13px; line-height:1.5 }
+  .doc{ max-width:820px; margin:0 auto }
+  .head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px }
+  .brand{ font-size:21px; font-weight:800; color:var(--accent) } .brand img{ max-height:52px; display:block; margin-bottom:6px }
+  .brand small{ display:block; font-weight:400; color:#555; font-size:11px; line-height:1.5; margin-top:2px }
+  .docmeta{ text-align:right } .docmeta h1{ font-size:20px; margin:0 0 6px; letter-spacing:.3px } .docmeta .row{ color:#444; font-size:12px }
+  .docmeta .num{ font-weight:700; color:var(--accent) }
+  .parties{ display:flex; gap:16px; margin:16px 0 4px }
+  .party{ flex:1; background:#f8f9fb; border:1px solid #edf0f4; border-radius:8px; padding:10px 12px }
+  .party .lbl{ font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:#8a92a0; font-weight:700 }
+  .party b{ font-size:14px } .accentbar{ height:4px; background:var(--accent); border-radius:3px; margin:4px 0 2px }
+  h1{ font-size:18px; margin:0 0 4px } .muted{ color:#666; font-size:12px }
+  table{ width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12.5px }
+  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid #e9ecf1 } thead th{ background:var(--accent); color:#fff; font-weight:600; border:none }
+  td.n,th.n{ text-align:right } tbody tr:nth-child(even){ background:#fafbfc }
+  .sub{ color:#777; font-size:11px }
+  .tot{ margin-top:4px; margin-left:auto; width:300px; font-size:13px }
+  .tot div{ display:flex; justify-content:space-between; padding:4px 2px } .tot .tax{ color:#555; font-size:12px }
+  .tot .g{ border-top:2px solid var(--accent); font-weight:800; font-size:16px; margin-top:6px; padding-top:8px } .tot .dep{ color:var(--accent); font-weight:700 }
+  .terms{ margin-top:20px; border-top:1px solid #e9ecf1; padding-top:12px }
+  .terms h3{ font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:#8a92a0; margin:0 0 6px } .terms p{ margin:3px 0; font-size:11.5px; color:#444 }
+  .notes{ margin-top:14px; font-size:12px; color:#444 }
+  .footer{ margin-top:22px; text-align:center; color:#9aa2b1; font-size:10.5px; border-top:1px solid #eef1f5; padding-top:10px }
+  .badge{ display:inline-block; padding:2px 8px; border-radius:6px; background:var(--accent); color:#fff; font-size:11px }
   @media print{ body{ padding:0 } .noprint{ display:none } }
 </style></head><body><div class="doc">${body}</div></body></html>`;
 
+// Intestazione professionale: blocco azienda (logo+dati) + meta documento +
+// riquadri Fornitore/Cliente (stile Quotation ERPNext).
 function headerBlock(doc, company, title) {
+  const addr = [company.address, [company.zip, company.city].filter(Boolean).join(' '), company.country].filter(Boolean).join(', ');
+  const fiscal = [company.vat_number && ('P.IVA ' + company.vat_number), company.tax_code && ('CF ' + company.tax_code)].filter(Boolean).join(' · ');
+  const contacts = [company.email, company.phone, company.website].filter(Boolean).join(' · ');
   return `<div class="head">
-    <div class="brand">${esc(company.company_name || 'INGLY Design')}<small>${esc([company.vat_number && ('P.IVA ' + company.vat_number), company.city, company.email].filter(Boolean).join(' · '))}</small></div>
-    <div style="text-align:right"><h1>${esc(title)}</h1>
-      <div class="muted">${esc(doc.number || 'Bozza')} · ${day(doc.issue_date) || ''}</div>
-      <div class="muted">Cliente: <b>${esc(doc.customer_name || '—')}</b></div>
-      ${doc.valid_until ? `<div class="muted">Valido fino al ${day(doc.valid_until)}</div>` : ''}</div>
+    <div class="brand">${company.logo_url ? `<img src="${esc(company.logo_url)}" alt="">` : ''}${esc(company.company_name || 'INGLY Design')}
+      <small>${esc(addr)}${addr && (fiscal || contacts) ? '<br>' : ''}${esc(fiscal)}${fiscal && contacts ? ' · ' : ''}${esc(contacts)}</small></div>
+    <div class="docmeta"><h1>${esc(title)}</h1>
+      <div class="row"><span class="num">${esc(doc.number || 'Bozza')}</span></div>
+      <div class="row">Data: ${day(doc.issue_date) || day(new Date().toISOString())}</div>
+      ${doc.valid_until ? `<div class="row">Valido fino al <b>${day(doc.valid_until)}</b></div>` : ''}
+    </div></div>
+  <div class="accentbar"></div>
+  <div class="parties">
+    <div class="party"><div class="lbl">Fornitore</div><b>${esc(company.company_name || 'INGLY Design')}</b><div class="sub">${esc(fiscal || addr || '')}</div></div>
+    <div class="party"><div class="lbl">Spett.le cliente</div><b>${esc(doc.customer_name || '—')}</b></div>
   </div>`;
+}
+
+// Riepilogo imposte (una riga per aliquota) + acconto, stile ERPNext.
+function totalsBlock(computed) {
+  const taxes = (computed.taxSummary || []).length
+    ? computed.taxSummary.map((t) => `<div class="tax"><span>IVA ${t.rate}% su ${eur(t.base)}</span><span>${eur(t.tax)}</span></div>`).join('')
+    : `<div class="tax"><span>IVA</span><span>${eur(computed.iva)}</span></div>`;
+  return `<div class="tot">
+    <div><span>Imponibile</span><span>${eur(computed.imponibile)}</span></div>
+    ${taxes}
+    <div class="g"><span>TOTALE</span><span>${eur(computed.total)}</span></div>
+    ${computed.deposit ? `<div class="dep"><span>Acconto ${computed.depositPct}%</span><span>${eur(computed.deposit)}</span></div>` : ''}
+    ${computed.deposit ? `<div class="tax"><span>Saldo alla consegna</span><span>${eur((computed.total || 0) - computed.deposit)}</span></div>` : ''}
+  </div>`;
+}
+
+// Termini & Condizioni: espliciti dal doc, oppure default KB INGLY.
+function termsBlock(doc, company) {
+  const lines = doc.terms && String(doc.terms).trim()
+    ? String(doc.terms).split('\n').filter((l) => l.trim())
+    : [
+      'Preventivo valido 7 giorni salvo diversa indicazione.',
+      'Acconto 50% su prodotti personalizzati oltre € 50; saldo alla consegna.',
+      'Prezzi IVA esclusa salvo diversa indicazione. Tempi di consegna da concordare.',
+      'I prodotti personalizzati non sono soggetti a reso salvo difetto di produzione.',
+    ];
+  return `<div class="terms"><h3>Termini &amp; Condizioni</h3>${lines.map((l) => `<p>${esc(l)}</p>`).join('')}</div>
+    <div class="footer">${esc(company.company_name || 'INGLY Design')}${company.vat_number ? ' · P.IVA ' + esc(company.vat_number) : ''} — Grazie per la fiducia.</div>`;
 }
 
 // PDF CLIENTE — nessun costo interno, solo prezzi/righe/sconti/IVA/totale.
@@ -49,19 +102,15 @@ export function clientDocHTML(doc, computed, company = {}, templateKey = 'standa
     <td class="n">${r.qty}</td><td class="n">${eur(r.unitPrice)}</td>
     <td class="n">${r.discountPct ? '-' + r.discountPct + '%' : '—'}</td>
     <td class="n">${eur(r.imponibile)}</td></tr>`).join('');
-  const body = `${headerBlock(doc, company, doc.title || 'Preventivo')}
-    ${doc.category ? `<span class="badge">${esc(doc.category)}</span>` : ''}
-    <table><thead><tr><th>Descrizione</th><th class="n">Q.tà</th><th class="n">Prezzo</th><th class="n">Sconto</th><th class="n">Imponibile</th></tr></thead>
+  const title = doc.title && doc.title.trim() ? doc.title : 'Preventivo';
+  const body = `${headerBlock(doc, company, 'PREVENTIVO')}
+    ${title !== 'Preventivo' ? `<h1 style="margin:14px 0 2px">${esc(title)}</h1>` : ''}
+    <table><thead><tr><th>Descrizione</th><th class="n">Q.tà</th><th class="n">Prezzo unit.</th><th class="n">Sconto</th><th class="n">Importo</th></tr></thead>
       <tbody>${rows || '<tr><td colspan="5">Nessuna riga</td></tr>'}</tbody></table>
-    <div class="tot">
-      <div><span>Imponibile</span><span>${eur(computed.imponibile)}</span></div>
-      <div><span>IVA</span><span>${eur(computed.iva)}</span></div>
-      <div class="g"><span>Totale</span><span>${eur(computed.total)}</span></div>
-      ${computed.deposit ? `<div><span>Acconto ${computed.depositPct}%</span><span>${eur(computed.deposit)}</span></div>` : ''}
-    </div>
-    ${doc.notes ? `<div class="notes">${esc(doc.notes)}</div>` : ''}
-    <div class="notes">Preventivo valido 7 giorni salvo diversa indicazione. Grazie per la fiducia.</div>`;
-  return shell(doc.title || 'Preventivo', tpl.accent, body);
+    ${totalsBlock(computed)}
+    ${doc.notes ? `<div class="notes"><b>Note:</b> ${esc(doc.notes)}</div>` : ''}
+    ${termsBlock(doc, company)}`;
+  return shell(title, tpl.accent, body);
 }
 
 // PDF INTERNO — include breakdown costi, markup, margine (uso interno).

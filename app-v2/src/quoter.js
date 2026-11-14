@@ -274,7 +274,11 @@ export function computeDocument(lines = [], opts = {}) {
   // Righe sotto la soglia di margine del canale (allerta professionale).
   const belowMin = rows.filter((r) => r.imponibile > 0 && r.marginPct < minMarginPct)
     .map((r) => ({ description: r.description, marginPct: r.marginPct }));
-  return { rows, imponibile, iva, total, cost, margin, marginPct, deposit, depositPct, minMarginPct, belowMin, marginOk: marginPct >= minMarginPct, risk: marginRisk(marginPct, minMarginPct) };
+  // Riepilogo imposte per aliquota (stile ERPNext: una riga IVA per aliquota).
+  const taxGroups = {};
+  for (const r of rows) { const k = Number(r.vatRate) || 0; (taxGroups[k] = taxGroups[k] || { rate: k, base: 0, tax: 0 }); taxGroups[k].base = r2(taxGroups[k].base + r.imponibile); taxGroups[k].tax = r2(taxGroups[k].tax + r.iva); }
+  const taxSummary = Object.values(taxGroups).sort((a, b) => a.rate - b.rate);
+  return { rows, imponibile, iva, total, cost, margin, marginPct, deposit, depositPct, minMarginPct, belowMin, marginOk: marginPct >= minMarginPct, taxSummary, risk: marginRisk(marginPct, minMarginPct) };
 }
 
 // Descrizione-SNAPSHOT: congela nel testo della riga il dettaglio del calcolo,

@@ -171,7 +171,8 @@ describe('Quoter — documenti PDF / share / template', (s) => {
   it(s, 'PDF cliente: righe/prezzi/IVA, NESSUN costo interno', async () => {
     const html = DOC.clientDocHTML(doc, computed, { company_name: 'INGLY Design', vat_number: '01234567890' });
     assert(/Kit Rossi/.test(html) && /Targa/.test(html), 'contenuto cliente');
-    assert(/Totale/.test(html) && /IVA/.test(html), 'totali');
+    assert(/totale/i.test(html) && /IVA/.test(html), 'totali');
+    assert(/Termini/i.test(html) && /Valido fino/i.test(html), 'termini e validità nel PDF professionale');
     assert(!/Costo unit|Markup|Margine|break-even/i.test(html), 'nessun dato interno nel PDF cliente');
   });
   it(s, 'PDF interno: include costo, markup, margine', async () => {

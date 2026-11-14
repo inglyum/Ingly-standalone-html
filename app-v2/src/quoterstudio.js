@@ -36,7 +36,7 @@ export function lineDbPayload(l, tenantId, quoteId, sortOrder, opts = {}) {
   };
 }
 
-const HEADER_COLS = ['title', 'priority', 'category', 'deposit_pct', 'customer_id', 'customer_name', 'notes', 'valid_until', 'issue_date', 'status', 'channel', 'express', 'global_discount_pct', 'apply_qty_tiers'];
+const HEADER_COLS = ['title', 'priority', 'category', 'deposit_pct', 'customer_id', 'customer_name', 'notes', 'valid_until', 'issue_date', 'status', 'channel', 'express', 'global_discount_pct', 'apply_qty_tiers', 'terms'];
 function headerPayload(doc) {
   const out = {};
   for (const k of HEADER_COLS) if (k in doc && doc[k] !== undefined) out[k] = doc[k];

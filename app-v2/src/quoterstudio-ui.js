@@ -128,6 +128,7 @@ export function mount(container, { sb, ctx }) {
         <label class="v2-check"><input type="checkbox" data-hc="apply_qty_tiers" ${S.doc.apply_qty_tiers ? 'checked' : ''}> Sconti quantità KB</label>
       </div>
       <button class="v2-btn v2-xs v2-ghost" data-apply-channel title="Imposta il markup di tutte le righe al canale scelto">Applica markup canale a tutte le righe</button>
+      <label style="margin-top:8px">Termini &amp; Condizioni (PDF)<textarea data-h="terms" rows="3" placeholder="Lascia vuoto per i termini standard KB (validità 7gg, acconto 50%…)">${esc(S.doc.terms || '')}</textarea></label>
       <div class="v2-studio-lines-h"><h3>Prodotti</h3><button class="v2-btn v2-xs" data-addprod>+ Prodotto</button></div>
       <div class="v2-studio-lines">${prods}</div>
       <div class="v2-studio-lines-h"><h3>Lavorazioni</h3><button class="v2-btn v2-xs" data-addwork>+ Aggiungi lavorazione</button></div>
@@ -397,7 +398,7 @@ export function mount(container, { sb, ctx }) {
         title: quote.title || '', customer_id: quote.customer_id || '', customer_name: quote.customer_name || '',
         priority: quote.priority || 'normal', category: quote.category || '', notes: quote.notes || '',
         valid_until: quote.valid_until || '', deposit_pct: quote.deposit_pct || 0,
-        channel: quote.channel || 'CUSTOM', express: !!quote.express, global_discount_pct: quote.global_discount_pct || 0, apply_qty_tiers: !!quote.apply_qty_tiers,
+        channel: quote.channel || 'CUSTOM', express: !!quote.express, global_discount_pct: quote.global_discount_pct || 0, apply_qty_tiers: !!quote.apply_qty_tiers, terms: quote.terms || '',
         lines: (lines.length ? lines : [null]).map((l) => l ? {
           description: l.description || '', product_id: l.product_id || null, quantity: l.quantity != null ? l.quantity : 1,
           markup_pct: l.markup_pct != null ? l.markup_pct : 100, discount_pct: l.discount_pct || 0, vat_rate: l.vat_rate != null ? l.vat_rate : 22,
