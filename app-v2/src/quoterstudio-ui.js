@@ -6,6 +6,7 @@
 // storico congelato. No alert/confirm nativi. Responsive.
 import * as STU from './quoterstudio.js';
 import * as TPL from './quotetemplates.js';
+import * as PL from './pricelist.js';
 import * as Q from './quoter.js';
 import * as DOC from './quoterdoc.js';
 import * as CRM from './crm.js';
@@ -49,7 +50,7 @@ export function mount(container, { sb, ctx }) {
   root.innerHTML = loading('Inizializzazione Smart Quoter…');
 
   const S = { doc: { title: '', customer_id: '', customer_name: '', priority: 'normal', category: '', channel: 'CUSTOM', notes: '', valid_until: '', deposit_pct: 0, express: false, global_discount_pct: 0, apply_qty_tiers: false, lines: [newLine()] }, sel: 0, selW: 0, id: null };
-  let customers = [], products = [], equipment = [], settings = {}, prodById = {}, eqById = {};
+  let customers = [], products = [], equipment = [], settings = {}, prodById = {}, eqById = {}, customerPrices = {};
 
   const line = () => S.doc.lines[S.sel];
   const working = () => { const l = line(); return l && l.workings[S.selW]; };
@@ -62,7 +63,14 @@ export function mount(container, { sb, ctx }) {
       extraDiscountPct: Number(S.doc.global_discount_pct) || 0,
       applyQtyTiers: !!S.doc.apply_qty_tiers,
       minMarginPct: Q.channelPreset(S.doc.channel).minMarginPct,
+      customerPrices, // listino concordato per cliente (pattern v96)
     };
+  }
+  // Carica il listino concordato del cliente selezionato (prezzi auto nel Quoter).
+  async function loadCustomerPrices() {
+    customerPrices = {};
+    if (!S.doc.customer_id) return;
+    try { customerPrices = await PL.mapForCustomer(sb, S.doc.customer_id); } catch (_) { customerPrices = {}; }
   }
   function computedDoc() { return Q.computeDocument(S.doc.lines, docOpts()); }
 
@@ -209,7 +217,7 @@ export function mount(container, { sb, ctx }) {
         <label>IVA %<input data-l="vat_rate" type="number" step="1" value="${esc(l.vat_rate)}"></label>
       </div>
       <div class="v2-form-row"><label>Quantità<input data-l="quantity" type="number" min="1" step="1" value="${esc(l.quantity)}"></label></div>
-      <div class="v2-sum-line"><span>Prezzo cliente (unit.)</span><b data-r="unitprice">${eur(cl.unitPrice)}</b></div>
+      <div class="v2-sum-line"><span>Prezzo cliente (unit.)${cl.agreedPrice != null ? ' <span class="v2-chip v2-ok" title="Prezzo da listino cliente">listino</span>' : ''}</span><b data-r="unitprice">${eur(cl.unitPrice)}</b></div>
       <div class="v2-sum-line"><span>Margine</span><b data-r="margin" class="${riskCls}">${eur(cl.margin)} (${cl.marginPct}%)</b></div>
       <div class="v2-note ${riskCls}" data-r="risk" style="margin:6px 0">${esc(RISK_LABEL[Q.marginRisk(cl.marginPct, 55)])}</div>
       <div class="v2-sum-line"><span>Prezzo minimo</span><b data-r="minprice">${eur(cl.minPrice)}</b></div>
@@ -248,7 +256,7 @@ export function mount(container, { sb, ctx }) {
   function wire() {
     root.querySelectorAll('[data-h]').forEach((el) => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
       const k = el.getAttribute('data-h'); S.doc[k] = el.value;
-      if (k === 'customer_id') { const c = customers.find((x) => String(x.id) === String(el.value)); S.doc.customer_name = c ? c.name : ''; }
+      if (k === 'customer_id') { const c = customers.find((x) => String(x.id) === String(el.value)); S.doc.customer_name = c ? c.name : ''; loadCustomerPrices().then(() => { refreshTotals(); if (Object.keys(customerPrices).length) toast('Listino cliente applicato ai prodotti a catalogo'); }); }
       if (['deposit_pct', 'channel', 'global_discount_pct'].includes(k)) refreshTotals();
     }));
     // checkbox opzioni prezzo (express, sconti quantità) → ricalcolo live
@@ -397,7 +405,7 @@ export function mount(container, { sb, ctx }) {
           workings: Array.isArray(l.workings) && l.workings.length ? l.workings.map((x) => ({ ...x })) : [newWorking('material')],
         } : newLine()),
       };
-      S.sel = 0; S.selW = 0; draw();
+      S.sel = 0; S.selW = 0; await loadCustomerPrices(); draw();
     } catch (e) { toast(Q.friendlyError(e)); }
   }
 }

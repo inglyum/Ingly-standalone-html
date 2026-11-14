@@ -190,7 +190,17 @@ export function computeLine(l = {}, opts = {}) {
   const markupPct = Number(l.markup_pct != null ? l.markup_pct : (opts.defaultMarkupPct != null ? opts.defaultMarkupPct : 100));
   // prezzo di LISTINO (prima di express e sconti) da markup, arrotondato a ,90.
   const priceFromMarkup = roundTo90(unitCost * (1 + markupPct / 100));
-  const listPrice = (opts.useStoredPrice && l.unit_price != null) ? r2(l.unit_price) : priceFromMarkup;
+  // Listino per cliente (pattern v96): se il prodotto ha un prezzo concordato
+  // (fisso o sconto% sul listino) lo usa come prezzo base. opts.customerPrices
+  // = { product_id: { agreed_price, discount_pct } }.
+  const agreedEntry = (l.product_id && opts.customerPrices) ? opts.customerPrices[String(l.product_id)] : null;
+  let agreedPrice = null;
+  if (agreedEntry) {
+    if (Number(agreedEntry.agreed_price) > 0) agreedPrice = r2(agreedEntry.agreed_price);
+    else if (Number(agreedEntry.discount_pct) > 0) agreedPrice = r2(priceFromMarkup * (1 - agreedEntry.discount_pct / 100));
+  }
+  const listPrice = agreedPrice != null ? agreedPrice
+    : (opts.useStoredPrice && l.unit_price != null) ? r2(l.unit_price) : priceFromMarkup;
   // Express (urgenza <48h, KB): maggiorazione OPT-IN sul prezzo di listino.
   const expressPct = Math.max(0, Number(opts.expressPct) || 0);
   const unitPrice = expressPct > 0 ? roundTo90(listPrice * (1 + expressPct / 100)) : listPrice;
@@ -209,7 +219,7 @@ export function computeLine(l = {}, opts = {}) {
   const marginPct = imponibile > 0 ? r2((margin / imponibile) * 100) : 0;
   return {
     qty, material, machine, labor, design, extra, unitCost, markupPct, listPrice, unitPrice, workings,
-    expressPct, qtyDiscPct: r2(qtyDisc), discountPct, netUnit, vatRate, imponibile, iva, total, cost, margin, marginPct,
+    agreedPrice, expressPct, qtyDiscPct: r2(qtyDisc), discountPct, netUnit, vatRate, imponibile, iva, total, cost, margin, marginPct,
     minPrice: unitCost, // prezzo minimo vitale = break-even unitario
   };
 }
