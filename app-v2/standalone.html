@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="it"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>INGLY OS — Il tuo gestionale (offline)</title>
+<link rel="stylesheet" href="./src/styles.css">
+<style>
+  body{ margin:0; background:var(--bg,#0b0f14); color:var(--txt,#e5e7eb); font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif }
+  #local-banner{ position:fixed; z-index:60; right:12px; bottom:12px; display:flex; gap:8px; align-items:center;
+    background:var(--card,#111827); border:1px solid var(--bd,#1f2937); border-radius:10px; padding:8px 12px; box-shadow:0 8px 24px rgba(0,0,0,.3); font-size:12px }
+  #local-banner button{ background:var(--bg,#0b0f14); color:inherit; border:1px solid var(--bd,#1f2937); border-radius:6px; padding:4px 8px; cursor:pointer }
+  #app{ min-height:100vh }
+</style>
+</head><body>
+<div id="app"><div style="padding:40px;text-align:center;opacity:.7">⏳ Avvio del gestionale locale…</div></div>
+<div id="local-banner">
+  💾 Offline · dati salvati in questo browser
+  <button id="seed-btn" title="Carica dati dimostrativi (solo se vuoto)">Dati demo</button>
+  <button id="wipe-btn" title="Svuota tutti i dati locali">Svuota</button>
+</div>
+
+<script type="module">
+import { openLocalDb } from './src/localdb.js';
+import { renderShell } from './src/app.js';
+import { mountRouter } from './src/router.js';
+
+// Utente locale unico (proprietario): nessun login, nessun server, 100% offline.
+const TENANT = 't1';
+function ctx(){ return { email:'inglydesign@gmail.com', activeTenant:TENANT, tenantIds:[TENANT], roles:{ [TENANT]:'OWNER' } }; }
+
+// Seed dimostrativo minimale (usato solo al primo avvio se il DB è vuoto, o col
+// pulsante "Dati demo"). Il tool reale parte vuoto: i dati sono i tuoi.
+function seedDemo(){
+  return {
+    tenant_settings:[{ tenant_id:TENANT, vat_rate:22, company_name:'Ingly Design' }],
+    customer:[
+      { id:'c1', tenant_id:TENANT, name:'Maria Russo', type:'B2C', email:'maria@example.it', phone:'3330000', segment:'privato', deleted_at:null },
+      { id:'c2', tenant_id:TENANT, name:'Chef Nino', type:'B2B', email:'nino@ristorante.it', phone:'3351111', segment:'ristorazione', deleted_at:null },
+    ],
+    catalog_product:[
+      { id:'p1', tenant_id:TENANT, name:'Targa A5 incisa', kind:'product', sku:'ING-001', cost:10, price:29.9, unit:'pz', active:true, deleted_at:null },
+      { id:'p2', tenant_id:TENANT, name:'QR Menu ristorante', kind:'product', sku:'ING-002', cost:6, price:19.9, unit:'pz', active:true, deleted_at:null },
+      { id:'m1', tenant_id:TENANT, name:'MDF 3mm', kind:'material', material_type:'MDF', cost:12, cost_per_mq:12, unit:'mq', active:true, deleted_at:null },
+    ],
+    equipment:[{ id:'e1', tenant_id:TENANT, name:'xTool P2 (laser CO2)', category:'laser', cost_per_min:0.45, active:true, deleted_at:null }],
+  };
+}
+
+let sb;
+async function boot(){
+  sb = await openLocalDb(/* seed al primo avvio: */ null); // parte VUOTO (tuoi dati)
+  render();
+  window.addEventListener('hashchange', render);
+  document.getElementById('seed-btn').addEventListener('click', async ()=>{
+    // carica il demo solo se non ci sono già clienti
+    const { data } = await sb.from('customer').select('*').limit(1);
+    if(data && data.length){ alert('Ci sono già dati: svuota prima di caricare il demo.'); return; }
+    const s = seedDemo();
+    for(const [t, rows] of Object.entries(s)){ for(const row of rows){ await sb.from(t).insert(row); } }
+    render();
+  });
+  document.getElementById('wipe-btn').addEventListener('click', async ()=>{
+    if(!confirm('Svuotare TUTTI i dati locali? Operazione non annullabile.')) return;
+    if(sb._reset) await sb._reset();
+    render();
+  });
+}
+
+function render(){
+  if(!location.hash) location.hash = '#/dashboard';
+  const app = document.getElementById('app');
+  app.innerHTML = renderShell(ctx(), (location.hash||'').replace(/^#\/?/,'') || 'dashboard');
+  mountRouter(app, ctx(), sb);
+  const ns = app.querySelector('#v2-nav-search');
+  if(ns) ns.addEventListener('input', ()=>{ const q=ns.value.toLowerCase().trim();
+    app.querySelectorAll('#v2-nav .v2-nav-item').forEach(a=>{ a.style.display=(!q||a.textContent.toLowerCase().includes(q))?'':'none'; });
+    app.querySelectorAll('#v2-nav .v2-nav-group').forEach(g=>{ const any=[...g.querySelectorAll('.v2-nav-item')].some(a=>a.style.display!=='none'); g.style.display=any?'':'none'; });
+  });
+}
+boot();
+</script>
+</body></html>

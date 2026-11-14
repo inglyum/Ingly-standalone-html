@@ -4,3 +4,4 @@ test-results/
 dist/
 *.log
 app-v2/ingly-smart-quoter-demo.html
+app-v2/ingly-os-standalone.html

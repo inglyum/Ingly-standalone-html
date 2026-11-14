@@ -32,6 +32,7 @@ import './quoter-workings.test.mjs';
 import './quoter-pricing.test.mjs';
 import './quotetemplates.test.mjs';
 import './pricelist.test.mjs';
+import './localdb.test.mjs';
 import './settings.test.mjs';
 import './profitfirst.test.mjs';
 import './sdi.test.mjs';

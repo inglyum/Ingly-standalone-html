@@ -11,7 +11,8 @@
     "latest": "node scripts/find-latest.mjs",
     "typecheck": "tsc --noEmit",
     "build": "vite build",
-    "demo:standalone": "node scripts/build-standalone-demo.mjs"
+    "demo:standalone": "node scripts/build-standalone-demo.mjs",
+    "standalone": "node scripts/build-standalone.mjs"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.112.3",
