@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Setup ERPNext</title><meta name="description" content="Passi per mettere in piedi ERPNext su Frappe Cloud e installare l'app INGLY Laser.">
+<style>
+  :root{--bg:#0f1115;--card:#171a21;--card2:#1f232c;--text:#e8eaf0;--muted:#9aa2b1;--border:#2a2f3a;--primary:#6ea8fe;--green:#39d98a;--amber:#ffc24b;--radius:14px}
+  @media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg:#f6f7f9;--card:#fff;--card2:#f0f2f6;--text:#1a1e26;--muted:#5b6472;--border:#e2e6ec}}
+  :root[data-theme="light"]{--bg:#f6f7f9;--card:#fff;--card2:#f0f2f6;--text:#1a1e26;--muted:#5b6472;--border:#e2e6ec}
+  *{box-sizing:border-box}html,body{margin:0}body{background:var(--bg);color:var(--text);font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;padding:0 16px}
+  .wrap{max-width:860px;margin:0 auto;padding:28px 0 60px}h1{font-size:26px;margin:0 0 4px}h2{font-size:19px;margin:26px 0 10px;border-bottom:1px solid var(--border);padding-bottom:6px}
+  .sub{color:var(--muted);margin:0 0 16px}.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 18px;margin:12px 0}
+  .step{display:flex;gap:12px;margin:12px 0}.num{flex:0 0 28px;height:28px;border-radius:50%;background:var(--primary);color:#06121f;font-weight:800;display:flex;align-items:center;justify-content:center}
+  code{background:var(--card2);padding:1px 6px;border-radius:6px;font-size:13px}pre{background:var(--card2);padding:12px;border-radius:10px;overflow:auto;font-size:13px}
+  ul{margin:6px 0 6px 18px}li{margin:3px 0}.tip{border-left:4px solid var(--green)}.warn{border-left:4px solid var(--amber)}
+  a{color:var(--primary)}
+</style></head><body><div class="wrap">
+  <h1>Setup ERPNext per INGLY</h1>
+  <p class="sub">Percorso più rapido e senza server da gestire: <b>Frappe Cloud</b> (hosting gestito). Poi installiamo l'app <b>INGLY Laser</b> che aggiunge il preventivatore laser con la nostra KB.</p>
+
+  <div class="card tip"><b>Prerequisito mio:</b> l'app <code>erpnext-app/ingly_laser</code> è già pronta nel repo. Appena hai il sito ERPNext, la installiamo. Il calcolo prezzi (markup canale, sfrido, €/min, ,90, express) è codice di app → funziona anche sul piano base (shared bench).</div>
+
+  <h2>1 · Crea il sito ERPNext (Frappe Cloud)</h2>
+  <div class="step"><div class="num">1</div><div>Vai su <b>frappecloud.com</b> → <b>Sign up</b> (c'è una prova gratuita).</div></div>
+  <div class="step"><div class="num">2</div><div>Crea un <b>Site</b> nuovo. Alla scelta app, seleziona <b>ERPNext</b> (porta con sé anche Frappe).</div></div>
+  <div class="step"><div class="num">3</div><div>Scegli un piano: per iniziare va bene lo <b>shared bench</b> più piccolo (~€10/mese). La nostra app non richiede Server Script, quindi non serve il private bench.</div></div>
+  <div class="step"><div class="num">4</div><div>Alla fine avrai un indirizzo tipo <code>ingly.frappe.cloud</code> e le credenziali Administrator.</div></div>
+
+  <h2>2 · Configura l'azienda</h2>
+  <div class="card">Al primo accesso, il wizard chiede i dati azienda. Imposta:
+    <ul>
+      <li>Azienda: <b>Ingly Design</b> · Paese: <b>Italia</b> · Valuta: <b>EUR</b></li>
+      <li>Fuso/lingua: Italiano · Chart of Accounts: Italia (se proposto)</li>
+      <li>Aliquota IVA predefinita: <b>22%</b> (crea un "Sales Taxes and Charges Template")</li>
+    </ul>
+  </div>
+
+  <h2>3 · Installa l'app INGLY Laser</h2>
+  <div class="step"><div class="num">1</div><div>Dashboard Frappe Cloud → <b>Apps</b> → <b>Add App</b> → <b>Install from GitHub</b>.</div></div>
+  <div class="step"><div class="num">2</div><div>Indica il repo che contiene l'app (cartella <code>erpnext-app/ingly_laser</code>). Se serve, la pubblico come repository GitHub a sé (dimmelo e lo preparo).</div></div>
+  <div class="step"><div class="num">3</div><div>Associa l'app al tuo Bench e premi <b>Install</b> sul Site. Il deploy lancia <code>bench migrate</code> e crea i campi.</div></div>
+  <div class="card warn"><b>Alternativa self-host (bench):</b>
+<pre>bench get-app ingly_laser &lt;git-url&gt;
+bench --site ilmiosito install-app ingly_laser
+bench --site ilmiosito migrate &amp;&amp; bench build &amp;&amp; bench restart</pre></div>
+
+  <h2>4 · Porta i tuoi dati</h2>
+  <div class="card">ERPNext importa da CSV (menu <b>Data Import</b>). Posso generare per te i CSV di <b>Clienti</b> e <b>Prodotti</b> dai dati dell'app-v2, pronti da caricare. Dimmi "genera i CSV" quando hai il sito.</div>
+
+  <h2>5 · Primo preventivo di prova</h2>
+  <div class="step"><div class="num">1</div><div>Vai su <b>Selling → Quotation → New</b>, scegli il Cliente e il <b>Canale</b> (sezione "INGLY · Opzioni prezzo").</div></div>
+  <div class="step"><div class="num">2</div><div>Aggiungi una riga, espandi <b>"INGLY · Configura Lavorazione"</b>, inserisci mq/€mq, laser min/€min, manodopera…</div></div>
+  <div class="step"><div class="num">3</div><div><b>Salva</b>: il prezzo riga si calcola da solo (costo × markup, ,90). Poi PDF/email/→ Sales Order col flusso ERPNext.</div></div>
+
+  <h2>Cosa faccio io adesso / dopo</h2>
+  <ul>
+    <li><b>Adesso:</b> app <code>ingly_laser</code> pronta nel repo (pricing KB, campi, fixtures, README).</li>
+    <li><b>Quando hai il sito:</b> pubblico l'app come repo installabile, genero i CSV dei tuoi dati, e aggiungiamo print format PDF brandizzato + email + eventuale firma.</li>
+    <li>Le 61 skills Frappe le uso proprio per scrivere correttamente queste personalizzazioni.</li>
+  </ul>
+  <p class="sub">Nota onesta: ERPNext non è installabile in questo ambiente cloud (serve un server persistente MariaDB/Redis). Perciò il sito lo crei tu su Frappe Cloud; io preparo e poi installo/collaudo le personalizzazioni.</p>
+</div></body></html>

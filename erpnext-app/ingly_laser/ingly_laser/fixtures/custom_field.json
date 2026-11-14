@@ -1,0 +1,19 @@
+[
+ {"doctype":"Custom Field","name":"Quotation-ingly_section","dt":"Quotation","fieldname":"ingly_section","label":"INGLY · Opzioni prezzo","fieldtype":"Section Break","insert_after":"order_type","collapsible":1},
+ {"doctype":"Custom Field","name":"Quotation-ingly_channel","dt":"Quotation","fieldname":"ingly_channel","label":"Canale","fieldtype":"Select","options":"Personalizzato\nB2C\nB2B\nEtsy","default":"Personalizzato","insert_after":"ingly_section"},
+ {"doctype":"Custom Field","name":"Quotation-ingly_express","dt":"Quotation","fieldname":"ingly_express","label":"Express +25% (urgenza <48h)","fieldtype":"Check","insert_after":"ingly_channel"},
+
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_lav_section","dt":"Quotation Item","fieldname":"ingly_lav_section","label":"INGLY · Configura Lavorazione","fieldtype":"Section Break","insert_after":"description","collapsible":1},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_material_mq","dt":"Quotation Item","fieldname":"ingly_material_mq","label":"Materiale (mq)","fieldtype":"Float","insert_after":"ingly_lav_section"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_sfrido_pct","dt":"Quotation Item","fieldname":"ingly_sfrido_pct","label":"Sfrido %","fieldtype":"Float","insert_after":"ingly_material_mq"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_cost_per_mq","dt":"Quotation Item","fieldname":"ingly_cost_per_mq","label":"Costo materiale €/mq","fieldtype":"Currency","insert_after":"ingly_sfrido_pct"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_cb1","dt":"Quotation Item","fieldname":"ingly_cb1","fieldtype":"Column Break","insert_after":"ingly_cost_per_mq"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_laser_min","dt":"Quotation Item","fieldname":"ingly_laser_min","label":"Laser (min)","fieldtype":"Float","insert_after":"ingly_cb1"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_cost_per_min","dt":"Quotation Item","fieldname":"ingly_cost_per_min","label":"Macchina €/min","fieldtype":"Currency","insert_after":"ingly_laser_min"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_labor_min","dt":"Quotation Item","fieldname":"ingly_labor_min","label":"Manodopera (min)","fieldtype":"Float","insert_after":"ingly_cost_per_min"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_labor_rate","dt":"Quotation Item","fieldname":"ingly_labor_rate","label":"Manodopera €/h (def. 18)","fieldtype":"Currency","insert_after":"ingly_labor_min"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_cb2","dt":"Quotation Item","fieldname":"ingly_cb2","fieldtype":"Column Break","insert_after":"ingly_labor_rate"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_design_cost","dt":"Quotation Item","fieldname":"ingly_design_cost","label":"Design €","fieldtype":"Currency","insert_after":"ingly_cb2"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_extra_cost","dt":"Quotation Item","fieldname":"ingly_extra_cost","label":"Extra €","fieldtype":"Currency","insert_after":"ingly_design_cost"},
+ {"doctype":"Custom Field","name":"Quotation Item-ingly_unit_cost","dt":"Quotation Item","fieldname":"ingly_unit_cost","label":"Costo produzione (unit.)","fieldtype":"Currency","read_only":1,"insert_after":"ingly_extra_cost"}
+]
