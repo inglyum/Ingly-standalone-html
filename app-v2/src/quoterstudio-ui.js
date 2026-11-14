@@ -83,7 +83,31 @@ export function mount(container, { sb, ctx }) {
     .catch((e) => { root.innerHTML = errorBox(Q.friendlyError(e)); });
 
   // ---------- RENDER ----------
-  function draw() { root.innerHTML = `<div class="v2-studio">${renderLeft()}${renderCenter()}${renderRight()}</div>`; wire(); }
+  function draw() { root.innerHTML = `${renderDocHead()}<div class="v2-studio">${renderLeft()}${renderCenter()}${renderRight()}</div>`; wire(); }
+
+  // Barra-documento in testa: identità del preventivo in stile documento
+  // professionale (titolo, cliente, canale, stato, totale sempre visibile).
+  function renderDocHead() {
+    const d = computedDoc();
+    const chLabel = (Q.CHANNEL_PRESETS[S.doc.channel] || {}).label || S.doc.channel;
+    const status = S.id ? (S._number || 'Bozza') : 'Nuovo preventivo';
+    const cust = S.doc.customer_name || '— nessun cliente —';
+    const validTxt = S.doc.valid_until ? ('Valido fino al ' + esc((S.doc.valid_until || '').slice(0, 10))) : 'Validità 7 giorni (KB)';
+    return `<div class="v2-dochead">
+      <div class="v2-dochead-main">
+        <div class="v2-dochead-badge">PREVENTIVO</div>
+        <div class="v2-dochead-titles">
+          <h2 class="v2-dochead-title">${esc(S.doc.title || 'Preventivo senza titolo')}</h2>
+          <div class="v2-dochead-sub"><span>${esc(cust)}</span><span class="v2-dot">·</span><span>${esc(status)}</span><span class="v2-dot">·</span><span>${esc(validTxt)}</span></div>
+        </div>
+      </div>
+      <div class="v2-dochead-meta">
+        <span class="v2-chip v2-chip-ch">${esc(chLabel)}</span>
+        ${S.doc.express ? '<span class="v2-chip v2-chip-warn">Express +25%</span>' : ''}
+        <div class="v2-dochead-tot"><span>Totale cliente</span><b data-r="hdr-total">${eur(d.total)}</b></div>
+      </div>
+    </div>`;
+  }
 
   function renderLeft() {
     const custOpts = customers.map((x) => `<option value="${esc(x.id)}"${S.doc.customer_id === x.id ? ' selected' : ''}>${esc(x.name)}</option>`).join('');
@@ -107,32 +131,40 @@ export function mount(container, { sb, ctx }) {
           <button class="v2-btn v2-xs v2-danger" data-wdel="${j}" title="Elimina">✕</button></div></div>`;
     }).join('') : '';
     return `<div class="v2-studio-col v2-studio-left">
-      <h3>Progetto</h3>
-      <label>Titolo<input data-h="title" value="${esc(S.doc.title)}" placeholder="Es. Kit matrimonio Rossi"></label>
-      <label>Cliente<select data-h="customer_id"><option value="">— nessuno —</option>${custOpts}</select></label>
-      <div class="v2-form-row">
-        <label>Priorità<select data-h="priority">${['low', 'normal', 'high', 'urgent'].map((p) => `<option value="${p}"${S.doc.priority === p ? ' selected' : ''}>${p}</option>`).join('')}</select></label>
-        <label>Validità<input data-h="valid_until" type="date" value="${esc((S.doc.valid_until || '').slice(0, 10))}"></label>
-      </div>
-      <div class="v2-form-row">
-        <label>Categoria<input data-h="category" value="${esc(S.doc.category)}"></label>
-        <label>Acconto %<input data-h="deposit_pct" type="number" min="0" max="100" value="${esc(S.doc.deposit_pct || 0)}"></label>
-      </div>
-      <h3 style="margin-top:12px">Opzioni prezzo</h3>
-      <div class="v2-form-row">
-        <label>Canale<select data-h="channel">${Object.entries(Q.CHANNEL_PRESETS).map(([k, v]) => `<option value="${k}"${S.doc.channel === k ? ' selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
-        <label>Sconto globale %<input data-h="global_discount_pct" type="number" min="0" max="95" step="1" value="${esc(S.doc.global_discount_pct || 0)}"></label>
-      </div>
-      <div class="v2-form-row" style="align-items:center">
-        <label class="v2-check"><input type="checkbox" data-hc="express" ${S.doc.express ? 'checked' : ''}> Express +25% (urgenza &lt;48h)</label>
-        <label class="v2-check"><input type="checkbox" data-hc="apply_qty_tiers" ${S.doc.apply_qty_tiers ? 'checked' : ''}> Sconti quantità KB</label>
-      </div>
-      <button class="v2-btn v2-xs v2-ghost" data-apply-channel title="Imposta il markup di tutte le righe al canale scelto">Applica markup canale a tutte le righe</button>
-      <label style="margin-top:8px">Termini &amp; Condizioni (PDF)<textarea data-h="terms" rows="3" placeholder="Lascia vuoto per i termini standard KB (validità 7gg, acconto 50%…)">${esc(S.doc.terms || '')}</textarea></label>
-      <div class="v2-studio-lines-h"><h3>Prodotti</h3><button class="v2-btn v2-xs" data-addprod>+ Prodotto</button></div>
-      <div class="v2-studio-lines">${prods}</div>
-      <div class="v2-studio-lines-h"><h3>Lavorazioni</h3><button class="v2-btn v2-xs" data-addwork>+ Aggiungi lavorazione</button></div>
-      <div class="v2-studio-lines">${works || '<div class="v2-empty">Nessuna lavorazione.</div>'}</div>
+      <section class="v2-sec">
+        <div class="v2-sec-h"><span class="v2-sec-ico">📋</span><h3>Progetto</h3></div>
+        <label>Titolo<input data-h="title" value="${esc(S.doc.title)}" placeholder="Es. Kit matrimonio Rossi"></label>
+        <label>Cliente<select data-h="customer_id"><option value="">— nessuno —</option>${custOpts}</select></label>
+        <div class="v2-form-row">
+          <label>Priorità<select data-h="priority">${['low', 'normal', 'high', 'urgent'].map((p) => `<option value="${p}"${S.doc.priority === p ? ' selected' : ''}>${p}</option>`).join('')}</select></label>
+          <label>Validità<input data-h="valid_until" type="date" value="${esc((S.doc.valid_until || '').slice(0, 10))}"></label>
+        </div>
+        <div class="v2-form-row">
+          <label>Categoria<input data-h="category" value="${esc(S.doc.category)}"></label>
+          <label>Acconto %<input data-h="deposit_pct" type="number" min="0" max="100" value="${esc(S.doc.deposit_pct || 0)}"></label>
+        </div>
+      </section>
+      <section class="v2-sec">
+        <div class="v2-sec-h"><span class="v2-sec-ico">💶</span><h3>Opzioni prezzo</h3></div>
+        <div class="v2-form-row">
+          <label>Canale<select data-h="channel">${Object.entries(Q.CHANNEL_PRESETS).map(([k, v]) => `<option value="${k}"${S.doc.channel === k ? ' selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
+          <label>Sconto globale %<input data-h="global_discount_pct" type="number" min="0" max="95" step="1" value="${esc(S.doc.global_discount_pct || 0)}"></label>
+        </div>
+        <div class="v2-opt-toggles">
+          <label class="v2-check"><input type="checkbox" data-hc="express" ${S.doc.express ? 'checked' : ''}> Express +25% (urgenza &lt;48h)</label>
+          <label class="v2-check"><input type="checkbox" data-hc="apply_qty_tiers" ${S.doc.apply_qty_tiers ? 'checked' : ''}> Sconti quantità KB</label>
+        </div>
+        <button class="v2-btn v2-xs v2-ghost v2-block" data-apply-channel title="Imposta il markup di tutte le righe al canale scelto">Applica markup canale a tutte le righe</button>
+        <label style="margin-top:10px">Termini &amp; Condizioni (PDF)<textarea data-h="terms" rows="3" placeholder="Lascia vuoto per i termini standard KB (validità 7gg, acconto 50%…)">${esc(S.doc.terms || '')}</textarea></label>
+      </section>
+      <section class="v2-sec">
+        <div class="v2-sec-h"><span class="v2-sec-ico">📦</span><h3>Prodotti</h3><button class="v2-btn v2-xs" data-addprod>+ Prodotto</button></div>
+        <div class="v2-studio-lines">${prods}</div>
+      </section>
+      <section class="v2-sec">
+        <div class="v2-sec-h"><span class="v2-sec-ico">🛠️</span><h3>Lavorazioni</h3><button class="v2-btn v2-xs" data-addwork>+ Aggiungi</button></div>
+        <div class="v2-studio-lines">${works || '<div class="v2-empty">Nessuna lavorazione.</div>'}</div>
+      </section>
     </div>`;
   }
 
@@ -177,13 +209,17 @@ export function mount(container, { sb, ctx }) {
         <div class="v2-work-cost">Costo lavorazione: <b>${eur(cw.cost)}</b></div>`;
     }
     return `<div class="v2-studio-col v2-studio-center">
-      <h3>⚙️ Configura Lavorazione</h3>
-      <div class="v2-muted" style="margin-bottom:10px">Prodotto: <b>${esc(l.description || 'Prodotto ' + (S.sel + 1))}</b></div>
-      <label>Nome prodotto<input data-l="description" value="${esc(l.description || '')}"></label>
-      <label>Prodotto dal catalogo<select data-lprod><option value="">— libero —</option>${products.map((p) => `<option value="${esc(p.id)}"${l.product_id === p.id ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label>
-      ${params}
-      <label style="margin-top:12px">Specifiche tecniche<textarea data-l="spec">${esc(l.spec || '')}</textarea></label>
-      <label>Immagine (URL/Storage)<input data-l="image_url" value="${esc(l.image_url || '')}"></label>
+      <div class="v2-sec-h"><span class="v2-sec-ico">⚙️</span><h3>Configura Lavorazione</h3></div>
+      <div class="v2-prod-tag">Prodotto: <b>${esc(l.description || 'Prodotto ' + (S.sel + 1))}</b></div>
+      <div class="v2-form-row">
+        <label>Nome prodotto<input data-l="description" value="${esc(l.description || '')}"></label>
+        <label>Prodotto dal catalogo<select data-lprod><option value="">— libero —</option>${products.map((p) => `<option value="${esc(p.id)}"${l.product_id === p.id ? ' selected' : ''}>${esc(p.name)}</option>`).join('')}</select></label>
+      </div>
+      <div class="v2-work-panel">${params}</div>
+      <div class="v2-form-row" style="margin-top:12px">
+        <label>Specifiche tecniche<textarea data-l="spec">${esc(l.spec || '')}</textarea></label>
+        <label>Immagine (URL/Storage)<input data-l="image_url" value="${esc(l.image_url || '')}"></label>
+      </div>
     </div>`;
   }
 
@@ -209,7 +245,7 @@ export function mount(container, { sb, ctx }) {
     const sugg = Q.priceForMargin(cl.unitCost, 60);
     const riskCls = cl.marginPct < minM ? 'v2-bad' : cl.marginPct < minM + 10 ? '' : 'v2-ok';
     return `<div class="v2-studio-col v2-studio-right">
-      <h3>Cost Breakdown <span class="v2-muted">prodotto</span></h3>
+      <div class="v2-sec-h"><span class="v2-sec-ico">🧮</span><h3>Cost Breakdown <span class="v2-muted">prodotto</span></h3></div>
       <div data-r="breakdown">${breakdownRows(cl)}</div>
       <div class="v2-sum-line v2-sum-tot"><span>Costo produzione (unit.)</span><b data-r="unitcost">${eur(cl.unitCost)}</b></div>
       <div class="v2-form-row" style="margin-top:8px">
@@ -229,13 +265,15 @@ export function mount(container, { sb, ctx }) {
         <div><span>Premium</span><b data-r="premium">${eur(tiers.premium)}</b></div>
       </div>
       <div class="v2-sum-line"><span>Prezzo netto (unit.)${cl.discountPct ? ` −${cl.discountPct}%` : ''}</span><b data-r="netunit">${eur(cl.netUnit)}</b></div>
-      <h4>Totale documento</h4>
-      <div data-r="docalert">${renderMarginAlert(d)}</div>
-      <div class="v2-sum-line"><span>Imponibile</span><b data-r="doc-imp">${eur(d.imponibile)}</b></div>
-      <div class="v2-sum-line"><span>IVA</span><b data-r="doc-iva">${eur(d.iva)}</b></div>
-      <div class="v2-sum-line v2-sum-tot"><span>Totale cliente</span><b data-r="doc-total">${eur(d.total)}</b></div>
-      <div class="v2-sum-line"><span>Margine documento</span><b data-r="doc-margin" class="${d.marginOk ? 'v2-ok' : 'v2-bad'}">${eur(d.margin)} (${d.marginPct}%)</b></div>
-      ${d.deposit ? `<div class="v2-sum-line"><span>Acconto ${d.depositPct}%</span><b data-r="doc-dep">${eur(d.deposit)}</b></div>` : '<div class="v2-sum-line"><span>Acconto</span><b data-r="doc-dep">€0,00</b></div>'}
+      <div class="v2-doc-totals">
+        <div class="v2-sec-h v2-sec-h-sm"><span class="v2-sec-ico">📄</span><h4>Totale documento</h4></div>
+        <div data-r="docalert">${renderMarginAlert(d)}</div>
+        <div class="v2-sum-line"><span>Imponibile</span><b data-r="doc-imp">${eur(d.imponibile)}</b></div>
+        <div class="v2-sum-line"><span>IVA</span><b data-r="doc-iva">${eur(d.iva)}</b></div>
+        <div class="v2-grand-tot"><span>Totale cliente</span><b data-r="doc-total">${eur(d.total)}</b></div>
+        <div class="v2-sum-line"><span>Margine documento</span><b data-r="doc-margin" class="${d.marginOk ? 'v2-ok' : 'v2-bad'}">${eur(d.margin)} (${d.marginPct}%)</b></div>
+        ${d.deposit ? `<div class="v2-sum-line"><span>Acconto ${d.depositPct}%</span><b data-r="doc-dep">${eur(d.deposit)}</b></div>` : '<div class="v2-sum-line"><span>Acconto</span><b data-r="doc-dep">€0,00</b></div>'}
+      </div>
       <div class="v2-studio-actions">
         ${w ? '<button class="v2-btn" data-save>💾 Salva</button>' : ''}
         ${w && S.id ? '<button class="v2-btn v2-ghost" data-dup>Duplica</button>' : ''}
@@ -364,7 +402,7 @@ export function mount(container, { sb, ctx }) {
     const set = (k, v) => { const el = root.querySelector(`[data-r="${k}"]`); if (el) el.textContent = v; };
     set('unitcost', eur(cl.unitCost)); set('unitprice', eur(cl.unitPrice)); set('minprice', eur(cl.minPrice)); set('netunit', eur(cl.netUnit));
     set('target', sugg != null ? eur(sugg) : '—'); set('economy', eur(tiers.economy)); set('consigliato', eur(tiers.consigliato)); set('premium', eur(tiers.premium));
-    set('doc-imp', eur(d.imponibile)); set('doc-iva', eur(d.iva)); set('doc-total', eur(d.total)); set('doc-dep', eur(d.deposit));
+    set('doc-imp', eur(d.imponibile)); set('doc-iva', eur(d.iva)); set('doc-total', eur(d.total)); set('doc-dep', eur(d.deposit)); set('hdr-total', eur(d.total));
     const mg = root.querySelector('[data-r="margin"]'); if (mg) { mg.textContent = `${eur(cl.margin)} (${cl.marginPct}%)`; mg.className = riskCls; }
     const dm = root.querySelector('[data-r="doc-margin"]'); if (dm) { dm.textContent = `${eur(d.margin)} (${d.marginPct}%)`; dm.className = d.marginOk ? 'v2-ok' : 'v2-bad'; }
     const al = root.querySelector('[data-r="docalert"]'); if (al) al.innerHTML = renderMarginAlert(d);
