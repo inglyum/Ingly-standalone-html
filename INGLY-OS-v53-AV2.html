@@ -103777,10 +103777,15 @@ table tbody tr:hover td{ background:color-mix(in srgb,var(--ds-primary) 6%,trans
       try{orders=await AppStore.get('orders')||[];}catch(e){}
       try{sales=await AppStore.get('sales')||[];}catch(e){}
       try{quotes=JSON.parse(localStorage.getItem('ingly_b2b_quotes_v1')||'[]');}catch(e){}
+      let idbQuotes=[]; try{ idbQuotes=await AppStore.get('quotes')||[]; }catch(e){}
       const nm=norm(cName(c));
       const mine=r=>sameId(r.clientId,c.id)||(nm&&norm(recClient(r))===nm);
       const O=orders.filter(mine), S=sales.filter(mine);
-      const Q=quotes.filter(q=>nm&&norm(q.client||q.clientName||q.cliente||'')===nm);
+      const Q=[
+        ...quotes.filter(q=>nm&&norm(q.client||q.clientName||q.cliente||'')===nm),
+        ...idbQuotes.filter(q=>sameId(q.clientId,c.id)||(nm&&norm(q.clientName||q.client||'')===nm))
+          .map(q=>({...q, total:(q.grossPrice||q.netPrice||q.total||0), client:(q.clientName||q.client||''), date:(q.date||q.createdAt||q.issue_date)}))
+      ];
       this._data={c,O,S,Q}; this._tab='timeline';
       this._render();
     },
