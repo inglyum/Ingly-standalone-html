@@ -1787,8 +1787,11 @@ tr:hover td .badge { opacity: 1; }
     <div class="module-actions">
       <input class="form-control btn-sm" style="width:200px" placeholder="Cerca..." oninput="Inventory.filter(this.value)" id="inv-search">
       <button class="btn btn-primary btn-sm" onclick="Inventory.openModal()"><i class="fas fa-plus"></i> Aggiungi</button>
+      <button class="btn btn-secondary btn-sm" onclick="Inventory.reorderSuggestions()" title="Suggerimenti riordino per gli articoli sotto scorta"><i class="fas fa-rotate"></i> Riordino</button>
+      <button class="btn btn-secondary btn-sm" onclick="Inventory.exportCSV()" title="Esporta magazzino in CSV"><i class="fas fa-file-csv"></i> CSV</button>
     </div>
   </div>
+  <div id="inventory-summary" class="mb-16"></div>
   <div id="inventory-alerts" class="mb-16"></div>
   <div class="table-wrap"><table><thead><tr>
     <th data-i18n="inv.sku">SKU</th><th data-i18n="inv.item">Articolo</th><th data-i18n="inv.cat">Categoria</th><th data-i18n="inv.stock">Stock</th><th data-i18n="inv.min">Min.</th><th data-i18n="inv.cost">Costo</th><th data-i18n="inv.value">Valore</th><th data-i18n="inv.status">Stato</th><th data-i18n="inv.actions">Azioni</th>
@@ -15207,6 +15210,13 @@ const Inventory={
     const alertEl=eid('inventory-alerts');
     if(alertEl&&low.length)alertEl.innerHTML=`<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> <strong>${low.length} articoli</strong> sotto scorta minima: ${low.map(i=>sanitize(i.name)).join(', ')}</div>`;
     else if(alertEl)alertEl.innerHTML='';
+    const sumEl=eid('inventory-summary');
+    if(sumEl){
+      const totVal=items.reduce((a,i)=>a+(+i.stock||0)*(+i.costPrice||0),0);
+      const outN=items.filter(i=>(+i.stock||0)<=0).length;
+      const kc=(lbl,val,col)=>`<div style="flex:1;min-width:120px;background:var(--bg-card2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px"><div style="font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.4px">${lbl}</div><div style="font-size:18px;font-weight:800;color:${col||'var(--text)'};font-variant-numeric:tabular-nums">${val}</div></div>`;
+      sumEl.innerHTML=`<div style="display:flex;gap:10px;flex-wrap:wrap">${kc('Valore magazzino',fmtCur(totVal),'var(--primary)')}${kc('Articoli',items.length)}${kc('Sotto scorta',low.length,low.length?'var(--orange)':'var(--green)')}${kc('Esauriti',outN,outN?'var(--red)':'var(--green)')}</div>`;
+    }
     el.innerHTML=filtered.map(i=>{
       const pct=i.minStock>0?Math.min(100,Math.round(i.stock/i.minStock*100)):100;
       const statusClass=i.stock<=0?'badge-red':i.stock<=i.minStock?'badge-yellow':'badge-green';
@@ -15230,7 +15240,9 @@ const Inventory={
         <td>
           <div class="act-group">
             <button class="act-btn act-edit" onclick="Inventory.openModal(${i.id})"><i class="fas fa-edit"></i> Modifica</button>
-            <button class="act-btn act-del" onclick="Inventory.del(${i.id})"><i class="</div>
+            <button class="act-btn" onclick="Inventory.movements(${i.id})" title="Storico movimenti e carico/scarico"><i class="fas fa-clock-rotate-left"></i></button>
+            <button class="act-btn act-del" onclick="Inventory.del(${i.id})"><i class="fas fa-trash"></i> Elimina</button>
+          </div>
         </td>
       </tr>`;
     }).join('');
@@ -15239,10 +15251,76 @@ const Inventory={
   filter(v){this.filterVal=v.toLowerCase();this.render();},
   async adjust(id,delta){
     const item=await IDB.get('inventory',id);if(!item)return;
-    item.stock=Math.max(0,(+item.stock||0)+delta);
+    const before=(+item.stock||0);
+    item.stock=Math.max(0,before+delta);
     await IDB.put('inventory',item);
+    this.logMove(id, delta>0?'carico':'scarico', item.stock-before, 'rettifica rapida');
     await logAction('inventory',id,'stock_adjusted',{delta,stock:item.stock});
     await this.render();
+  },
+  // ── Movimenti di magazzino (storico in localStorage, nessun bump IDB) ──
+  _moves(){ try{ return JSON.parse(localStorage.getItem('ingly_stock_moves')||'[]'); }catch(e){ return []; } },
+  _saveMoves(m){ try{ localStorage.setItem('ingly_stock_moves', JSON.stringify(m.slice(-2000))); }catch(e){} },
+  logMove(itemId,type,qty,note){ const m=this._moves(); m.push({id:Date.now()+''+Math.floor(Math.random()*999),itemId:itemId,type:type,qty:qty,note:note||'',ts:new Date().toISOString()}); this._saveMoves(m); },
+  async movements(id){
+    const it=await IDB.get('inventory',id); if(!it)return;
+    const list=this._moves().filter(x=>String(x.itemId)===String(id)).reverse().slice(0,100);
+    const rows=list.length?list.map(x=>{ const c=x.type==='carico'?'var(--green)':x.type==='scarico'?'var(--red)':'var(--orange)'; const sign=x.qty>0?'+':''; return '<div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid var(--border)"><span><b style="color:'+c+'">'+x.type+'</b> '+sanitize(x.note||'')+'</span><span style="white-space:nowrap"><b style="color:'+c+';font-variant-numeric:tabular-nums">'+sign+x.qty+'</b> <small class="text-muted">'+new Date(x.ts).toLocaleString('it-IT')+'</small></span></div>'; }).join(''):'<div class="text-muted" style="padding:14px 0">Nessun movimento registrato.</div>';
+    this._overlay('📜 Movimenti — '+sanitize(it.name),
+      '<div style="display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap"><button class="btn btn-sm btn-secondary" onclick="Inventory.moveModal('+id+',\'carico\')">⬆️ Carico</button><button class="btn btn-sm btn-secondary" onclick="Inventory.moveModal('+id+',\'scarico\')">⬇️ Scarico</button><button class="btn btn-sm btn-secondary" onclick="Inventory.moveModal('+id+',\'rettifica\')">🔧 Rettifica</button></div>'
+      +'<div style="max-height:46vh;overflow:auto">'+rows+'</div>');
+  },
+  moveModal(id,type){
+    const lbl=type==='rettifica'?'Nuovo stock totale':'Quantità da '+type;
+    const ttl=type==='carico'?'⬆️ Carico magazzino':type==='scarico'?'⬇️ Scarico magazzino':'🔧 Rettifica stock';
+    this._overlay(ttl,
+      '<label class="form-label">'+lbl+'</label><input id="inv-mv-q" type="number" class="form-control" value="0" style="margin-bottom:10px">'
+      +'<label class="form-label">Nota / causale</label><input id="inv-mv-n" class="form-control" placeholder="es. fornitore, ordine, inventario…" style="margin-bottom:14px">'
+      +'<button class="btn btn-primary w-full" onclick="Inventory._applyMove('+id+',\''+type+'\',+document.getElementById(\'inv-mv-q\').value||0,document.getElementById(\'inv-mv-n\').value)">Registra movimento</button>');
+  },
+  async _applyMove(id,type,val,note){
+    const it=await IDB.get('inventory',id); if(!it)return;
+    let delta=0, ns=(+it.stock||0);
+    if(type==='carico'){ delta=Math.abs(val); ns+=delta; }
+    else if(type==='scarico'){ delta=-Math.abs(val); ns=Math.max(0,ns+delta); }
+    else { ns=Math.max(0,val); delta=ns-(+it.stock||0); }
+    it.stock=ns; await IDB.put('inventory',it);
+    this.logMove(id,type,delta,note);
+    await logAction('inventory',id,'stock_'+type,{delta,stock:ns});
+    const ov=document.getElementById('inv-ov'); if(ov)ov.remove();
+    toast('Movimento registrato ✅','success'); await this.render();
+  },
+  // ── Suggerimenti riordino (sotto scorta → qty consigliata), ponte verso Acquisti ──
+  async reorderSuggestions(){
+    const items=await IDB.getAll('inventory');
+    const low=items.filter(i=>(+i.stock||0)<=(+i.minStock||0));
+    const rows=low.length?low.map(i=>{ const target=Math.max((+i.minStock||0)*2,(+i.minStock||0)+1); const sugg=Math.max(1,target-(+i.stock||0)); return '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><span><b>'+sanitize(i.name)+'</b> <small class="text-muted">'+sanitize(i.supplier||'— nessun fornitore')+'</small><br><small class="text-muted">stock '+i.stock+' / min '+i.minStock+'</small></span><span style="display:flex;align-items:center;gap:8px"><b style="color:var(--orange);white-space:nowrap">+'+sugg+' '+sanitize(i.unit||'pz')+'</b><button class="btn btn-sm btn-primary" onclick="Inventory.createReorder('+i.id+','+sugg+')">Riordina</button></span></div>'; }).join(''):'<div class="text-muted" style="padding:14px 0">✅ Nessun articolo sotto scorta.</div>';
+    this._overlay('🔄 Suggerimenti riordino', rows+(low.length?'<div style="margin-top:12px;text-align:right"><button class="btn btn-sm btn-primary" onclick="Inventory.reorderAll()">Crea richieste per tutti</button></div>':''));
+  },
+  createReorder(itemId,qty){
+    try{ const r=JSON.parse(localStorage.getItem('ingly_reorders')||'[]'); r.push({id:Date.now()+''+Math.floor(Math.random()*999),itemId:itemId,qty:qty,status:'pending',ts:new Date().toISOString()}); localStorage.setItem('ingly_reorders',JSON.stringify(r)); }catch(e){}
+    toast('Richiesta di riordino creata — la trovi in Fornitori/Acquisti','success');
+  },
+  async reorderAll(){
+    const items=await IDB.getAll('inventory'); const low=items.filter(i=>(+i.stock||0)<=(+i.minStock||0));
+    low.forEach(i=>{ const target=Math.max((+i.minStock||0)*2,(+i.minStock||0)+1); const sugg=Math.max(1,target-(+i.stock||0)); this.createReorder(i.id,sugg); });
+    const ov=document.getElementById('inv-ov'); if(ov)ov.remove();
+    toast(low.length+' richieste di riordino create','success');
+  },
+  async exportCSV(){
+    const items=await IDB.getAll('inventory');
+    const head=['sku','name','category','unit','stock','minStock','costPrice','value','supplier'];
+    const q=(v)=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+    const csv=head.join(',')+'\n'+items.map(i=>[i.sku,i.name,i.category,i.unit,i.stock,i.minStock,i.costPrice,(+i.stock||0)*(+i.costPrice||0),i.supplier].map(q).join(',')).join('\n');
+    try{ if(typeof dl!=='undefined'){ dl('magazzino-'+new Date().toISOString().slice(0,10)+'.csv',csv,'text/csv;charset=utf-8'); } else { const bl=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(bl); a.download='magazzino.csv'; a.click(); } toast('CSV esportato ✅','success'); }catch(e){ toast('Errore export','error'); }
+  },
+  _overlay(title,bodyHTML){
+    var old=document.getElementById('inv-ov'); if(old)old.remove();
+    var ov=document.createElement('div'); ov.id='inv-ov';
+    ov.style.cssText='position:fixed;inset:0;background:#000a;backdrop-filter:blur(5px);z-index:2147483100;display:flex;align-items:center;justify-content:center;padding:18px';
+    ov.innerHTML='<div style="background:var(--bg-card);border:1px solid var(--border2);border-radius:16px;width:min(560px,96vw);max-height:90vh;overflow:auto;padding:22px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><h3 style="margin:0;font-size:16px;color:var(--text);flex:1">'+title+'</h3><button onclick="document.getElementById(\'inv-ov\').remove()" style="border:none;background:var(--bg-card2);color:var(--text-muted);width:30px;height:30px;border-radius:50%;cursor:pointer;flex-shrink:0">✕</button></div>'+bodyHTML+'</div>';
+    ov.addEventListener('click',function(e){ if(e.target===ov)ov.remove(); });
+    document.body.appendChild(ov);
   },
   async openModal(id=null){
     this.editId=id;
