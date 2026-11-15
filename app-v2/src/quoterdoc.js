@@ -7,17 +7,20 @@ const eur = (n) => '€ ' + (Number(n || 0)).toLocaleString('it-IT', { minimumFr
 const day = (s) => esc((s || '').slice(0, 10));
 
 // Template documentali (preset modulari, non copie del vecchio TemplateManager).
+// accent = colore testo di marca (leggibile su bianco); hbg/htx = sfondo/testo
+// dell'header tabella e delle barre. Premium = brand INGLY oro (header oro +
+// testo scuro ad alto contrasto, accent-bar e bordo totale oro).
 export const TEMPLATES = {
-  standard: { label: 'Preventivo standard', accent: '#111827', showSpec: false },
-  premium: { label: 'Preventivo premium', accent: '#6d28d9', showSpec: true },
-  b2b: { label: 'Preventivo B2B', accent: '#0f766e', showSpec: true },
-  internal: { label: 'Documento interno', accent: '#b91c1c', showSpec: true },
+  standard: { label: 'Preventivo standard', accent: '#111827', hbg: '#111827', htx: '#ffffff', showSpec: false },
+  premium: { label: 'Preventivo premium', accent: '#b45309', hbg: '#fbbf24', htx: '#1a1206', showSpec: true },
+  b2b: { label: 'Preventivo B2B', accent: '#0f766e', hbg: '#0f766e', htx: '#ffffff', showSpec: true },
+  internal: { label: 'Documento interno', accent: '#b91c1c', hbg: '#b91c1c', htx: '#ffffff', showSpec: true },
 };
 
-const shell = (title, accent, body) => `<!doctype html><html lang="it"><head><meta charset="utf-8">
+const shell = (title, tpl, body) => `<!doctype html><html lang="it"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <style>
-  :root{ --accent:${accent} }
+  :root{ --accent:${tpl.accent || '#111827'}; --hbg:${tpl.hbg || tpl.accent || '#111827'}; --htx:${tpl.htx || '#ffffff'} }
   *{ box-sizing:border-box } body{ font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif; color:#1a1a1a; margin:0; padding:34px 40px; background:#fff; font-size:13px; line-height:1.5 }
   .doc{ max-width:820px; margin:0 auto }
   .head{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:10px }
@@ -28,20 +31,20 @@ const shell = (title, accent, body) => `<!doctype html><html lang="it"><head><me
   .parties{ display:flex; gap:16px; margin:16px 0 4px }
   .party{ flex:1; background:#f8f9fb; border:1px solid #edf0f4; border-radius:8px; padding:10px 12px }
   .party .lbl{ font-size:10px; text-transform:uppercase; letter-spacing:.5px; color:#8a92a0; font-weight:700 }
-  .party b{ font-size:14px } .accentbar{ height:4px; background:var(--accent); border-radius:3px; margin:4px 0 2px }
+  .party b{ font-size:14px } .accentbar{ height:5px; background:var(--hbg); border-radius:3px; margin:4px 0 2px }
   h1{ font-size:18px; margin:0 0 4px } .muted{ color:#666; font-size:12px }
   table{ width:100%; border-collapse:collapse; margin:16px 0 8px; font-size:12.5px }
-  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid #e9ecf1 } thead th{ background:var(--accent); color:#fff; font-weight:600; border:none }
+  th,td{ text-align:left; padding:8px 10px; border-bottom:1px solid #e9ecf1 } thead th{ background:var(--hbg); color:var(--htx); font-weight:700; border:none }
   td.n,th.n{ text-align:right } tbody tr:nth-child(even){ background:#fafbfc }
   .sub{ color:#777; font-size:11px }
   .tot{ margin-top:4px; margin-left:auto; width:300px; font-size:13px }
   .tot div{ display:flex; justify-content:space-between; padding:4px 2px } .tot .tax{ color:#555; font-size:12px }
-  .tot .g{ border-top:2px solid var(--accent); font-weight:800; font-size:16px; margin-top:6px; padding-top:8px } .tot .dep{ color:var(--accent); font-weight:700 }
+  .tot .g{ border-top:2px solid var(--hbg); font-weight:800; font-size:16px; margin-top:6px; padding-top:8px } .tot .dep{ color:var(--accent); font-weight:700 }
   .terms{ margin-top:20px; border-top:1px solid #e9ecf1; padding-top:12px }
   .terms h3{ font-size:12px; text-transform:uppercase; letter-spacing:.5px; color:#8a92a0; margin:0 0 6px } .terms p{ margin:3px 0; font-size:11.5px; color:#444 }
   .notes{ margin-top:14px; font-size:12px; color:#444 }
   .footer{ margin-top:22px; text-align:center; color:#9aa2b1; font-size:10.5px; border-top:1px solid #eef1f5; padding-top:10px }
-  .badge{ display:inline-block; padding:2px 8px; border-radius:6px; background:var(--accent); color:#fff; font-size:11px }
+  .badge{ display:inline-block; padding:2px 8px; border-radius:6px; background:var(--hbg); color:var(--htx); font-size:11px }
   @media print{ body{ padding:0 } .noprint{ display:none } }
 </style></head><body><div class="doc">${body}</div></body></html>`;
 
@@ -110,7 +113,7 @@ export function clientDocHTML(doc, computed, company = {}, templateKey = 'standa
     ${totalsBlock(computed)}
     ${doc.notes ? `<div class="notes"><b>Note:</b> ${esc(doc.notes)}</div>` : ''}
     ${termsBlock(doc, company)}`;
-  return shell(title, tpl.accent, body);
+  return shell(title, tpl, body);
 }
 
 // PDF INTERNO — include breakdown costi, markup, margine (uso interno).
@@ -129,7 +132,7 @@ export function internalDocHTML(doc, computed, company = {}) {
       <div><span>Margine</span><span>${eur(computed.margin)} (${computed.marginPct}%)</span></div>
       <div class="g"><span>Rischio margine</span><span>${esc((computed.risk || 'low').toUpperCase())}</span></div>
     </div>`;
-  return shell('Documento interno', tpl.accent, body);
+  return shell('Documento interno', tpl, body);
 }
 
 // Riepilogo testuale cliente (per WhatsApp/condivisione) — nessun dato interno.
