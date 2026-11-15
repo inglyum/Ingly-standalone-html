@@ -102823,6 +102823,36 @@ table tbody tr:hover td{ background:color-mix(in srgb,var(--ds-primary) 6%,trans
 /* 6 · Focus coerente su input/select/textarea esistenti (non-layout) */
 .form-control:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
   box-shadow:0 0 0 3px color-mix(in srgb,var(--primary,#fbbf24) 16%,transparent); }
+
+/* ════════ FASE 1.5 — UI REBUILD (layer additivo · token · props safe) ════════ */
+/* Profondità coerente sulle superfici (depth system) */
+.card,.kpi-card,.stat-card{ box-shadow:var(--shadow-sm); }
+.table-wrap{ box-shadow:var(--shadow-sm); }
+.modal,.modal-content{ box-shadow:var(--shadow-lg); }
+.kpi-card{ background-image:linear-gradient(180deg,rgba(255,255,255,.02),transparent 55%); }
+/* Gerarchia tipografica */
+.module-title,.page-title,.card-title{ letter-spacing:-.015em; text-wrap:balance; }
+.kpi-value,.stat-value,.stat-val{ letter-spacing:-.02em; font-variant-numeric:tabular-nums; }
+.kpi-label,.stat-label{ letter-spacing:.04em }
+table thead th{ letter-spacing:.03em }
+.badge{ letter-spacing:.015em }
+/* Movimento & elevazione (solo transform/shadow/filter) */
+@media (prefers-reduced-motion: no-preference){
+  .card{ transition:box-shadow .18s var(--ds-ease),border-color .18s }
+  .card:hover{ box-shadow:var(--shadow-md) }
+  .kpi-card,.stat-card{ transition:transform .18s var(--ds-ease),box-shadow .18s,border-color .18s }
+  .kpi-card:hover,.stat-card:hover{ transform:translateY(-3px); box-shadow:var(--shadow-md); border-color:var(--border2) }
+  .btn,.act-btn{ transition:transform .12s var(--ds-ease),box-shadow .14s,filter .14s,border-color .14s,background .14s }
+  .btn:hover:not(:disabled),.act-btn:hover{ transform:translateY(-1px) }
+  .btn:active:not(:disabled),.act-btn:active{ transform:translateY(0) scale(.985) }
+  .progress-bar{ transition:width .4s var(--ds-ease) }
+}
+/* Accento brand sui bottoni primari (glow) */
+.btn-primary{ box-shadow:0 2px 10px color-mix(in srgb,var(--primary) 22%,transparent) }
+.btn-primary:hover:not(:disabled){ filter:brightness(1.06); box-shadow:0 5px 18px color-mix(in srgb,var(--primary) 32%,transparent) }
+/* Input raffinati */
+.form-control{ transition:border-color .14s,box-shadow .14s,background .14s }
+.form-control:hover:not(:focus){ border-color:var(--border2) }
 `;
   document.head.appendChild(css);
 
