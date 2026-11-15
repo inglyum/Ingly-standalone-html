@@ -59750,11 +59750,67 @@ window.BrandIdentity = BrandIdentity;
       'gennaio':'January','febbraio':'February','marzo':'March','aprile':'April',
       'maggio':'May','giugno':'June','luglio':'July','agosto':'August',
       'settembre':'September','ottobre':'October','novembre':'November','dicembre':'December',
+      // ── EN coverage estesa (frasi lunghe PRIMA delle parole brevi) ──
+      // Dashboard / briefing
+      'Nessuna urgenza — tutto sotto controllo!':'No urgencies — all under control!',
+      'Nessuna azione urgente — ottima giornata!':'No urgent actions — great day!',
+      'Nessuna azione urgente oggi':'No urgent actions today',
+      'Nessuna azione urgente richiesta':'No urgent action required',
+      'Aggiungi vendite per vedere insight personalizzati':'Add sales to see personalized insights',
+      'Salva preventivi per vedere i dati':'Save quotes to see data',
+      'Nessuna azione urgente':'No urgent actions',
+      'Buon pomeriggio!':'Good afternoon!','Buongiorno!':'Good morning!','Buonasera!':'Good evening!',
+      'Ci sono cose da sistemare.':'A few things to fix.',
+      'Tutto in ordine oggi!':'Everything in order today!','Tutto in ordine oggi':'Everything in order today',
+      'SALUTE AZIENDALE':'BUSINESS HEALTH','TREND DEL GIORNO':'TREND OF THE DAY',
+      'TOP 3 AZIONI OGGI':'TOP 3 ACTIONS TODAY','INSIGHT DEL GIORNO':'INSIGHT OF THE DAY',
+      'Azioni di oggi':'Today actions','AZIONI RAPIDE':'QUICK ACTIONS','Azioni Rapide':'Quick Actions',
+      'ENTRATE MESE':'MONTHLY REVENUE','NUOVI CLIENTI':'NEW CLIENTS','STOCK BASSO':'LOW STOCK',
+      'Acquisiti questo mese':'Acquired this month','vs mese scorso':'vs last month',
+      'Entrate Ultimi 6 Mesi':'Revenue Last 6 Months','Top Prodotti':'Top Products','Stock Basso':'Low Stock',
+      'Ordini attivi':'Active orders','Margine netto':'Net margin','Vendite oggi':'Sales today','Transazioni':'Transactions',
+      'Nuovo preventivo':'New quote','Registra vendita':'Record sale','Vedi pipeline':'View pipeline','Contatta clienti':'Contact clients',
+      'Preventivo Rapido':'Quick Quote','Business review AI':'AI business review','Crescita rapida':'Fast growth',
+      'Tutto OK!':'All OK!','Tutto OK':'All OK','Tutto a posto':'All set',
+      // Smart Quoter
+      'Preventivi professionali multi-voce con pricing dinamico':'Professional multi-line quotes with dynamic pricing',
+      'CONFIGURA LAVORAZIONE':'CONFIGURE JOB','VOCI IN PREVENTIVO':'QUOTE ITEMS',
+      'AGGIUNGI AL PREVENTIVO':'ADD TO QUOTE','RISORSA DA LISTINO':'PRICE-LIST RESOURCE',
+      'COLORE / FINITURA':'COLOR / FINISH','MARKUP PREDEFINITO %':'DEFAULT MARKUP %',
+      'SCONTO FINALE %':'FINAL DISCOUNT %','a tutte le righe':'to all rows',
+      'Costo Vivo Totale':'Total Raw Cost','Subtotale netto':'Net Subtotal','TOTALE LORDO':'GROSS TOTAL',
+      'Costi Aggiuntivi':'Additional Costs','Costi Extra':'Extra Costs','Costo Vivo':'Raw Cost',
+      'PREZZO FINALE':'FINAL PRICE','Salva Preventivo':'Save Quote','PDF Cliente (Personalizzato)':'Client PDF (Custom)',
+      'PDF Cliente':'Client PDF','PDF Interno':'Internal PDF','Preventivi Salvati':'Saved Quotes',
+      'Invia a Workflow':'Send to Workflow','Conferma → Vendita':'Confirm → Sale','Salva Template':'Save Template',
+      'TITOLO LAVORO':'JOB TITLE','Nuovo Cliente Rapido':'Quick New Client','Salva e Seleziona':'Save and Select',
+      'Senza IVA':'No VAT','Descrizione':'Description','Netto':'Net','Unit.':'Unit',
+      'CLIENTE (CRM)':'CLIENT (CRM)','RIEPILOGO':'SUMMARY','AZIONI':'ACTIONS','CATEGORIA':'CATEGORY',
+      'QTÀ':'QTY','PRIORITÀ':'PRIORITY','SCADENZA':'DEADLINE','COSTO UNITARIO €':'UNIT COST €',
+      'Impostazioni Macchina':'Machine Settings','Prodotto da calcolare':'Product to calculate',
+      'Mostra':'Show','Nascondi':'Hide','editabile':'editable','Nuovo':'New','Storico':'History',
+      // CRM / tabelle
+      'CRM Clienti':'CRM Clients','Clienti · contatti · attività':'Clients · contacts · activities',
+      'Nessun cliente. Crea il primo cliente o modifica i filtri.':'No clients. Create the first client or change filters.',
+      'Cerca cliente per nome/email…':'Search client by name/email…','+ Nuovo cliente':'+ New client',
+      'Tutti i tipi':'All types','Nome':'Name','Telefono':'Phone','Segmento':'Segment','Valore':'Value','Tipo':'Type',
+      'Aziende':'Companies','Attività':'Activities',
+      // Stati & priorità
+      'in attesa':'pending','confermato':'confirmed','bozza':'draft','Attivo':'Active','Inattivo':'Inactive',
+      'Bassa':'Low','Media':'Medium',
+      // Azioni comuni
+      'Nuovo preventivo':'New quote','Registra vendita':'Record sale','+ Nuovo':'+ New','+ Prodotto':'+ Product',
+      'Salva tutto':'Save all','Elimina':'Delete','Modifica':'Edit','Duplica':'Duplicate','Chiudi':'Close',
+      'Caricamento…':'Loading…','Nessun dato disponibile':'No data available',
     };
 
     I18n.apply = function() {
       _origApply();
       if(this.lang !== 'en') return;
+
+      // Ordina IT→EN dalla chiave più LUNGA alla più corta: le frasi vincono
+      // sulle parole, evitando traduzioni parziali (es. "Salvati"→"Saveti").
+      const _enPairs = Object.entries(EN_EXTRA).sort((a,b)=>b[0].length-a[0].length);
 
       // 1. Translate all text nodes with data-i18n or matching known strings
       // Also translate page titles, section headers, buttons
@@ -59766,7 +59822,7 @@ window.BrandIdentity = BrandIdentity;
         const txt = el.textContent.trim();
         if(!txt || txt.length > 100) return;
         // Try direct translation
-        for(const [it, en] of Object.entries(EN_EXTRA)) {
+        for(const [it, en] of _enPairs) {
           if(txt === it || txt.includes(it)) {
             const icon = el.querySelector('i,img,span.nav-badge');
             const badge = el.querySelector('.nav-badge');
@@ -59784,7 +59840,7 @@ window.BrandIdentity = BrandIdentity;
       // 2. Translate placeholders
       document.querySelectorAll('[placeholder]').forEach(el => {
         const ph = el.placeholder;
-        for(const [it, en] of Object.entries(EN_EXTRA)) {
+        for(const [it, en] of _enPairs) {
           if(ph.includes(it)) { el.placeholder = ph.replace(it, en); break; }
         }
       });
