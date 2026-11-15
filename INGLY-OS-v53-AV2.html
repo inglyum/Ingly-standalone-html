@@ -48707,9 +48707,46 @@ const SuppliersManager = {
     else if(typeof toast!=='undefined') toast('Apri Fornitori per modificare','info');
   },
 
-  openOrders(id){
-    if(typeof toast!=='undefined') toast('Funzione ordini fornitore in arrivo','info');
+  async openOrders(){
+    const suppliers = await IDB.getAll('suppliers').catch(()=>[]);
+    const orders = (await IDB.getAll('supplier_orders').catch(()=>[])).sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0));
+    const inv = await IDB.getAll('inventory').catch(()=>[]);
+    const invById = {}; inv.forEach(i=>invById[i.id]=i);
+    let reorders=[]; try{ reorders=JSON.parse(localStorage.getItem('ingly_reorders')||'[]').filter(r=>r.status!=='done'); }catch(e){}
+    const supOpts = '<option value="">— fornitore —</option>'+suppliers.map(s=>'<option value="'+String(s.name||'').replace(/"/g,'&quot;')+'">'+sanitize(s.name||'')+'</option>').join('');
+    const roRows = reorders.length ? reorders.map(r=>{ const it=invById[r.itemId]||{}; return '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);flex-wrap:wrap"><span><b>'+sanitize(it.name||('Articolo '+r.itemId))+'</b> <small class="text-muted">× '+r.qty+' '+sanitize(it.unit||'pz')+'</small></span><span style="display:flex;gap:6px;align-items:center"><select class="form-control" style="height:30px;font-size:11px;width:auto" id="po-sup-'+r.id+'">'+supOpts+'</select><button class="btn btn-sm btn-primary" onclick="SuppliersManager.createPOFromReorder(\''+r.id+'\')">Ordina</button><button class="btn btn-sm btn-secondary" onclick="SuppliersManager.ignoreReorder(\''+r.id+'\')" title="Ignora">✕</button></span></div>'; }).join('') : '<div class="text-muted" style="padding:10px 0">Nessuna richiesta. Generale dal Magazzino → Riordino.</div>';
+    const today=new Date().toISOString().split('T')[0];
+    const ordRows = orders.length ? orders.map(o=>{ const st=o.status||'attesa'; const stc=st==='ricevuto'?'var(--green)':st==='ordinato'?'var(--blue)':(o.expectedDate&&o.expectedDate<today?'var(--red)':'var(--orange)'); const lines=(o.lines||[]).map(l=>sanitize(l.name)+' ×'+l.qty).join(', '); return '<div style="padding:10px 0;border-bottom:1px solid var(--border)"><div style="display:flex;justify-content:space-between;gap:8px"><span><b>'+sanitize(o.supplier||'—')+'</b> <span style="background:'+stc+'22;color:'+stc+';font-size:10px;padding:2px 8px;border-radius:99px">'+st+'</span></span><span class="text-muted" style="font-size:11px">'+(o.expectedDate||'')+'</span></div><div class="text-muted" style="font-size:11px;margin:3px 0">'+lines+'</div><div style="display:flex;gap:6px">'+(st!=='ricevuto'?'<button class="btn btn-sm btn-primary" onclick="SuppliersManager.receivePO('+o.id+')" title="Segna ricevuto e carica il magazzino">📥 Ricevuto → carico</button>':'')+'<button class="btn btn-sm btn-secondary" onclick="SuppliersManager.deletePO('+o.id+')">🗑</button></div></div>'; }).join('') : '<div class="text-muted" style="padding:10px 0">Nessun ordine d\'acquisto.</div>';
+    this._ovr('🧾 Acquisti — Ordini fornitore',
+      '<div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:4px">🔄 Richieste di riordino dal Magazzino</div>'+roRows
+      +'<div style="font-size:12px;font-weight:700;color:var(--text);margin:16px 0 4px">🧾 Ordini d\'acquisto</div>'+ordRows);
   },
+  _ovr(title,body){ var old=document.getElementById('po-ov'); if(old)old.remove(); var ov=document.createElement('div'); ov.id='po-ov'; ov.style.cssText='position:fixed;inset:0;background:#000a;backdrop-filter:blur(5px);z-index:2147483100;display:flex;align-items:center;justify-content:center;padding:18px'; ov.innerHTML='<div style="background:var(--bg-card);border:1px solid var(--border2);border-radius:16px;width:min(600px,96vw);max-height:90vh;overflow:auto;padding:22px"><div style="display:flex;align-items:center;gap:10px;margin-bottom:12px"><h3 style="margin:0;font-size:16px;color:var(--text);flex:1">'+title+'</h3><button onclick="document.getElementById(\'po-ov\').remove()" style="border:none;background:var(--bg-card2);color:var(--text-muted);width:30px;height:30px;border-radius:50%;cursor:pointer;flex-shrink:0">✕</button></div>'+body+'</div>'; ov.addEventListener('click',function(e){ if(e.target===ov)ov.remove(); }); document.body.appendChild(ov); },
+  async createPOFromReorder(reorderId){
+    let reorders=[]; try{ reorders=JSON.parse(localStorage.getItem('ingly_reorders')||'[]'); }catch(e){}
+    const r=reorders.find(x=>String(x.id)===String(reorderId)); if(!r)return;
+    const selEl=document.getElementById('po-sup-'+reorderId); const sup=selEl?selEl.value:'';
+    const it=await IDB.get('inventory',r.itemId).catch(()=>null)||{};
+    const exp=new Date(Date.now()+7*864e5).toISOString().split('T')[0];
+    const po={id:Date.now(),supplier:sup||(it.supplier||'Da definire'),status:'attesa',expectedDate:exp,createdAt:new Date().toISOString(),lines:[{itemId:r.itemId,name:it.name||('Articolo '+r.itemId),qty:r.qty,unit:it.unit||'pz'}]};
+    await IDB.put('supplier_orders',po);
+    reorders=reorders.filter(x=>String(x.id)!==String(reorderId)); try{ localStorage.setItem('ingly_reorders',JSON.stringify(reorders)); }catch(e){}
+    if(typeof toast!=='undefined')toast('Ordine fornitore creato ✅','success');
+    this.openOrders();
+  },
+  ignoreReorder(reorderId){ let r=[]; try{ r=JSON.parse(localStorage.getItem('ingly_reorders')||'[]'); }catch(e){} r=r.filter(x=>String(x.id)!==String(reorderId)); try{ localStorage.setItem('ingly_reorders',JSON.stringify(r)); }catch(e){} this.openOrders(); },
+  async receivePO(id){
+    const o=await IDB.get('supplier_orders',id).catch(()=>null); if(!o)return;
+    for(const l of (o.lines||[])){
+      const it=await IDB.get('inventory',l.itemId).catch(()=>null);
+      if(it){ it.stock=(+it.stock||0)+(+l.qty||0); await IDB.put('inventory',it); if(window.Inventory&&Inventory.logMove)Inventory.logMove(l.itemId,'carico',+l.qty||0,'ricezione ordine '+(o.supplier||'')); }
+    }
+    o.status='ricevuto'; o.receivedAt=new Date().toISOString(); await IDB.put('supplier_orders',o);
+    if(typeof toast!=='undefined')toast('📥 Merce ricevuta — magazzino aggiornato','success');
+    if(window.Inventory&&Inventory.render)Inventory.render();
+    this.openOrders();
+  },
+  async deletePO(id){ await IDB.del('supplier_orders',id).catch(()=>{}); if(typeof toast!=='undefined')toast('Ordine eliminato','warning'); this.openOrders(); },
 
   exportCSV(){
     const all = typeof SupplierIntelligence!=='undefined' ? SupplierIntelligence.getAll() : [];
