@@ -106592,7 +106592,7 @@ var Admin = {
     var m=document.createElement('div'); m.id='ia-admin';
     m.innerHTML='<div class="ia-am">'
       +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:14px"><h2>⚙️ Pannello Amministrazione</h2><button class="ia-x" id="ia-adm-x" style="margin-left:auto">✕</button></div>'
-      +'<div style="margin-bottom:14px"><span class="ia-tab" data-t="users">👥 Utenti</span><span class="ia-tab" data-t="guest">👤 Ospite</span><span class="ia-tab" data-t="log">📜 Utilizzo</span><span class="ia-tab" data-t="sync">☁️ Sync online</span></div>'
+      +'<div style="margin-bottom:14px;display:flex;flex-wrap:wrap;gap:4px"><span class="ia-tab" data-t="users">👥 Utenti</span><span class="ia-tab" data-t="guest">👤 Ospite</span><span class="ia-tab" data-t="system">🖥️ Sistema</span><span class="ia-tab" data-t="backup">💾 Backup</span><span class="ia-tab" data-t="log">📜 Utilizzo</span><span class="ia-tab" data-t="sync">☁️ Sync online</span></div>'
       +'<div id="ia-adm-body"></div></div>';
     document.body.appendChild(m);
     m.addEventListener('click',function(e){if(e.target===m)m.remove();});
@@ -106605,6 +106605,8 @@ var Admin = {
     var el=document.getElementById('ia-adm-body'); if(!el)return;
     if(this.tab==='users')return this.users(el);
     if(this.tab==='guest')return this.guest(el);
+    if(this.tab==='system')return this.system(el);
+    if(this.tab==='backup')return this.backup(el);
     if(this.tab==='log')return this.log(el);
     if(this.tab==='sync')return this.sync(el);
   },
@@ -106614,7 +106616,7 @@ var Admin = {
       +'<div style="display:grid;grid-template-columns:1fr 1fr auto auto;gap:8px;margin-top:10px">'
       +'<input class="ia-in" id="ia-nu-u" placeholder="username" style="padding:9px 11px;font-size:12px">'
       +'<input class="ia-in" id="ia-nu-p" type="text" placeholder="password" style="padding:9px 11px;font-size:12px">'
-      +'<select class="ia-in" id="ia-nu-r" style="padding:9px 11px;font-size:12px;width:auto"><option value="user">Utente</option><option value="admin">Admin</option></select>'
+      +'<select class="ia-in" id="ia-nu-r" style="padding:9px 11px;font-size:12px;width:auto"><option value="user">Utente</option><option value="manager">Manager</option><option value="staff">Staff</option><option value="viewer">Viewer</option><option value="admin">Admin</option></select>'
       +'<button class="ia-mini" id="ia-nu-go" style="background:#6366f125;color:#818cf8;border-color:#6366f150">Crea</button></div></div>'
       +'<div class="ia-card" style="padding:0">'
       +list.map(function(u){
@@ -106668,6 +106670,35 @@ var Admin = {
       return '<div class="ia-row"><span style="flex:1">'+ic+' <b>'+esc(x.user)+'</b> <span style="color:#5c5c68">'+x.action+'</span></span><span style="font-size:10px;color:#5c5c68">'+new Date(x.ts).toLocaleString('it-IT')+'</span></div>';
     }).join(''):'<div style="padding:16px;color:#5c5c68;font-size:12px">Nessuna attività registrata.</div>')+'</div>'
     +'<button class="ia-mini" style="margin-top:10px;color:#ef4444" onclick="if(confirm(\'Svuotare il log?\')){localStorage.setItem(\''+L_KEY+'\',\'[]\');Admin.renderBody()}">🗑 Svuota log</button>';
+  },
+  system:function(el){
+    var ver=(document.title.match(/v[0-9][0-9A-Za-z.\-]*/)||['—'])[0];
+    el.innerHTML='<div class="ia-card"><b style="font-size:12px">🖥️ Stato sistema &amp; diagnostica</b>'
+      +'<div id="ia-sys-body" style="font-size:12px;color:#c7c7d1;margin-top:10px;line-height:1.7">Caricamento…</div></div>';
+    var body=document.getElementById('ia-sys-body');
+    (async function(){
+      var rows=[];
+      rows.push(['Versione', ver]);
+      rows.push(['Utenti registrati', String(users().length)]);
+      try{ if(navigator.storage&&navigator.storage.estimate){ var es=await navigator.storage.estimate(); rows.push(['Spazio dati usato', (es.usage/1048576).toFixed(1)+' MB'+(es.quota?(' / '+(es.quota/1048576).toFixed(0)+' MB'):'')]); } }catch(e){}
+      try{ var all=await IDB.exportAll(); var tot=0, lines=[]; Object.keys(all||{}).forEach(function(k){ var n=Array.isArray(all[k])?all[k].length:0; if(n>0){ tot+=n; lines.push(k+' ('+n+')'); } }); rows.push(['Record totali', String(tot)]); if(lines.length) rows.push(['Store con dati', lines.slice(0,10).join(', ')+(lines.length>10?' …':'')]); }catch(e){}
+      var health=[];
+      health.push((typeof IDB!=='undefined'?'✅':'❌')+' Database locale');
+      health.push((typeof Sync!=='undefined'&&Sync.ready)?'☁️ Sync online attivo':'⚪ Solo locale');
+      health.push((typeof toast!=='undefined'?'✅':'⚪')+' Notifiche');
+      rows.push(['Diagnostica', health.join(' · ')]);
+      body.innerHTML=rows.map(function(r){return '<div style="display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #ffffff0a;padding:5px 0"><span style="color:#9a9aa8">'+esc(r[0])+'</span><b style="text-align:right;max-width:62%">'+esc(r[1])+'</b></div>';}).join('');
+    })();
+  },
+  backup:function(el){
+    el.innerHTML='<div class="ia-card"><b style="font-size:12px">💾 Backup &amp; ripristino dati</b>'
+      +'<div style="font-size:11px;color:#9a9aa8;margin:8px 0;line-height:1.6">Esporta un backup completo dei dati locali (clienti, preventivi, ordini, magazzino, impostazioni…) da conservare o trasferire su un altro dispositivo.</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+      +'<button class="ia-mini" id="ia-bk-exp" style="background:#10b98125;color:#10b981;border-color:#10b98150">⬇️ Esporta backup ora</button>'
+      +'<button class="ia-mini" id="ia-bk-open" style="background:#6366f125;color:#818cf8;border-color:#6366f150">🗂️ Apri sezione Backup (ripristino)</button>'
+      +'</div></div>';
+    document.getElementById('ia-bk-exp').onclick=function(){ try{ if(typeof Backup!=='undefined'&&Backup.download){ Backup.download(); if(typeof toast!=='undefined')toast('Backup esportato ✅','success'); } else if(typeof toast!=='undefined'){ toast('Funzione backup non disponibile','error'); } }catch(e){ if(typeof toast!=='undefined')toast('Errore backup: '+e.message,'error'); } };
+    document.getElementById('ia-bk-open').onclick=function(){ var m=document.getElementById('ia-admin'); if(m)m.remove(); try{ nav('backup'); }catch(e){} };
   },
   sync:function(el){
     var cfg=lsG(FB_KEY,null)||{};
