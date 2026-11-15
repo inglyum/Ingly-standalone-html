@@ -32,7 +32,8 @@ const RISK_LABEL = { high: '⚠️ Margine a rischio', medium: '⚠️ Margine s
 
 function newWorking(cat) {
   const b = { category: cat || 'material', description: '', resource_id: null };
-  if (cat === 'machine') return { ...b, minutes: 10, cost_per_min: 0 };
+  if (cat === 'machine') return { ...b, minutes: 10, cost_per_min: 0, hours: 0, cost_per_hour: 0 };
+  if (cat === 'filament') return { ...b, grams: 50, sfrido_pct: 0, cost_per_kg: 25 };
   if (cat === 'labor') return { ...b, minutes: 30, hours: 0, rate_per_hour: 18 };
   if (cat === 'painting') return { ...b, surface_mq: 1, cost_per_mq: 0, coats: 1 };
   if (cat === 'design') return { ...b, amount: 0 };
@@ -42,15 +43,56 @@ function newWorking(cat) {
 // Markup default +100% (×2) come INGLY OS v96: prezzi non gonfiati.
 const newLine = () => ({ description: 'Prodotto', product_id: null, quantity: 1, markup_pct: 100, discount_pct: 0, vat_rate: 22, spec: '', image_url: '', workings: [newWorking('material')] });
 
-export function mount(container, { sb, ctx }) {
+// PRESET DI DOMINIO — un solo motore, prodotti pre-configurati versatili ed
+// editabili (sostituiscono i vecchi calcolatori Laser/3D/Apparel a campo fisso).
+// Ogni preset è un PRODOTTO con lavorazioni reali, poi editabile riga per riga.
+const PRESET_DEFS = {
+  laser: {
+    label: '🔦 Incisione laser', title: 'Incisione laser',
+    workings: () => [
+      { category: 'material', description: 'Supporto', mq: 0.1, sfrido_pct: 10, cost_per_mq: 12, resource_id: null },
+      { category: 'machine', description: 'Taglio/incisione laser', minutes: 15, cost_per_min: 0.45, hours: 0, cost_per_hour: 0, resource_id: null },
+      { category: 'labor', description: 'Finitura/pulizia', minutes: 10, hours: 0, rate_per_hour: 18, resource_id: null },
+    ],
+  },
+  print3d: {
+    label: '🧊 Stampa 3D', title: 'Stampa 3D',
+    workings: () => [
+      { category: 'filament', description: 'Filamento', grams: 50, sfrido_pct: 5, cost_per_kg: 25, resource_id: null },
+      { category: 'machine', description: 'Stampante 3D', minutes: 0, cost_per_min: 0, hours: 4, cost_per_hour: 0.8, resource_id: null },
+      { category: 'labor', description: 'Post-lavoro', minutes: 15, hours: 0, rate_per_hour: 18, resource_id: null },
+    ],
+  },
+  apparel: {
+    label: '👕 Capo personalizzato', title: 'Capo personalizzato',
+    workings: () => [
+      { category: 'gadget', description: 'Capo (t-shirt/felpa)', quantity: 1, unit_cost: 6, resource_id: null },
+      { category: 'gadget', description: 'Stampa (DTF/transfer)', quantity: 1, unit_cost: 2.5, resource_id: null },
+      { category: 'labor', description: 'Applicazione', minutes: 10, hours: 0, rate_per_hour: 18, resource_id: null },
+    ],
+  },
+};
+function presetLine(key) {
+  const d = PRESET_DEFS[key];
+  if (!d) return newLine();
+  return { description: d.title, product_id: null, quantity: 1, markup_pct: 100, discount_pct: 0, vat_rate: 22, spec: '', image_url: '', workings: d.workings() };
+}
+
+export function mount(container, { sb, ctx, preset } = {}) {
   if (!container) return;
   const role = roleForTenant(ctx || {}, (ctx || {}).activeTenant) || '—';
   const w = CRM.canWrite(role);
   const tenantId = (ctx || {}).activeTenant || null;
-  const root = container.querySelector('[data-quoterstudio-root]') || container;
+  const rootEl = container.querySelector('[data-quoterstudio-root]') || container;
+  const root = rootEl;
+  // Preset di dominio opzionale (Laser/3D/Apparel): lo Smart Quoter parte con un
+  // prodotto pre-configurato ma pienamente editabile. Default = prodotto vuoto.
+  const presetKey = preset || (rootEl.getAttribute && rootEl.getAttribute('data-preset')) || null;
+  const firstLine = PRESET_DEFS[presetKey] ? presetLine(presetKey) : newLine();
+  const presetTitle = PRESET_DEFS[presetKey] ? PRESET_DEFS[presetKey].title : '';
   root.innerHTML = loading('Inizializzazione Smart Quoter…');
 
-  const S = { doc: { title: '', customer_id: '', customer_name: '', priority: 'normal', category: '', channel: 'CUSTOM', notes: '', valid_until: '', deposit_pct: 0, express: false, global_discount_pct: 0, apply_qty_tiers: false, lines: [newLine()] }, sel: 0, selW: 0, id: null };
+  const S = { doc: { title: presetTitle, customer_id: '', customer_name: '', priority: 'normal', category: '', channel: 'CUSTOM', notes: '', valid_until: '', deposit_pct: 0, express: false, global_discount_pct: 0, apply_qty_tiers: false, lines: [firstLine] }, sel: 0, selW: 0, id: null };
   let customers = [], products = [], equipment = [], settings = {}, prodById = {}, eqById = {}, customerPrices = {};
 
   const line = () => S.doc.lines[S.sel];
@@ -161,7 +203,13 @@ export function mount(container, { sb, ctx }) {
         <label style="margin-top:10px">Termini &amp; Condizioni (PDF)<textarea data-h="terms" rows="3" placeholder="Lascia vuoto per i termini standard KB (validità 7gg, acconto 50%…)">${esc(S.doc.terms || '')}</textarea></label>
       </section>
       <section class="v2-sec">
-        <div class="v2-sec-h"><span class="v2-sec-ico">📦</span><h3>Prodotti</h3><button class="v2-btn v2-xs" data-addprod>+ Prodotto</button></div>
+        <div class="v2-sec-h"><span class="v2-sec-ico">📦</span><h3>Prodotti</h3>
+          <select data-addpreset class="v2-preset-add" title="Aggiungi un prodotto pre-configurato">
+            <option value="">+ Aggiungi…</option>
+            <option value="blank">📄 Vuoto</option>
+            ${Object.entries(PRESET_DEFS).map(([k, v]) => `<option value="${k}">${esc(v.label)}</option>`).join('')}
+          </select>
+        </div>
         <div class="v2-studio-lines">${prods}</div>
       </section>
       <section class="v2-sec">
@@ -174,7 +222,7 @@ export function mount(container, { sb, ctx }) {
   // Sorgente risorse per categoria: Laser/Macchina → Attrezzature (€/min reali);
   // le altre → Catalogo/Magazzino. Nessuna seconda anagrafica: il Quoter LEGGE.
   function resourceOpts(cat, sel) {
-    if (cat === 'design') return '<option value="">— manuale —</option>';
+    if (cat === 'design' || cat === 'filament') return '<option value="">— manuale —</option>';
     if (cat === 'machine') {
       return '<option value="">— manuale —</option>' + equipment.map((e) => `<option value="${esc(e.id)}"${sel === e.id ? ' selected' : ''}>${esc(e.name)} · ${eur(costPerMin(e))}/min</option>`).join('');
     }
@@ -199,7 +247,8 @@ export function mount(container, { sb, ctx }) {
       const cw = Q.computeWorking(wk);
       let fields = '';
       if (wk.category === 'material') fields = `${f('mq', 'Quantità (mq)', '0.01')}${f('sfrido_pct', 'Sfrido %', '1')}${f('cost_per_mq', 'Costo / mq €', '0.01')}`;
-      else if (wk.category === 'machine') fields = `${f('minutes', 'Minuti', '1')}${f('cost_per_min', 'Costo / min €', '0.01')}`;
+      else if (wk.category === 'machine') fields = `${f('minutes', 'Minuti', '1')}${f('cost_per_min', 'Costo / min €', '0.01')}${f('hours', 'Ore', '0.1')}${f('cost_per_hour', 'Costo / ora €', '0.1')}`;
+      else if (wk.category === 'filament') fields = `${f('grams', 'Filamento (g)', '1')}${f('sfrido_pct', 'Sfrido/supporti %', '1')}${f('cost_per_kg', 'Costo / kg €', '0.1')}`;
       else if (wk.category === 'labor') fields = `${f('minutes', 'Minuti', '1')}${f('hours', 'Ore', '0.25')}${f('rate_per_hour', 'Tariffa €/h', '0.5')}`;
       else if (wk.category === 'painting') fields = `${f('surface_mq', 'Superficie (mq)', '0.01')}${f('cost_per_mq', 'Costo / mq €', '0.01')}${f('coats', 'Mani', '1')}`;
       else if (wk.category === 'design') fields = `${f('amount', 'Costo design €', '0.5')}`;
@@ -234,7 +283,7 @@ export function mount(container, { sb, ctx }) {
     return `<div class="v2-note v2-bad" style="margin:6px 0">⚠️ Margine sotto il minimo ${d.minMarginPct}% del canale: ${names}. Rivedi prezzo o costi (mai gara al ribasso — KB).</div>`;
   }
 
-  const BREAK_CATS = ['material', 'machine', 'labor', 'design', 'painting', 'gadget', 'catalog', 'extra'];
+  const BREAK_CATS = ['material', 'machine', 'filament', 'labor', 'design', 'painting', 'gadget', 'catalog', 'extra'];
   function breakdownRows(cl) {
     const catSum = Object.fromEntries(BREAK_CATS.map((k) => [k, 0]));
     (cl.workings || []).forEach((wk) => { catSum[wk.category] = (catSum[wk.category] || 0) + wk.cost; });
@@ -324,6 +373,11 @@ export function mount(container, { sb, ctx }) {
     root.querySelectorAll('[data-prod]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('[data-delprod]')) return; S.sel = Number(el.getAttribute('data-prod')); S.selW = 0; draw(); }));
     root.querySelectorAll('[data-work]').forEach((el) => el.addEventListener('click', (e) => { if (e.target.closest('[data-wdup],[data-wup],[data-wdown],[data-wdel]')) return; S.selW = Number(el.getAttribute('data-work')); draw(); }));
     const ap = root.querySelector('[data-addprod]'); if (ap) ap.addEventListener('click', () => { S.doc.lines.push(newLine()); S.sel = S.doc.lines.length - 1; S.selW = 0; draw(); });
+    const apre = root.querySelector('[data-addpreset]'); if (apre) apre.addEventListener('change', () => {
+      const k = apre.value; if (!k) return;
+      S.doc.lines.push(k === 'blank' ? newLine() : presetLine(k));
+      S.sel = S.doc.lines.length - 1; S.selW = 0; draw();
+    });
     root.querySelectorAll('[data-delprod]').forEach((b) => b.addEventListener('click', () => { S.doc.lines.splice(Number(b.getAttribute('data-delprod')), 1); if (!S.doc.lines.length) S.doc.lines.push(newLine()); S.sel = Math.max(0, Math.min(S.sel, S.doc.lines.length - 1)); S.selW = 0; draw(); }));
     const aw = root.querySelector('[data-addwork]'); if (aw) aw.addEventListener('click', () => { const l = line(); l.workings.push(newWorking('material')); S.selW = l.workings.length - 1; draw(); });
     root.querySelectorAll('[data-wdel]').forEach((b) => b.addEventListener('click', () => { const l = line(); l.workings.splice(Number(b.getAttribute('data-wdel')), 1); if (!l.workings.length) l.workings.push(newWorking('material')); S.selW = Math.max(0, Math.min(S.selW, l.workings.length - 1)); draw(); }));

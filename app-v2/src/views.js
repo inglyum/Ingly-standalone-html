@@ -303,16 +303,16 @@ function viewForecasting() {
 }
 
 function viewLaserCalc() {
-  return `${head({ icon: '🔦', n: 'Calcolatore Laser' }, 'Materiale + laser (€/min) + manodopera · motore quoter · prezzo ×2 KB')}
-    <div data-lasercalc-root><div class="v2-loading">⏳…</div></div>`;
+  return `${head({ icon: '🔦', n: 'Smart Quote Laser' }, 'Preventivo laser editabile · materiale + laser + manodopera · breakdown, margine, PDF')}
+    <div data-quoterstudio-root data-preset="laser"><div class="v2-loading">⏳ Inizializzazione Smart Quoter…</div></div>`;
 }
 function viewPrint3D() {
-  return `${head({ icon: '🧊', n: 'Calcolatore Stampa 3D' }, 'Filamento + ore stampa + post-lavoro · deterministico')}
-    <div data-print3d-root><div class="v2-loading">⏳…</div></div>`;
+  return `${head({ icon: '🧊', n: 'Smart Quote 3D' }, 'Preventivo stampa 3D editabile · filamento (g) + ore stampa + post-lavoro · breakdown, margine, PDF')}
+    <div data-quoterstudio-root data-preset="print3d"><div class="v2-loading">⏳ Inizializzazione Smart Quoter…</div></div>`;
 }
 function viewApparel() {
-  return `${head({ icon: '👕', n: 'Calcolatore Apparel' }, 'Capo + stampa (DTF/transfer) + manodopera · deterministico')}
-    <div data-apparel-root><div class="v2-loading">⏳…</div></div>`;
+  return `${head({ icon: '👕', n: 'Smart Quote Apparel' }, 'Preventivo capo personalizzato editabile · capo + stampa (DTF/transfer) + manodopera · breakdown, margine, PDF')}
+    <div data-quoterstudio-root data-preset="apparel"><div class="v2-loading">⏳ Inizializzazione Smart Quoter…</div></div>`;
 }
 function viewListino() {
   return `${head({ icon: '📋', n: 'Listino Prezzi' }, 'Prezzi del catalogo con margine attuale · dai dati reali')}

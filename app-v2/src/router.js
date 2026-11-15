@@ -102,9 +102,11 @@ export function mountRouter(root, ctx, sb) {
     if (r === 'profitleak' && sb) { try { mountProfitLeak(view, { sb }); } catch (_) {} }
     if (r === 'revsim' && sb) { try { mountRevSim(view, { sb }); } catch (_) {} }
     if (r === 'dynamicprice' && sb) { try { mountDynamicPrice(view, { sb }); } catch (_) {} }
-    if (r === 'lasercalc') { try { mountLaser(view, { sb }); } catch (_) {} }
-    if (r === 'print3d') { try { mountPrint3D(view, { sb }); } catch (_) {} }
-    if (r === 'apparel') { try { mountApparel(view, { sb }); } catch (_) {} }
+    // Laser / 3D / Apparel ora sono lo Smart Quoter con preset di dominio
+    // (preventivi veri, editabili e salvabili), non più calcolatori usa-e-getta.
+    if (r === 'lasercalc' && sb) { try { mountQuoter(view, { sb, ctx, preset: 'laser' }); } catch (_) {} }
+    if (r === 'print3d' && sb) { try { mountQuoter(view, { sb, ctx, preset: 'print3d' }); } catch (_) {} }
+    if (r === 'apparel' && sb) { try { mountQuoter(view, { sb, ctx, preset: 'apparel' }); } catch (_) {} }
     if (r === 'listino' && sb) { try { mountListino(view, { sb }); } catch (_) {} }
     if (r === 'template_docs') { try { mountTemplates(view, { sb }); } catch (_) {} }
     if (r === 'quoteintel' && sb) { try { mountQuoteIntel(view, { sb }); } catch (_) {} }

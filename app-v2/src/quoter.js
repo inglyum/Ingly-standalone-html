@@ -128,6 +128,7 @@ const max0 = (n) => Math.max(0, Number(n) || 0);
 export const WORKING_CATEGORIES = [
   { k: 'material', label: 'Materiale', icon: '🧱' },
   { k: 'machine', label: 'Laser / Macchina', icon: '🔦' },
+  { k: 'filament', label: 'Filamento 3D', icon: '🧵' },
   { k: 'labor', label: 'Manodopera / Assemblaggio', icon: '🔧' },
   { k: 'design', label: 'Design', icon: '✏️' },
   { k: 'painting', label: 'Verniciatura', icon: '🎨' },
@@ -135,9 +136,10 @@ export const WORKING_CATEGORIES = [
   { k: 'catalog', label: 'Prodotto da Catalogo', icon: '📦' },
   { k: 'extra', label: 'Extra (setup/packaging…)', icon: '➕' },
 ];
-// Mappa categoria → bucket costo (per colonne flat/BI). La verniciatura confluisce
-// nel bucket 'material' (è materiale di consumo); resta distinta nel breakdown UI.
-const CAT_BUCKET = { material: 'material', painting: 'material', machine: 'machine', labor: 'labor', design: 'design', gadget: 'extra', catalog: 'extra', extra: 'extra' };
+// Mappa categoria → bucket costo (per colonne flat/BI). Verniciatura e filamento
+// confluiscono nel bucket 'material' (materiali di consumo); restano distinti nel
+// breakdown UI.
+const CAT_BUCKET = { material: 'material', painting: 'material', filament: 'material', machine: 'machine', labor: 'labor', design: 'design', gadget: 'extra', catalog: 'extra', extra: 'extra' };
 
 // Costo di UNA lavorazione secondo la categoria (deterministico, spiegabile).
 export function computeWorking(w = {}) {
@@ -145,7 +147,11 @@ export function computeWorking(w = {}) {
   let cost = 0;
   switch (w.category) {
     case 'material': cost = n(w.mq) * (1 + n(w.sfrido_pct) / 100) * n(w.cost_per_mq); break;
-    case 'machine': cost = n(w.minutes) * n(w.cost_per_min); break;
+    // Macchina: minuti (laser) E/O ore (stampante 3D, CNC). Retro-compatibile:
+    // le lavorazioni esistenti hanno solo minutes/cost_per_min (hours=0).
+    case 'machine': cost = n(w.minutes) * n(w.cost_per_min) + n(w.hours) * n(w.cost_per_hour); break;
+    // Filamento 3D a peso: grammi × (€/kg ÷ 1000), con sfrido (purghe/supporti).
+    case 'filament': cost = (n(w.grams) / 1000) * n(w.cost_per_kg) * (1 + n(w.sfrido_pct) / 100); break;
     case 'labor': cost = (n(w.minutes) / 60 + n(w.hours)) * n(w.rate_per_hour); break;
     case 'painting': cost = n(w.surface_mq) * n(w.cost_per_mq) * Math.max(1, n(w.coats) || 1); break;
     case 'design': cost = n(w.amount); break;
