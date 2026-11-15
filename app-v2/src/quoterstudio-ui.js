@@ -6,6 +6,7 @@
 // storico congelato. No alert/confirm nativi. Responsive.
 import * as STU from './quoterstudio.js';
 import * as TPL from './quotetemplates.js';
+import * as PR from './pricingrules.js';
 import * as PL from './pricelist.js';
 import * as Q from './quoter.js';
 import * as DOC from './quoterdoc.js';
@@ -146,6 +147,8 @@ export function mount(container, { sb, ctx }) {
       </section>
       <section class="v2-sec">
         <div class="v2-sec-h"><span class="v2-sec-ico">💶</span><h3>Opzioni prezzo</h3></div>
+        <label>Regola prezzo/imposta<select data-rule><option value="">— applica preset —</option></select></label>
+        ${w ? '<button class="v2-btn v2-xs v2-ghost v2-block" data-save-rule title="Salva canale, markup, IVA, sconti e termini correnti come regola riutilizzabile" style="margin-bottom:10px">💾 Salva impostazioni come regola</button>' : ''}
         <div class="v2-form-row">
           <label>Canale<select data-h="channel">${Object.entries(Q.CHANNEL_PRESETS).map(([k, v]) => `<option value="${k}"${S.doc.channel === k ? ' selected' : ''}>${esc(v.label)}</option>`).join('')}</select></label>
           <label>Sconto globale %<input data-h="global_discount_pct" type="number" min="0" max="95" step="1" value="${esc(S.doc.global_discount_pct || 0)}"></label>
@@ -346,8 +349,35 @@ export function mount(container, { sb, ctx }) {
     const conv = root.querySelector('[data-convert]'); if (conv) conv.addEventListener('click', async () => { try { const o = await convertQuoteToOrder(sb, tenantId, S.id); toast('Ordine creato: ' + (o.number || '')); setTimeout(() => { location.hash = '#/gestione_ordini'; }, 500); } catch (e) { toast(Q.friendlyError(e)); } });
     populateOpen();
     populateTemplates();
+    populateRules();
     const saveTpl = root.querySelector('[data-save-tpl]');
     if (saveTpl) saveTpl.addEventListener('click', onSaveTemplate);
+    const saveRule = root.querySelector('[data-save-rule]');
+    if (saveRule) saveRule.addEventListener('click', onSaveRule);
+  }
+
+  // ---------- REGOLE PREZZO/IMPOSTA (preset riutilizzabili) ----------
+  async function populateRules() {
+    const sel = root.querySelector('[data-rule]'); if (!sel) return;
+    try {
+      const rules = await PR.listRules(sb, {});
+      rules.forEach((r) => { const o = document.createElement('option'); o.value = r.id; o.textContent = r.name + (r.builtin ? ' · KB' : ''); sel.appendChild(o); });
+      sel.addEventListener('change', () => { const r = rules.find((x) => String(x.id) === String(sel.value)); if (r) applyPricingRule(r); sel.value = ''; });
+    } catch (_) { /* lista non disponibile */ }
+  }
+  function applyPricingRule(rule) {
+    S.doc = PR.applyRule(S.doc, rule);
+    draw();
+    toast('Regola applicata: ' + (rule.name || '') + (rule.regime ? ' (' + rule.regime + ')' : ''));
+  }
+  async function onSaveRule() {
+    const name = (S.doc.title && S.doc.title.trim()) ? S.doc.title.trim() : '';
+    if (!name) { toast('Dai un titolo al preventivo per salvarlo come regola'); return; }
+    try {
+      await PR.saveRule(sb, tenantId, PR.docToRule(S.doc, name, null));
+      toast('Regola salvata: ' + name);
+      const sel = root.querySelector('[data-rule]'); if (sel) { sel.innerHTML = '<option value="">— applica preset —</option>'; } populateRules();
+    } catch (e) { toast(Q.friendlyError(e)); }
   }
 
   // ---------- MODELLI DI PREVENTIVO ----------
