@@ -58826,6 +58826,21 @@ const PrimaNota = {
     return entries.sort((a,b)=>new Date(b.date||0)-new Date(a.date||0));
   },
 
+  // Riepilogo mensile sincrono (legge il ledger locale) — usato dalla dashboard.
+  // FIX: era definito solo su un secondo oggetto window.PrimaNota, causando
+  // "getMonthlySummary is not a function" quando i chiamanti risolvevano a questo.
+  getMonthlySummary(){
+    var d=[]; try{ d=JSON.parse(localStorage.getItem('ingly_prima_nota_v1')||'[]'); }catch(e){ d=[]; }
+    var now=new Date().toISOString().slice(0,7);
+    var lm=new Date(new Date().setMonth(new Date().getMonth()-1)).toISOString().slice(0,7);
+    return {
+      thisMon:d.filter(function(r){return (r.date||'').slice(0,7)===now&&r.tipo==='entrata';}).reduce(function(a,r){return a+(+r.importo||0);},0),
+      lastMon:d.filter(function(r){return (r.date||'').slice(0,7)===lm&&r.tipo==='entrata';}).reduce(function(a,r){return a+(+r.importo||0);},0),
+      total:d.reduce(function(a,r){return r.tipo==='entrata'?a+(+r.importo||0):a-(+r.importo||0);},0),
+      count:d.length
+    };
+  },
+
   async render() {
     const el = document.getElementById('view-prima_nota');
     if(!el) return;
