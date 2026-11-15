@@ -102624,6 +102624,34 @@ button:disabled{ opacity:.5; cursor:not-allowed; }
 /* ── NAV CLEANUP (reversibile) ─────────────────────────────── */
 .nav-item[data-section="monthly_report"],
 .nav-item[data-section="stockplanner"]{ display:none!important; }
+
+/* ════════ FASE 1 — UX POLISH (additivo · token-based · solo props safe) ════════ */
+/* 1 · Tipografia & numeri: cifre incolonnate su dati, valute, KPI, tabelle */
+.stat-val,.stat-value,.kpi-value,.kpi-val,.num,.v2-num,.money,.amount,.mono,
+td,th,input[type="number"]{ font-variant-numeric:tabular-nums; font-feature-settings:"tnum" 1,"lnum" 1; }
+.page-title,.card-title,h1,h2,h3{ text-wrap:balance; }
+/* 2 · Elevazione: profondità su card KPI e righe interattive (solo transform/shadow) */
+@media (prefers-reduced-motion: no-preference){
+  .kpi-card,.stat-card,.card[onclick],.clickable{
+    transition:transform .16s var(--ds-ease),box-shadow .16s var(--ds-ease),border-color .16s; }
+  .kpi-card:hover,.stat-card:hover,.card[onclick]:hover,.clickable:hover{
+    transform:translateY(-2px); box-shadow:var(--shadow-md,0 8px 24px rgba(0,0,0,.42)); }
+  /* 3 · Fluidità: entrata morbida al cambio sezione */
+  .section-view.active{ animation:inglyF1In .24s var(--ds-ease) both; }
+  @keyframes inglyF1In{ from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
+}
+/* 4 · Righe tabella: hover tint coerente (solo background) */
+table tbody tr{ transition:background .12s; }
+table tbody tr:hover td{ background:color-mix(in srgb,var(--ds-primary) 6%,transparent); }
+/* 5 · Scrollbar raffinata (cosmetico, non-layout) */
+*{ scrollbar-width:thin; scrollbar-color:var(--border2,#30303c) transparent; }
+*::-webkit-scrollbar{ width:10px;height:10px; }
+*::-webkit-scrollbar-thumb{ background:var(--border2,#30303c);border-radius:99px;border:2px solid transparent;background-clip:content-box; }
+*::-webkit-scrollbar-thumb:hover{ background:var(--text-dim,#5c5c68);background-clip:content-box; }
+*::-webkit-scrollbar-track{ background:transparent; }
+/* 6 · Focus coerente su input/select/textarea esistenti (non-layout) */
+.form-control:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--primary,#fbbf24) 16%,transparent); }
 `;
   document.head.appendChild(css);
 
