@@ -47,10 +47,26 @@
 })();
 </script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+/* ── OFFLINE-SAFE SHIMS ──────────────────────────────────────────────
+   Le librerie sopra arrivano da CDN: se non si caricano (offline / rete
+   bloccata) definiamo stub no-op così l'app NON lancia errori al render.
+   Online le librerie vere restano attive (lo shim si attiva solo se mancano). */
+(function(){
+  if(typeof window.Chart==='undefined'){
+    var C=function(){ this.destroy=function(){}; this.update=function(){}; this.resize=function(){};
+      this.reset=function(){}; this.render=function(){}; this.data={datasets:[]}; this.options={}; this.canvas=null; };
+    C.getChart=function(){ return null; };
+    C.register=function(){}; C.unregister=function(){};
+    C.defaults={ font:{}, plugins:{legend:{},tooltip:{}}, scales:{}, elements:{}, color:'#888' };
+    C.Chart=C; window.Chart=C; window._chartOffline=true;
+  }
+})();
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22INGLY%20OS%22%2C%20%22short_name%22%3A%20%22INGLY%22%2C%20%22description%22%3A%20%22Il%20gestionale%20completo%20per%20artigiani%20creativi%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22background_color%22%3A%20%22%230f0f1a%22%2C%20%22theme_color%22%3A%20%22%236366f1%22%2C%20%22orientation%22%3A%20%22portrait-primary%22%2C%20%22categories%22%3A%20%5B%22productivity%22%2C%20%22business%22%5D%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22data%3Aimage/svg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20192%20192%27%3E%3Crect%20width%3D%27192%27%20height%3D%27192%27%20rx%3D%2732%27%20fill%3D%27%25236366f1%27/%3E%3Ctext%20x%3D%2796%27%20y%3D%27130%27%20text-anchor%3D%27middle%27%20font-size%3D%27110%27%20font-family%3D%27Arial%27%3E%5Cud83c%5Cudfa8%3C/text%3E%3C/svg%3E%22%2C%20%22sizes%22%3A%20%22192x192%22%2C%20%22type%22%3A%20%22image/svg%2Bxml%22%7D%2C%20%7B%22src%22%3A%20%22data%3Aimage/svg%2Bxml%2C%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%20512%20512%27%3E%3Crect%20width%3D%27512%27%20height%3D%27512%27%20rx%3D%2780%27%20fill%3D%27%25236366f1%27/%3E%3Ctext%20x%3D%27256%27%20y%3D%27340%27%20text-anchor%3D%27middle%27%20font-size%3D%27300%27%20font-family%3D%27Arial%27%3E%5Cud83c%5Cudfa8%3C/text%3E%3C/svg%3E%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image/svg%2Bxml%22%2C%20%22purpose%22%3A%20%22any%20maskable%22%7D%5D%7D">
 <meta name="mobile-web-app-capable" content="yes">
@@ -82531,14 +82547,19 @@ textarea.px-input{resize:vertical;min-height:90px}
       }
     } catch (e) {}
 
-    // Also patch App.navigate once, cleanly
+    // Also patch App.navigate once, cleanly.
+    // App.navigate può essere read-only (non riassegnabile): in quel caso
+    // l'intercettazione resta garantita dal Bus hook sopra. try/catch evita
+    // l'errore "Cannot assign to read only property 'navigate'" al boot.
     if (!window._proxNavHooked && typeof App !== 'undefined' && App.navigate) {
-      var _orig = App.navigate;
-      App.navigate = function (section) {
-        handleNav(section);
-        return _orig.call(this, section);
-      };
-      window._proxNavHooked = true;
+      try {
+        var _orig = App.navigate;
+        App.navigate = function (section) {
+          handleNav(section);
+          return _orig.call(this, section);
+        };
+        window._proxNavHooked = true;
+      } catch (e) { /* read-only: coperto dal Bus hook */ }
     }
 
     function handleNav(section) {
@@ -95136,14 +95157,14 @@ console.log('[INGLY OS v34] ✅ SaaS Auth Gate · Module Lock · Roadmap v34');
   }
 
   /* ── 4. Supabase Cloud (opzionale) ── */
-  var _sbUrl = localStorage.getItem('ingly_supabase_url') || 'https://efphymfbjaxbtuujcgvr.supabase.co';
-  var _sbKey = localStorage.getItem('ingly_supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmcGh5bWZiamF4YnR1dWpjZ3ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTgyNTcsImV4cCI6MjA5Nzg3NDI1N30.s5vwCaNobMT9uHFsnn5wNM0ODeLOk1f1JGHNTo3dSOc';
+  var _sbUrl = localStorage.getItem('ingly_supabase_url') || '';
+  var _sbKey = localStorage.getItem('ingly_supabase_anon_key') || '';
   // Configura Supabase
   if (!localStorage.getItem('ingly_supabase_url')) {
-    localStorage.setItem('ingly_supabase_url', 'https://efphymfbjaxbtuujcgvr.supabase.co');
+    localStorage.setItem('ingly_supabase_url', '');
   }
   if (!localStorage.getItem('ingly_supabase_anon_key')) {
-    localStorage.setItem('ingly_supabase_anon_key', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmcGh5bWZiamF4YnR1dWpjZ3ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTgyNTcsImV4cCI6MjA5Nzg3NDI1N30.s5vwCaNobMT9uHFsnn5wNM0ODeLOk1f1JGHNTo3dSOc');
+    localStorage.setItem('ingly_supabase_anon_key', '');
   }
 
   function sbConfigured() { return !!(_sbUrl && _sbKey); }
@@ -96660,8 +96681,8 @@ body.saas-active main {
 (function InglySaaSPlatformV2() {
   'use strict';
 
-  var SB_URL = localStorage.getItem('ingly_supabase_url') || 'https://efphymfbjaxbtuujcgvr.supabase.co';
-  var SB_KEY = localStorage.getItem('ingly_supabase_anon_key') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVmcGh5bWZiamF4YnR1dWpjZ3ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIyOTgyNTcsImV4cCI6MjA5Nzg3NDI1N30.s5vwCaNobMT9uHFsnn5wNM0ODeLOk1f1JGHNTo3dSOc';
+  var SB_URL = localStorage.getItem('ingly_supabase_url') || '';
+  var SB_KEY = localStorage.getItem('ingly_supabase_anon_key') || '';
 
   /* ─── P1: DARK / LIGHT MODE (visibile nella UI) ─────────── */
   function initDarkMode() {
