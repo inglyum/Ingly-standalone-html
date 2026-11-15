@@ -127,3 +127,18 @@ l'esito reale.
   computeDocument estesi in modo retro-compatibile (expressPct, extraDiscountPct,
   applyQtyTiers, minMarginPct). Opzioni persistite su sales_quote. Suite 537 verde
   (1 fallimento ambientale: ICU locale del container, non codice).
+
+## 2026-11-15 — Design system esteso + shell ERP ultima generazione
+Elevata la struttura visiva a livello ERP moderno (Linear/Notion/Odoo 17) agendo
+sul SISTEMA condiviso, non sui 102 moduli uno a uno. `:root` ora espone un set di
+token completo: i nomi storici (--bg/--card/--card2/--bd/--tx/--mut/--pri) restano
+per retro-compatibilità, affiancati da alias ricchi (--radius/-sm/-lg, --shadow-sm/
+md/lg, --border/-2, --txt-muted/-dim, --pri-soft/-border/-ink, semantici --green/
+red/blue/orange/purple, --transition, --ease-out/-spring). Così i componenti nuovi
+(Smart Quoter) risolvono token reali e tutta l'app condivide palette/forma/moto.
+Shell rinnovata via CSS condiviso (zero rinomini di classi, test verdi): brand con
+logo gradiente, sidebar raggruppata con accent-bar sull'attivo, topbar sticky con
+backdrop-blur, KPI card con hover-lift, tabelle con header sticky + zebra, bottoni
+`.v2-btn` riutilizzabili (tolto il margin-top di login, aggiunti hover/press/focus),
+focus-visible WCAG AA sui controlli condivisi. Nessun colore hardcoded fuori token.
+Reversibile (solo CSS). Suite 565 verde (1 fallimento ambientale: ICU locale).
