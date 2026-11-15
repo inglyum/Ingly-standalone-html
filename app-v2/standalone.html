@@ -32,7 +32,7 @@ function ctx(){ return { email:'inglydesign@gmail.com', activeTenant:TENANT, ten
 function seedDemo(){
   return {
     tenant_settings:[{ tenant_id:TENANT, vat_rate:22, company_name:'Ingly Design' }],
-    customer:[
+    crm_customer:[
       { id:'c1', tenant_id:TENANT, name:'Maria Russo', type:'B2C', email:'maria@example.it', phone:'3330000', segment:'privato', deleted_at:null },
       { id:'c2', tenant_id:TENANT, name:'Chef Nino', type:'B2B', email:'nino@ristorante.it', phone:'3351111', segment:'ristorazione', deleted_at:null },
     ],
@@ -52,7 +52,7 @@ async function boot(){
   window.addEventListener('hashchange', render);
   document.getElementById('seed-btn').addEventListener('click', async ()=>{
     // carica il demo solo se non ci sono già clienti
-    const { data } = await sb.from('customer').select('*').limit(1);
+    const { data } = await sb.from('crm_customer').select('*').limit(1);
     if(data && data.length){ alert('Ci sono già dati: svuota prima di caricare il demo.'); return; }
     const s = seedDemo();
     for(const [t, rows] of Object.entries(s)){ for(const row of rows){ await sb.from(t).insert(row); } }
