@@ -23170,12 +23170,12 @@ const PaymentWizard = {
               <input id="pwiz-pp" type="text" class="form-control" placeholder="tuonome" value="${localStorage.getItem('ingly_paypal_user')||''}">
             </div>
           </div>
-          <div style="background:#003087'10;border:1px solid #003087'30;border-radius:10px;padding:12px;margin-bottom:16px;font-size:11px;color:#94a3b8;line-height:1.6">
+          <div style="background:#00308710;border:1px solid #00308730;border-radius:10px;padding:12px;margin-bottom:16px;font-size:11px;color:#94a3b8;line-height:1.6">
             Il cliente riceverà un link diretto al tuo profilo PayPal.me con l'importo pre-compilato di <strong style="color:#ffc439">${fmtCur(amt)}</strong>
           </div>
           <div style="display:flex;gap:10px">
             <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;padding:11px;background:var(--bg-card2);border:1px solid var(--border);color:var(--text-muted);border-radius:8px;cursor:pointer">Annulla</button>
-            <button onclick="PaymentWizard._openPayPal(eid('pwiz-pp').value,${amt},this)" style="flex:2;padding:11px;backgrou;border-radius:8px;cursor:pointer;font-weight:700">🅿️ Apri link pagamento</button>
+            <button onclick="PaymentWizard._openPayPal(eid('pwiz-pp').value,${amt},this)" style="flex:2;padding:11px;background:#003087;color:#ffc439;border:none;border-radius:8px;cursor:pointer;font-weight:700">🅿️ Apri link pagamento</button>
           </div>
         </div>
       </div>`;
@@ -39651,6 +39651,9 @@ const MorningBriefing = {
   _KEY: 'ingly_briefing_shown',
 
   async maybeShow() {
+    // Primo avvio meno invadente: se il wizard di setup non è ancora stato
+    // completato, non impilare il briefing sopra — apparirà dal giorno dopo.
+    try{ if(!localStorage.getItem('ingly_wizard_done_v2')) return; }catch(e){}
     const today = new Date().toISOString().split('T')[0];
     const lastShown = localStorage.getItem(this._KEY);
     if (lastShown === today) return;
@@ -56576,7 +56579,11 @@ window.OnboardingTour = OnboardingTour;
 (function(){
   const tryStart = () => {
     if(typeof App === 'undefined' || typeof toast === 'undefined') return setTimeout(tryStart, 800);
-    if(OnboardingTour.shouldShow()) setTimeout(()=>OnboardingTour.start(), 2500);
+    // Primo avvio meno invadente: non incatenare il tour sopra il wizard di setup.
+    // Il tour auto-parte solo dopo che il wizard è stato completato/saltato
+    // (quindi dalla sessione successiva); resta sempre avviabile dal pulsante Aiuto.
+    let wizDone = true; try{ wizDone = !!localStorage.getItem('ingly_wizard_done_v2'); }catch(e){}
+    if(wizDone && OnboardingTour.shouldShow()) setTimeout(()=>OnboardingTour.start(), 2500);
   };
   setTimeout(tryStart, 1000);
 })();
