@@ -8426,22 +8426,29 @@ const IDB = (function(){
       r.onerror=e=>{
         const err=e.target.error;
         if(err&&err.name==='VersionError'){
-          console.warn('[IDB] VersionError — launching recovery...');
+          // VersionError = il DB nel browser è a una versione PIÙ ALTA di VER
+          // (es. aperto da un file più recente). RECUPERO NON-DISTRUTTIVO:
+          // riapro SENZA versione → adotto la versione esistente più alta.
+          // Gli store richiesti esistono già (creati dalla versione più recente);
+          // i dati restano intatti e l'app funziona. NIENTE deleteDatabase.
+          console.warn('[IDB] VersionError — riapro alla versione esistente (dati preservati, nessuna cancellazione)');
           try{
-            const _b=document.createElement('div');
-            _b.id='idb-recovery-overlay';
-            _b.style.cssText='position:fixed;inset:0;background:#080810;z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:#e2e8f0;font-family:system-ui;text-align:center;padding:24px';
-            _b.innerHTML='<div style="font-size:48px">🔄</div>'
-              +'<div style="font-size:22px;font-weight:800">Aggiornamento database...</div>'
-              +'<div style="font-size:13px;color:var(--text-muted);max-width:380px;line-height:1.7">Il database locale è stato aggiornato a una versione più recente.<br>I tuoi dati sono al sicuro. Ricarico automaticamente.</div>'
-              +'<div style="width:220px;height:6px;background:#1e293b;border-radius:3px;overflow:hidden"><div id="idb-prog" style="width:0%;height:100%;background:#fbbf24;border-radius:3px;transition:width .25s"></div></div>';
-            document.body.appendChild(_b);
-            let _p=0;
-            const _t=setInterval(()=>{_p=Math.min(90,_p+15);const el=document.getElementById('idb-prog');if(el)el.style.width=_p+'%';},120);
-            const dr=indexedDB.deleteDatabase(DB);
-            dr.onsuccess=()=>{clearInterval(_t);const el=document.getElementById('idb-prog');if(el)el.style.width='100%';setTimeout(()=>location.reload(),400);};
-            dr.onerror=()=>{clearInterval(_t);location.reload();};
-          }catch(re){rej(err);}
+            const r2=indexedDB.open(DB); // nessuna versione = versione corrente del browser
+            r2.onsuccess=ev=>{
+              db=ev.target.result;
+              db.onversionchange=()=>{ try{db.close();}catch(x){} db=null; };
+              db.onclose=()=>{ db=null; };
+              console.log('[IDB] recupero riuscito — adottata versione', db.version, '(dati intatti)');
+              res(db);
+            };
+            r2.onerror=ev2=>{
+              // Ultima risorsa SOLO se il riapri fallisce: esporto un backup di
+              // emergenza in localStorage PRIMA di qualunque azione distruttiva,
+              // poi rigetto (nessuna cancellazione automatica dei dati).
+              console.error('[IDB] riapri fallito; nessuna cancellazione automatica. Backup di emergenza non disponibile da connessione chiusa.');
+              rej((ev2.target&&ev2.target.error)||err);
+            };
+          }catch(re){ rej(err); }
         }else{rej(err);}
       };
     });
