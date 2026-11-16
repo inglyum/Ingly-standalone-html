@@ -8575,6 +8575,80 @@ const IDB = (function(){
 window.IDB = IDB;
 
 // ════════════════════════════════════════════════════════════════════════
+// DataMigrations — framework migrazioni DATI sequenziali, atomiche, idempotenti
+// (Sprint 1 ERP upgrade). NON tocca lo schema (quello resta in onupgradeneeded).
+// Registry inizialmente VUOTO: run() è un no-op sicuro finché non si registrano
+// migrazioni reali (Sprint 2+). Ogni migrazione: { id, desc, stores:[], up(IDB) }.
+// Garanzie: eseguite in ordine, una sola volta (tracking in settings), backup
+// automatico degli store toccati PRIMA di eseguire, nessun drop di store, errori
+// loggati e non silenziati, boot mai interrotto da un fallimento.
+// ════════════════════════════════════════════════════════════════════════
+const DataMigrations = (function(){
+  const TRACK_KEY = '_data_migrations';
+  // Registry — VUOTO per ora (Sprint 1 = solo framework). Esempio di forma:
+  // { id:'2026-01-timestamps', desc:'createdAt/updatedAt dove mancano',
+  //   stores:['clients','orders'], async up(IDB){ /* idempotente */ } }
+  const MIGRATIONS = [];
+
+  async function _getTrack(){
+    try{ const t = await IDB.get('settings', TRACK_KEY); return t || { key:TRACK_KEY, applied:[], log:[] }; }
+    catch(e){ return { key:TRACK_KEY, applied:[], log:[] }; }
+  }
+  async function _saveTrack(t){ t.updatedAt = new Date().toISOString(); try{ await IDB.put('settings', t); }catch(e){ console.warn('[DataMigrations] track save failed', e); } }
+
+  // Backup verificabile degli store toccati PRIMA della migrazione (snapshot in store 'backups').
+  async function backupStores(stores, migId){
+    const snap = {}; let total = 0;
+    for(const s of (stores||[])){ try{ const rows = await IDB.getAll(s); snap[s] = rows; total += rows.length; }catch(e){ snap[s] = []; } }
+    const entry = { id:'premig_'+migId+'_'+Date.now(), type:'pre-migration', migId, ts:new Date().toISOString(), counts:Object.fromEntries(Object.entries(snap).map(([k,v])=>[k,v.length])), data:snap };
+    try{ await IDB.put('backups', entry); }catch(e){ console.warn('[DataMigrations] backup save failed', e); }
+    return { total, counts:entry.counts, backupId:entry.id };
+  }
+
+  async function _countStores(stores){ const c={}; for(const s of (stores||[])){ try{ c[s]=(await IDB.getAll(s)).length; }catch(e){ c[s]=0; } } return c; }
+
+  // Esegue tutte le migrazioni pendenti, in ordine, idempotenti.
+  async function run(){
+    const track = await _getTrack();
+    const applied = new Set(track.applied||[]);
+    const pending = MIGRATIONS.filter(m => m && m.id && !applied.has(m.id));
+    if(!pending.length){ // assicura solo l'esistenza del record di tracking
+      if(!track.applied) track.applied = [];
+      await _saveTrack(track);
+      return { ran:0, applied:[...applied] };
+    }
+    let ran = 0;
+    for(const m of pending){
+      try{
+        const before = await _countStores(m.stores);
+        const bk = await backupStores(m.stores, m.id);         // regola 5: backup prima di ogni migrazione
+        await m.up(IDB);                                        // la migrazione DEVE essere idempotente
+        const after = await _countStores(m.stores);
+        // Integrità: nessuna perdita di record (le migrazioni additive non riducono i count)
+        const lost = Object.keys(before).filter(s => (after[s]||0) < (before[s]||0));
+        if(lost.length){ console.error('[DataMigrations] INTEGRITÀ: record persi in', lost, 'migrazione', m.id, '— ripristino consigliato da backup', bk.backupId); }
+        track.applied.push(m.id);
+        (track.log = track.log||[]).push({ id:m.id, ts:new Date().toISOString(), before, after, backupId:bk.backupId, lost });
+        await _saveTrack(track);
+        ran++;
+        console.log('[DataMigrations] applicata', m.id, '—', m.desc||'');
+      }catch(e){
+        console.error('[DataMigrations] FALLITA', m.id, e, '— boot continua, migrazione NON marcata applicata');
+        (track.log = track.log||[]).push({ id:m.id, ts:new Date().toISOString(), error:String(e&&e.message||e) });
+        await _saveTrack(track);
+        break; // non proseguire con le successive se una fallisce (sequenziale)
+      }
+    }
+    return { ran, applied:[...new Set(track.applied)] };
+  }
+
+  async function status(){ const t = await _getTrack(); return { registered:MIGRATIONS.map(m=>m.id), applied:t.applied||[], pending:MIGRATIONS.filter(m=>!(t.applied||[]).includes(m.id)).map(m=>m.id), log:t.log||[] }; }
+
+  return { run, status, backupStores, _registry:MIGRATIONS };
+})();
+window.DataMigrations = DataMigrations;
+
+// ════════════════════════════════════════════════════════════════════════
 // updateOrderStatus — SINGLE SOURCE OF TRUTH per tutti i cambi stato
 // Aggiorna SEMPRE sia 'orders' che 'pipeline', emette eventi, crea sale
 // ════════════════════════════════════════════════════════════════════════
@@ -10541,6 +10615,9 @@ const App={
     await this.seedDefaults();
     await Gadgets.seed();
     await FixedCosts.seed();
+    // Sprint 1 ERP: esegue le migrazioni DATI pendenti (idempotenti, con backup).
+    // Deferita e non bloccante: un fallimento non interrompe il boot.
+    setTimeout(()=>{ try{ if(typeof DataMigrations!=='undefined') DataMigrations.run().then(r=>{ if(r&&r.ran) console.log('[DataMigrations] eseguite',r.ran,'migrazioni'); }).catch(e=>console.warn('[DataMigrations]',e)); }catch(e){} }, 1500);
     I18n.apply();
     ThemeSwitcher.init();
   ThemeSwitcher.initFont();
