@@ -10983,13 +10983,30 @@ const App={
       lead_scorer:  ()=>{ setTimeout(()=>{ if(typeof MarketIntel!=='undefined') MarketIntel.render('lead_scorer'); },100); },
     };
     if(ctrl.signal.aborted) return;
-    try{if(map[s])map[s]();}catch(err){INGLY_DEV&&console.warn('[renderSection:'+s+']',err.message);}
+    // Sprint 1 ERP: error-boundary per-modulo. Un modulo che crasha NON rompe la
+    // navigazione; l'errore viene SEMPRE loggato e registrato (non più silenziato),
+    // con feedback non-bloccante all'utente.
+    try{if(map[s])map[s]();}catch(err){ App._renderError(s, err); }
     // v3.6: reset VirtualList state on section change
     if(typeof Catalog!=='undefined' && s!=='catalog') {
       Catalog._vlActive=false;
       const si = document.getElementById('content-inner');
       if(si&&si._vlListener){si.removeEventListener('scroll',si._vlListener);si._vlListener=null;}
     }
+  },
+  // Sprint 1 ERP: gestione errori di render per-modulo (non silenziata).
+  _renderError(section, err){
+    const msg = (err && err.message) || String(err);
+    console.error('[renderSection:'+section+']', err); // SEMPRE, non solo in dev
+    try{ (this._errLog = this._errLog||[]).push({ section, msg, ts:Date.now() }); if(this._errLog.length>50) this._errLog.shift(); }catch(e){}
+    try{
+      this._errToastAt = this._errToastAt||{};
+      const now=Date.now();
+      if(typeof toast==='function' && (now-(this._errToastAt[section]||0))>8000){
+        this._errToastAt[section]=now;
+        toast('⚠️ Sezione "'+section+'" non caricata del tutto. Dettagli in console.','warning',4000);
+      }
+    }catch(e){}
   },
   filterNav(q){
     const v=q.toLowerCase().trim();
