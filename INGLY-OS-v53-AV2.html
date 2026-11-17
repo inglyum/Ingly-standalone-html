@@ -5855,6 +5855,53 @@ Il sistema analizza revenue, margini, clienti a rischio, ordini in scadenza, pro
           </div>
         </div>
 
+        <!-- ═══ Fase A ERP: Tipo offerta & Canali B2C/B2B ═══ -->
+        <div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:800;color:var(--text);margin-bottom:10px;display:flex;align-items:center;gap:6px">🧩 Tipo offerta & Canali di vendita</div>
+          <div style="display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:10px;margin-bottom:10px">
+            <div>
+              <label style="font-size:10px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:3px">Tipo offerta</label>
+              <select class="form-control" id="cat-type" style="font-size:12px">
+                <option value="product">📦 Prodotto (fisico)</option>
+                <option value="material">🧱 Materiale (materia prima)</option>
+                <option value="digital">💾 File digitale (download)</option>
+                <option value="custom">✏️ Su misura (preventivo)</option>
+                <option value="service">⏱️ Servizio (a slot)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:3px">Visibilità canali</label>
+              <div style="display:flex;gap:12px;align-items:center;padding-top:7px">
+                <label style="font-size:11px;color:var(--text);display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="cat-vis-b2c" checked> B2C</label>
+                <label style="font-size:11px;color:var(--text);display:flex;align-items:center;gap:5px;cursor:pointer"><input type="checkbox" id="cat-vis-b2b" checked> B2B</label>
+              </div>
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:3px">IVA %</label>
+              <input class="form-control" id="cat-b2c-vat" type="number" step="1" value="22" style="font-size:12px">
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px">
+            <div style="background:#10b98108;border:1px solid #10b98130;border-radius:8px;padding:8px">
+              <label style="font-size:10px;color:#10b981;font-weight:700;display:block;margin-bottom:3px">🛍️ Prezzo B2C €</label>
+              <input class="form-control" id="cat-b2c-price" type="number" step="0.01" placeholder="auto da retail" style="font-size:13px;font-weight:700">
+            </div>
+            <div style="background:#6366f108;border:1px solid #6366f130;border-radius:8px;padding:8px">
+              <label style="font-size:10px;color:#818cf8;font-weight:700;display:block;margin-bottom:3px">🏢 Prezzo B2B €</label>
+              <input class="form-control" id="cat-b2b-price" type="number" step="0.01" placeholder="0.00" style="font-size:13px;font-weight:700">
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px">
+              <label style="font-size:10px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:3px">📦 MOQ B2B</label>
+              <input class="form-control" id="cat-b2b-moq" type="number" min="1" value="1" style="font-size:13px;font-weight:700">
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:8px">
+              <label style="font-size:10px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:3px">🗓️ Termini netti (gg)</label>
+              <input class="form-control" id="cat-b2b-net" type="number" min="0" value="0" style="font-size:13px;font-weight:700">
+            </div>
+          </div>
+          <div style="font-size:9px;color:var(--text-dim);margin-top:7px">Se il prezzo B2C è vuoto, si usa il prezzo retail (Campione). Il prezzo B2B qui è il listino base: il listino per-cliente, se presente, ha priorità.</div>
+        </div>
+
         <!-- Campi secondari compatti -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
           <div><label style="font-size:10px;color:var(--text-muted);font-weight:700;display:block;margin-bottom:3px">🔥 Trend Score (0-100)</label>
@@ -8592,10 +8639,36 @@ window.IDB = IDB;
 // ════════════════════════════════════════════════════════════════════════
 const DataMigrations = (function(){
   const TRACK_KEY = '_data_migrations';
-  // Registry — VUOTO per ora (Sprint 1 = solo framework). Esempio di forma:
-  // { id:'2026-01-timestamps', desc:'createdAt/updatedAt dove mancano',
-  //   stores:['clients','orders'], async up(IDB){ /* idempotente */ } }
-  const MIGRATIONS = [];
+  // Registry delle migrazioni DATI (idempotenti). Il framework fa backup degli
+  // store toccati PRIMA di eseguire e verifica l'integrità dei conteggi.
+  const MIGRATIONS = [
+    {
+      id:'2026-11-catalog-offer-types',
+      desc:'Fase A Shop: aggiunge type + pricing.b2c/b2b + visibility ai prodotti catalogo (additivo, non-distruttivo)',
+      stores:['catalog'],
+      async up(IDB){
+        const rows = await IDB.getAll('catalog');
+        const toUpdate = [];
+        for(const p of rows){
+          // Idempotente: salta chi ha già type E pricing strutturato
+          if(p && p.type && p.pricing && p.pricing.b2c) continue;
+          const b2c = (p.pricing && p.pricing.b2c) || {};
+          const b2b = (p.pricing && p.pricing.b2b) || {};
+          const vis = p.visibility || {};
+          const out = { ...p,
+            type: p.type || 'product',
+            pricing: {
+              b2c: { price: (+b2c.price) || (+p.salePrice||0), vat: (b2c.vat!=null? +b2c.vat : 22) },
+              b2b: { price: +b2b.price||0, vat: (b2b.vat!=null? +b2b.vat : 22), moq: +b2b.moq||1, netTerms: +b2b.netTerms||0 }
+            },
+            visibility: { b2c: vis.b2c!==false, b2b: vis.b2b!==false }
+          };
+          toUpdate.push(out);
+        }
+        if(toUpdate.length) await IDB.putBulk('catalog', toUpdate); // conserva gli id originali
+      }
+    }
+  ];
 
   async function _getTrack(){
     try{ const t = await IDB.get('settings', TRACK_KEY); return t || { key:TRACK_KEY, applied:[], log:[] }; }
@@ -28789,6 +28862,15 @@ const Catalog={
     const fields=['cat-name','cat-cost','cat-price','cat-desc','cat-tags','cat-emoji','cat-trend','cat-material','cat-size','cat-time','cat-etsy','cat-notes'];
     // Reset all fields
     fields.forEach(f=>{const el=eid(f);if(el)el.value='';});
+    // Fase A: reset tipo offerta & canali
+    if(eid('cat-type'))eid('cat-type').value='product';
+    if(eid('cat-b2c-price'))eid('cat-b2c-price').value='';
+    if(eid('cat-b2c-vat'))eid('cat-b2c-vat').value='22';
+    if(eid('cat-b2b-price'))eid('cat-b2b-price').value='';
+    if(eid('cat-b2b-moq'))eid('cat-b2b-moq').value='1';
+    if(eid('cat-b2b-net'))eid('cat-b2b-net').value='0';
+    if(eid('cat-vis-b2c'))eid('cat-vis-b2c').checked=true;
+    if(eid('cat-vis-b2b'))eid('cat-vis-b2b').checked=true;
     // Reset B2B fields
     ['b2b-mat-cost','b2b-labor','b2b-machine','b2b-time','b2b-camp-price','b2b-camp-disc','b2b-camp-note','b2b-kit-qty','b2b-kit-price','b2b-kit-disc','b2b-kit-total','b2b-kit-note','b2b-stock-qty','b2b-stock-price','b2b-stock-disc','b2b-stock-total','b2b-stock-note','b2b-custom-name','b2b-custom-qty','b2b-custom-price','b2b-custom-note'].forEach(id_=>{const el=eid(id_);if(el)el.value='';});
     ['b2b-kit-disc','b2b-stock-disc'].forEach((id_,i)=>{const el=eid(id_);if(el)el.value=[15,25][i];});
@@ -28807,6 +28889,16 @@ const Catalog={
       if(p){
         fields.forEach(f=>{const el=eid(f);if(!el)return;const key=f.replace('cat-','');const map={name:'name',cost:'costPrice',price:'salePrice',desc:'desc',tags:'tags',emoji:'emoji',trend:'trendScore',material:'material',size:'size',time:'productionTime',etsy:'etsyRef',notes:'notes'};el.value=p[map[key]]||'';});
         eid('cat-cat').value=p.category;
+        // Fase A: popola tipo offerta & canali (normalizer gestisce record non migrati)
+        const _pr=Catalog.normalizeOffer(p);
+        if(eid('cat-type'))eid('cat-type').value=_pr.type;
+        if(eid('cat-b2c-price'))eid('cat-b2c-price').value=_pr.pricing.b2c.price||'';
+        if(eid('cat-b2c-vat'))eid('cat-b2c-vat').value=_pr.pricing.b2c.vat;
+        if(eid('cat-b2b-price'))eid('cat-b2b-price').value=_pr.pricing.b2b.price||'';
+        if(eid('cat-b2b-moq'))eid('cat-b2b-moq').value=_pr.pricing.b2b.moq;
+        if(eid('cat-b2b-net'))eid('cat-b2b-net').value=_pr.pricing.b2b.netTerms;
+        if(eid('cat-vis-b2c'))eid('cat-vis-b2c').checked=_pr.visibility.b2c;
+        if(eid('cat-vis-b2b'))eid('cat-vis-b2b').checked=_pr.visibility.b2b;
         this._photo=p.photo||null;
         if(prev)prev.innerHTML=p.photo?`<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:4px">`:`<span style="font-size:32px">${p.emoji||'🎁'}</span>`;
         // Load B2B tiers
@@ -29419,6 +29511,13 @@ Genera ESATTAMENTE in questo formato:
       category:eid('cat-cat').value,
       costPrice:+eid('cat-cost')?.value||0,
       salePrice:+eid('cat-price')?.value||0,
+      // ═══ Fase A ERP: tipo offerta + pricing B2C/B2B + visibilità (additivo) ═══
+      type: (eid('cat-type')?.value)||'product',
+      pricing: {
+        b2c: { price: (+eid('cat-b2c-price')?.value) || (+eid('cat-price')?.value||0), vat: (+eid('cat-b2c-vat')?.value)||22 },
+        b2b: { price: +eid('cat-b2b-price')?.value||0, vat: (+eid('cat-b2c-vat')?.value)||22, moq: +eid('cat-b2b-moq')?.value||1, netTerms: +eid('cat-b2b-net')?.value||0 }
+      },
+      visibility: { b2c: eid('cat-vis-b2c')?.checked!==false, b2b: eid('cat-vis-b2b')?.checked!==false },
       desc:eid('cat-desc')?.value||'',
       tags:eid('cat-tags')?.value||'',
       emoji:eid('cat-emoji')?.value||'🎁',
@@ -29472,6 +29571,24 @@ Genera ESATTAMENTE in questo formato:
     closeModal('catalog');this.editId=null;this._photo=null;
     await this.render();
   },
+  // ═══ Fase A ERP: normalizza tipo offerta + pricing B2C/B2B + visibilità ═══
+  // Default retro-compatibili: i record non ancora migrati restano validi.
+  normalizeOffer(p){
+    p = p || {};
+    const b2c = (p.pricing && p.pricing.b2c) || {};
+    const b2b = (p.pricing && p.pricing.b2b) || {};
+    const vis = p.visibility || {};
+    return {
+      type: p.type || 'product',
+      pricing: {
+        b2c: { price: (+b2c.price) || (+p.salePrice||0), vat: (b2c.vat!=null? +b2c.vat : 22) },
+        b2b: { price: +b2b.price||0, vat: (b2b.vat!=null? +b2b.vat : 22), moq: +b2b.moq||1, netTerms: +b2b.netTerms||0 }
+      },
+      visibility: { b2c: vis.b2c!==false, b2b: vis.b2b!==false }
+    };
+  },
+  // Prezzo per canale corrente ('b2c'|'b2b'), utile allo storefront (Fase B).
+  priceFor(p, channel){ const n=this.normalizeOffer(p); return (channel==='b2b'? n.pricing.b2b.price : n.pricing.b2c.price); },
   async del(id){
     if(!(await _dsConfirm('Eliminare questo prodotto dal catalogo?')))return;
     await IDB.del('catalog',id).catch(e=>console.warn('[Catalog.del]',e));
