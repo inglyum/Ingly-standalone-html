@@ -947,6 +947,7 @@ tr:hover td .badge { opacity: 1; }
       <div class="nav-group-items">
       <div class="nav-item" data-section="clients" onclick="App.navigate('clients')"><i class="fas fa-users"></i> CRM Clienti</div>
       <div class="nav-item" data-section="catalog" onclick="App.navigate('catalog')"><i class="fas fa-store"></i> Catalogo</div>
+      <div class="nav-item" data-section="shop" onclick="App.navigate('shop')"><i class="fas fa-bag-shopping"></i> Shop (vetrina)</div>
       <div class="nav-item" data-section="socialproof" onclick="App.navigate('socialproof')" style="color:#60a5fa;font-weight:700"><i class="fas fa-star"></i> Social Proof AI</div>
       <div class="nav-item" data-section="replyai" onclick="App.navigate('replyai')" style="color:#38bdf8;font-weight:700"><i class="fas fa-reply"></i> Reply Assistant 💬</div>
     </div>
@@ -1991,6 +1992,11 @@ tr:hover td .badge { opacity: 1; }
 </div>
 
 <!-- ===================== CATALOGO ===================== -->
+<!-- ═══ SHOP buyer storefront (Fasi B–F) — vista buyer, separata dal catalogo admin ═══ -->
+<div class="section-view" id="view-shop">
+  <div id="shop-root"><!-- Shop.render() --></div>
+</div>
+
 <div class="section-view" id="view-catalog">
 
   <!-- ── HEADER ─────────────────────────────────────────────────────── -->
@@ -10993,6 +10999,7 @@ const App={
       fixed_costs:()=>{if(typeof FixedCosts!=='undefined')(typeof FixedCosts!=='undefined'&&FixedCosts.render());},
       clients:()=>{if(typeof Clients!=='undefined')(typeof Clients!=='undefined'&&Clients.render());},
       catalog:()=>{if(typeof Catalog!=='undefined')(typeof Catalog!=='undefined'&&Catalog.render());},
+      shop:()=>{if(typeof Shop!=='undefined')Shop.render();},
       marketing:()=>{if(typeof Marketing!=='undefined')(typeof Marketing!=='undefined'&&Marketing.render());},
       etsy:()=>{if(typeof Etsy!=='undefined')(typeof Etsy!=='undefined'&&Etsy.render());},
       calendar:()=>{if(typeof Calendar!=='undefined')(typeof Calendar!=='undefined'&&Calendar.render());},
@@ -11586,7 +11593,10 @@ const Dashboard={
     await this.renderRecentSales();
     await this.renderRecentQuotes();
     await this.renderDueSoon();
-    await this.renderSmartActions();
+    // Guardia: renderSmartActions è definita in un oggetto Dashboard successivo
+    // (shadowing); evita 'is not a function' sulla dashboard principale.
+    if(typeof this.renderSmartActions==='function'){ try{ await this.renderSmartActions(); }catch(e){ console.warn('[Dashboard.smartActions]',e.message); } }
+    else if(typeof window.Dashboard!=='undefined' && typeof window.Dashboard.renderSmartActions==='function'){ try{ await window.Dashboard.renderSmartActions(); }catch(e){} }
     // Connect DashboardToday widget
     setTimeout(()=>{ if(typeof DashboardToday!=='undefined') DashboardToday.inject(); },300);
     // Connect HealthScore
@@ -11610,6 +11620,7 @@ const Dashboard={
     } catch(e){ console.error('[Dashboard.render]', e.message||e); }
   },
   async updateKPIs(kpi){
+    kpi = kpi || {}; // guardia: alcuni chiamanti passano kpi undefined → niente crash su kpi.revenue
     const el=eid('dashboard-kpis')||eid('dash-kpi-grid');if(!el)return; if(el.id==='dashboard-kpis')el.id='dash-kpi-grid';
     const items=[
       {l:'Revenue MTD',v:fmtCur(kpi.revenue),i:'fa-euro-sign',c:'var(--primary)',w:'revenue'},
@@ -29729,6 +29740,251 @@ Genera ESATTAMENTE in questo formato:
   }
 };
 if(typeof Catalog!=="undefined")window.Catalog=Catalog; // immediate window export
+
+// ═══════════════════════════════════════════════════════════════════════
+// SHOP — vetrina buyer versatile (Fasi B–F)
+// B: storefront adattivo per tipo + filtri per intento
+// C: canale B2C/B2B (UX, NON sicurezza — vera auth sarà server-side)
+// D: file digitali (download locale + tracking; firma reale = backend)
+// E: su misura → preventivo (riusa Quoter)  ·  F: carrello, cross-sell, bundle
+// Legge dal catalogo unico via Catalog.normalizeOffer() — nessuna duplicazione.
+// ═══════════════════════════════════════════════════════════════════════
+const Shop = {
+  _channel:'b2c', _intent:'all', _search:'', _cart:[],
+  INTENTS:[
+    {k:'all',     label:'Tutto',              emoji:'🛍️'},
+    {k:'product', label:'Pronti da comprare', emoji:'📦'},
+    {k:'digital', label:'Scarica subito',     emoji:'💾'},
+    {k:'material',label:'Per chi produce',    emoji:'🧱'},
+    {k:'custom',  label:'Crea il tuo',        emoji:'✏️'},
+    {k:'service', label:'Servizi',            emoji:'⏱️'},
+  ],
+  TYPE_META:{
+    product: {emoji:'📦', label:'Prodotto',  cta:'Aggiungi',          color:'var(--primary)'},
+    material:{emoji:'🧱', label:'Materiale',  cta:'Aggiungi',          color:'#818cf8'},
+    digital: {emoji:'💾', label:'Digitale',   cta:'⬇ Scarica',        color:'#22c55e'},
+    custom:  {emoji:'✏️', label:'Su misura',  cta:'Richiedi preventivo',color:'#f59e0b'},
+    service: {emoji:'⏱️', label:'Servizio',   cta:'Prenota',          color:'#06b6d4'},
+  },
+  _esc(s){ try{ return (typeof sanitize==='function'? sanitize(String(s==null?'':s)) : String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]))); }catch(e){ return ''; } },
+  _cur(v){ try{ return typeof fmtCur==='function'? fmtCur(+v||0) : '€'+(+v||0).toFixed(2); }catch(e){ return '€'+(+v||0).toFixed(2); } },
+  _loadCart(){ try{ this._cart = JSON.parse(localStorage.getItem('ingly_shop_cart')||'[]')||[]; }catch(e){ this._cart=[]; } },
+  _saveCart(){ try{ localStorage.setItem('ingly_shop_cart', JSON.stringify(this._cart)); }catch(e){} },
+
+  setChannel(ch){ this._channel = (ch==='b2b'?'b2b':'b2c'); this.render(); },
+  setIntent(k){ this._intent = k; this.render(); },
+  onSearch(v){ this._search = (v||'').toLowerCase().trim(); this.render(); },
+
+  _priceFor(p){ const n=Catalog.normalizeOffer(p); return this._channel==='b2b'? n.pricing.b2b.price : n.pricing.b2c.price; },
+
+  async render(){
+    this._loadCart();
+    const root = document.getElementById('shop-root'); if(!root) return;
+    let items = [];
+    try{ items = (await AppStore.get('catalog')) || []; }catch(e){ items = []; }
+    const ch = this._channel;
+    const visItems = items.filter(p=>{ const n=Catalog.normalizeOffer(p); return ch==='b2b'? n.visibility.b2b : n.visibility.b2c; });
+    let shown = visItems.slice();
+    if(this._intent!=='all') shown = shown.filter(p=> Catalog.normalizeOffer(p).type===this._intent );
+    if(this._search) shown = shown.filter(p=>((p.name||'')+(p.desc||'')+(p.tags||'')+(p.category||'')).toLowerCase().includes(this._search));
+    root.innerHTML = this._shell(shown, visItems, ch);
+  },
+
+  _shell(shown, visItems, ch){
+    const cartN = this._cart.reduce((a,l)=>a+(+l.qty||0),0);
+    const tabs = this.INTENTS.map(it=>{
+      const n = it.k==='all'? visItems.length : visItems.filter(p=>Catalog.normalizeOffer(p).type===it.k).length;
+      const active = this._intent===it.k;
+      return `<button onclick="Shop.setIntent('${it.k}')" style="padding:8px 14px;border-radius:999px;border:1px solid ${active?'var(--primary)':'var(--border)'};background:${active?'var(--primary-dim)':'var(--bg-card2)'};color:${active?'var(--primary)':'var(--text-muted)'};font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">${it.emoji} ${it.label}${n?` <span style="opacity:.7">(${n})</span>`:''}</button>`;
+    }).join('');
+    const cards = shown.length? shown.map(p=>this._card(p)).join('') :
+      `<div style="grid-column:1/-1;text-align:center;padding:50px 20px;border:2px dashed var(--border);border-radius:16px;background:var(--bg-card)"><div style="font-size:46px;margin-bottom:10px">🛍️</div><div style="font-size:15px;font-weight:800;color:var(--text)">Nessun articolo in questa vista</div><div style="font-size:12px;color:var(--text-muted);margin-top:6px">Cambia filtro o canale, oppure aggiungi prodotti dal Catalogo.</div></div>`;
+    const chBtn=(c,lbl)=>`<button onclick="Shop.setChannel('${c}')" style="padding:7px 16px;border:none;border-radius:8px;background:${this._channel===c?'var(--primary)':'transparent'};color:${this._channel===c?'#000':'var(--text-muted)'};font-weight:800;font-size:12px;cursor:pointer">${lbl}</button>`;
+    return `
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+      <div>
+        <div style="font-size:22px;font-weight:900;color:var(--text);display:flex;align-items:center;gap:10px;letter-spacing:-.3px"><i class="fas fa-bag-shopping" style="color:var(--primary)"></i> Shop — vetrina</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px">Esplora e acquista: prodotti, materiali, file digitali e su misura · ${ch==='b2b'?'Prezzi aziendali (B2B)':'Prezzi al pubblico (B2C)'}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="display:flex;background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:3px">${chBtn('b2c','🛍️ B2C')}${chBtn('b2b','🏢 B2B')}</div>
+        <button onclick="Shop.openCart()" style="position:relative;padding:9px 16px;background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;color:var(--text)">🛒 Carrello${cartN?`<span style="position:absolute;top:-7px;right:-7px;background:var(--primary);color:#000;border-radius:999px;font-size:10px;font-weight:800;padding:1px 6px">${cartN}</span>`:''}</button>
+      </div>
+    </div>
+    ${ch==='b2b'?`<div style="font-size:11px;color:var(--text-muted);background:#6366f110;border:1px solid #6366f130;border-radius:8px;padding:8px 12px;margin-bottom:12px">🏢 Vista B2B: prezzi wholesale, MOQ e termini. <strong>Nota:</strong> in locale è solo UX — l'accesso riservato reale sarà gestito dal backend.</div>`:''}
+    <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:14px">${tabs}</div>
+    <input type="text" placeholder="🔎 Cerca nello shop..." value="${this._esc(this._search)}" oninput="Shop.onSearch(this.value)" class="form-control" style="margin-bottom:16px;max-width:420px">
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px">${cards}</div>`;
+  },
+
+  _card(p){
+    const n = Catalog.normalizeOffer(p);
+    const meta = this.TYPE_META[n.type] || this.TYPE_META.product;
+    const price = this._priceFor(p);
+    const photo = p.photo? `<img src="${p.photo}" style="width:100%;height:100%;object-fit:cover" alt="${this._esc(p.name)}">` : `<span style="font-size:40px" aria-hidden="true">${p.emoji||meta.emoji}</span>`;
+    const moqNote = (this._channel==='b2b' && n.pricing.b2b.moq>1)? `<div style="font-size:10px;color:var(--text-muted)">MOQ ${n.pricing.b2b.moq} pz${n.pricing.b2b.netTerms>0?` · Net ${n.pricing.b2b.netTerms}gg`:''}</div>`:'';
+    const badge = `<span style="position:absolute;top:8px;left:8px;background:${meta.color};color:#000;font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px">${meta.emoji} ${meta.label}</span>`;
+    const dlBadge = n.type==='digital'? `<span style="position:absolute;top:8px;right:8px;background:#22c55e;color:#000;font-size:9px;font-weight:800;padding:2px 7px;border-radius:999px">⬇ immediato</span>`:'';
+    const priceBlock = n.type==='custom'
+      ? `<span style="font-size:12px;color:var(--text-muted)">${price>0?('da '+this._cur(price)):'su preventivo'}</span>`
+      : `<span style="font-size:14px;color:var(--primary);font-weight:800">${this._cur(price)}</span>`;
+    return `<div class="card" style="padding:0;overflow:hidden;display:flex;flex-direction:column;border-top:3px solid ${meta.color};position:relative">
+      <div style="height:130px;background:var(--bg-card2);display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">${badge}${dlBadge}${photo}</div>
+      <div style="padding:12px;flex:1;display:flex;flex-direction:column;gap:7px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);line-height:1.3">${this._esc(p.name)||'—'}</div>
+        ${p.category?`<div style="font-size:10px;color:var(--text-muted)">${this._esc(p.category)}</div>`:''}
+        <div style="margin-top:auto;display:flex;align-items:center;justify-content:space-between;gap:6px">${priceBlock}${moqNote}</div>
+        <button onclick="Shop.action(${p.id})" style="width:100%;padding:9px;background:${meta.color};color:#000;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer">${meta.cta}</button>
+      </div>
+    </div>`;
+  },
+
+  // Dispatch azione per tipo
+  async action(id){
+    let p; try{ p = await IDB.get('catalog', id); }catch(e){}
+    if(!p){ toast('Articolo non trovato','error'); return; }
+    const n = Catalog.normalizeOffer(p);
+    if(n.type==='digital')      return this.deliverDigital(p);
+    if(n.type==='custom')       return this.requestQuote(p);
+    if(n.type==='service')      return this.bookService(p);
+    return this.addToCart(p);   // product | material
+  },
+
+  // ─── Fase B/F: carrello ───
+  addToCart(p){
+    const price = this._priceFor(p);
+    const ex = this._cart.find(l=>l.id===p.id && l.channel===this._channel);
+    if(ex) ex.qty = (+ex.qty||1)+1;
+    else this._cart.push({ id:p.id, name:p.name, price, channel:this._channel, qty:1 });
+    this._saveCart(); toast('Aggiunto al carrello 🛒','success'); this.render();
+  },
+  removeFromCart(id){ this._cart = this._cart.filter(l=>String(l.id)!==String(id)); this._saveCart(); this.openCart(); this.render(); },
+  setQty(id,q){ const l=this._cart.find(x=>String(x.id)===String(id)); if(l){ l.qty=Math.max(1,+q||1); this._saveCart(); this.openCart(); this.render(); } },
+
+  openCart(){
+    this._loadCart();
+    const tot = this._cart.reduce((a,l)=>a+(+l.price||0)*(+l.qty||0),0);
+    const rows = this._cart.length? this._cart.map(l=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1"><div style="font-size:12px;font-weight:700;color:var(--text)">${this._esc(l.name)}</div><div style="font-size:10px;color:var(--text-muted)">${this._cur(l.price)} · ${(l.channel||'b2c').toUpperCase()}</div></div>
+        <input type="number" min="1" value="${+l.qty||1}" onchange="Shop.setQty(${l.id},this.value)" style="width:52px" class="form-control">
+        <div style="width:70px;text-align:right;font-weight:700;color:var(--text)">${this._cur((+l.price||0)*(+l.qty||0))}</div>
+        <button onclick="Shop.removeFromCart(${l.id})" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:14px">✕</button>
+      </div>`).join('') : `<div style="text-align:center;padding:30px;color:var(--text-muted)">Carrello vuoto</div>`;
+    const html = `<div style="padding:4px">
+      <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:10px">🛒 Carrello</div>
+      ${rows}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:14px;font-size:15px;font-weight:800;color:var(--text)"><span>Totale</span><span>${this._cur(tot)}</span></div>
+      <div style="display:flex;gap:8px;margin-top:16px">
+        <button onclick="Dialog&&Dialog.close&&Dialog.close()" style="flex:1;padding:10px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text-muted)">Continua</button>
+        <button ${this._cart.length?'':'disabled'} onclick="Shop.checkout()" style="flex:2;padding:10px;background:var(--primary);color:#000;border:none;border-radius:8px;font-weight:800;cursor:pointer;opacity:${this._cart.length?1:.5}">Checkout →</button>
+      </div></div>`;
+    this._overlay(html);
+  },
+
+  // ─── Fase B/C: checkout → crea ordine interno (pagamento via moduli esistenti) ───
+  async checkout(){
+    if(!this._cart.length) return;
+    const tot = this._cart.reduce((a,l)=>a+(+l.price||0)*(+l.qty||0),0);
+    const order = {
+      id: Date.now(),
+      _source:'shop', channel:this._channel,
+      clientName: this._channel==='b2b'?'Cliente B2B (shop)':'Cliente (shop)',
+      lines: this._cart.map(l=>({ id:l.id, desc:l.name, qty:+l.qty||1, unitCost:+l.price||0, subtotal:(+l.price||0)*(+l.qty||0) })),
+      total: tot, status:'in_attesa', createdAt:new Date().toISOString()
+    };
+    try{ await IDB.put('orders', order); AppStore.invalidate('orders'); }catch(e){ toast('Errore creazione ordine: '+e.message,'error'); return; }
+    this._cart=[]; this._saveCart();
+    this._closeOverlay();
+    toast('Ordine creato ✅ ('+this._cur(tot)+') — procedi al pagamento','success',5000);
+    // Pagamento: riusa i moduli esistenti se presenti (local-first; cattura reale = backend)
+    try{ if(typeof PaymentWizard!=='undefined' && PaymentWizard.stripe) PaymentWizard.stripe(); }catch(e){}
+    this.render();
+  },
+
+  // ─── Fase D: consegna file digitale (locale) ───
+  async deliverDigital(p){
+    const n = Catalog.normalizeOffer(p);
+    const price = this._priceFor(p);
+    const html = `<div style="padding:4px">
+      <div style="font-size:16px;font-weight:800;color:var(--text);margin-bottom:6px">💾 ${this._esc(p.name)}</div>
+      <div style="font-size:12px;color:var(--text-muted);margin-bottom:14px">File digitale · download immediato dopo l'acquisto · ${this._cur(price)}</div>
+      <div style="font-size:11px;color:var(--text-muted);background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:14px">Licenza: uso personale salvo diversa indicazione. Il link è a uso limitato. <strong>Nota:</strong> in locale il file è servito dal browser; la consegna firmata e protetta richiederà il backend.</div>
+      <div style="display:flex;gap:8px">
+        <button onclick="Shop._closeOverlay()" style="flex:1;padding:10px;background:var(--bg-card2);border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text-muted)">Chiudi</button>
+        <button onclick="Shop._downloadDigital(${p.id})" style="flex:2;padding:10px;background:#22c55e;color:#000;border:none;border-radius:8px;font-weight:800;cursor:pointer">Acquista & Scarica ⬇</button>
+      </div></div>`;
+    this._overlay(html);
+  },
+  async _downloadDigital(id){
+    let p; try{ p = await IDB.get('catalog', id); }catch(e){}
+    if(!p){ toast('File non trovato','error'); return; }
+    const n = Catalog.normalizeOffer(p);
+    // token locale a uso limitato + conteggio download sul record
+    const token = (Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+    const dig = p.digital || {}; dig.downloads = (+dig.downloads||0)+1; dig.lastToken = token; dig.lastAt = new Date().toISOString();
+    p.digital = dig;
+    try{ await IDB.put('catalog', p); AppStore.invalidate('catalog'); }catch(e){}
+    // consegna locale: se c'è un asset (foto/file) lo scarico, altrimenti una ricevuta
+    let href, fname;
+    if(p.digital && p.digital.dataUrl){ href=p.digital.dataUrl; fname=(p.digital.fileName||p.name||'file'); }
+    else if(p.photo){ href=p.photo; fname=(p.name||'file')+'.jpg'; }
+    else {
+      const receipt = `INGLY OS — Ricevuta download\nProdotto: ${p.name}\nTipo: file digitale\nToken: ${token}\nData: ${new Date().toLocaleString('it-IT')}\n\n(Asset digitale non ancora caricato in questo articolo: carica il file nel prodotto per la consegna automatica.)`;
+      href='data:text/plain;charset=utf-8,'+encodeURIComponent(receipt); fname=(p.name||'download')+'.txt';
+    }
+    try{ const a=document.createElement('a'); a.href=href; a.download=fname; document.body.appendChild(a); a.click(); a.remove(); }catch(e){}
+    // registra una vendita digitale come ordine (tracciabilità)
+    try{ await IDB.put('orders', { id:Date.now(), _source:'shop-digital', channel:this._channel, clientName:'Download shop', lines:[{id:p.id,desc:p.name,qty:1,unitCost:this._priceFor(p),subtotal:this._priceFor(p)}], total:this._priceFor(p), status:'completato', createdAt:new Date().toISOString() }); AppStore.invalidate('orders'); }catch(e){}
+    this._closeOverlay();
+    toast('Download avviato ⬇ — grazie per l\'acquisto','success',4000);
+    this.render();
+  },
+
+  // ─── Fase E: su misura → preventivo (riusa Quoter) ───
+  requestQuote(p){
+    const price = this._priceFor(p);
+    try{
+      // memorizza l'articolo richiesto per il Quoter
+      localStorage.setItem('ingly_shop_quote_request', JSON.stringify({ name:p.name, unitCost:price||0, catId:p.id, ts:Date.now() }));
+    }catch(e){}
+    this._closeOverlay&&this._closeOverlay();
+    if(typeof App!=='undefined' && App.navigate){
+      App.navigate('quoter');
+      // Inietta direttamente una riga nel modello del Quoter (affidabile, bypassa il form)
+      setTimeout(()=>{ try{
+        if(typeof Quoter!=='undefined' && Array.isArray(Quoter.lines)){
+          const d=(typeof Quoter._lineDefaults==='function')?Quoter._lineDefaults():{markup:100};
+          Quoter.lines.push({ id:Date.now(), cat:'catalogo', catLabel:'Da Catalogo', desc:(p.name||'Articolo su misura'), detail:'Su misura (da shop)', unitCost:+(price||0), unit:'pz', qty:1, subtotal:+(price||0), color:'', colorPick:'', markup:(d.markup!=null?d.markup:100), disc:0, vat:22 });
+          if(typeof Quoter.renderLines==='function') Quoter.renderLines();
+          if(typeof Quoter.recalcRight==='function') Quoter.recalcRight();
+        }
+      }catch(e){} }, 500);
+    }
+    toast('Apro il preventivo per "'+(p.name||'articolo')+'" ✏️','info',4000);
+  },
+
+  // ─── Servizio → prenotazione ───
+  bookService(p){
+    this._closeOverlay&&this._closeOverlay();
+    if(typeof App!=='undefined' && App.navigate){
+      if(document.getElementById('view-booking')) App.navigate('booking');
+      else App.navigate('shop');
+    }
+    toast('Prenotazione servizio "'+(p.name||'')+'" — scegli uno slot','info',4000);
+  },
+
+  // ─── overlay helper (theme-aware, chiudibile) ───
+  _overlay(innerHtml){
+    this._closeOverlay();
+    const ov=document.createElement('div'); ov.id='shop-overlay';
+    ov.style.cssText='position:fixed;inset:0;background:#0009;z-index:10000;display:flex;align-items:center;justify-content:center;padding:18px';
+    ov.onclick=(e)=>{ if(e.target===ov) Shop._closeOverlay(); };
+    ov.innerHTML=`<div style="background:var(--bg-card);border:1px solid var(--border2);border-radius:14px;max-width:440px;width:100%;max-height:85vh;overflow-y:auto;padding:18px;box-shadow:var(--shadow-lg)">${innerHtml}</div>`;
+    document.body.appendChild(ov);
+  },
+  _closeOverlay(){ const o=document.getElementById('shop-overlay'); if(o) o.remove(); },
+};
+window.Shop = Shop;
 
 
 // ===== CLIENTS - need populateSelect for projects  =====
