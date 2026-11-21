@@ -6,3 +6,6 @@ dist/
 app-v2/ingly-smart-quoter-demo.html
 app-v2/ingly-os-standalone.html
 backups/
+v68-package/tests/*.xlsx
+v68-package/tests/*.png
+v68-package/tests/*.min.js

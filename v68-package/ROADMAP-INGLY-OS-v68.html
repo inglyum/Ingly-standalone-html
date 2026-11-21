@@ -1,0 +1,253 @@
+<!doctype html><html lang="it"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Roadmap INGLY OS — v68</title><style>
+:root{color-scheme:light;--ink:#182235;--muted:#64748b;--gold:#c49b31;--bg:#f6f7f9}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Arial,sans-serif;font-size:14px;line-height:1.72}header{background:linear-gradient(125deg,#141b2b,#272f3d);color:#fff;padding:42px max(24px,calc((100vw - 1040px)/2)) 36px}header small{color:#f5c46c;text-transform:uppercase;letter-spacing:2px;font-weight:700}header h1{margin:8px 0 4px;font-size:34px;letter-spacing:-1px}header p{color:#d2d7df;margin:0}main{max-width:1088px;margin:26px auto 50px;background:white;padding:42px 52px;box-shadow:0 5px 30px #10182712;border-radius:16px}main h1{font-size:28px;margin-top:8px}main h2{margin-top:36px;font-size:23px;border-bottom:1px solid #e2e8f0;padding-bottom:8px}main h3{font-size:18px;margin-top:28px;color:#23314d}main blockquote{background:#fffbeb;border-left:4px solid var(--gold);padding:12px 18px;margin:20px 0}main blockquote p{margin:0}main table{border-collapse:collapse;width:100%;font-size:12px}main th,main td{border-bottom:1px solid #e5e7eb;padding:9px 10px;text-align:left;vertical-align:top}main th{background:#eef1f5;font-size:12px}main tr:hover td{background:#f9fafb}main code{background:#edf2f7;padding:2px 5px;border-radius:4px}main li{margin:7px 0}main input[type=checkbox]{width:16px;height:16px;accent-color:#b88b20;margin-right:8px;vertical-align:middle}main .task-list-item{list-style:none;margin-left:-20px}main pre{max-width:100%;overflow:auto}nav{position:sticky;top:0;background:#fff;border-bottom:1px solid #e2e8f0;padding:10px 20px;display:flex;justify-content:center;align-items:center;gap:20px;z-index:1}nav button{background:#151e2f;color:white;border:0;border-radius:7px;padding:7px 14px;cursor:pointer}nav a{color:#7e5a0c;text-decoration:none;font-weight:700}footer{max-width:1088px;margin:0 auto 36px;text-align:center;font-size:12px;color:#64748b}@media(max-width:730px){header{padding:28px 22px}header h1{font-size:26px}main{margin:12px 8px;padding:20px 16px;border-radius:9px}main table{display:block;overflow-x:auto}main h2{font-size:20px}nav{justify-content:space-around;gap:8px;flex-wrap:wrap}}@media print{body{background:white}main{padding:0;box-shadow:none;margin:0;max-width:none}nav{display:none}header{padding:18px 0;background:white;color:#111827;border-bottom:2px solid #b88b20}header small{color:#9a720d}header p{color:#475569}main table{page-break-inside:auto}main tr{page-break-inside:avoid}footer{display:none}}
+</style></head><body><header><small>INGLY DESIGN · Product engineering</small><h1>Roadmap INGLY OS</h1><p>Da v68 candidata QA a un gestionale verificato, affidabile e scalabile</p></header><nav><a href="#top">Inizio</a><a href="#roadmap">Gate</a><button onclick="window.print()">Stampa / PDF</button></nav><main id="top"><h1>INGLY OS — Roadmap operativa da v68 a versione di produzione</h1>
+<p><strong>Data di riferimento:</strong> 21 novembre 2026<br />
+<strong>Prodotto:</strong> INGLY DESIGN / INGLY OS (laboratorio di personalizzazione: laser CO₂, diodo, IR, stampa UV, stampa 3D e lavorazioni B2B).<br />
+<strong>Base reale:</strong> v67 Export &amp; Restore → candidata v68 Documenti &amp; Roadmap.<br />
+<strong>Stato attuale:</strong> <strong>QA CANDIDATE — NON USARE ANCORA PER PRODUZIONE</strong>.</p>
+<blockquote>
+<p>Questa roadmap distingue funzionalità presenti nel file, verifiche realmente eseguite e attività pianificate. La presenza di un modulo nella navigazione non costituisce prova che tutte le operazioni del modulo siano corrette.</p>
+</blockquote>
+<h2>1. Quadro sintetico e stato reale</h2>
+<table>
+<thead>
+<tr>
+  <th>Area</th>
+  <th>Stato v68</th>
+  <th>Evidenza o limite</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Interfaccia e navigazione</td>
+  <td><strong>Verificata in v65, regressione v68 aperta</strong></td>
+  <td>In v65 testate 115 viste standard, responsive 320–1440 px; serve ripetizione sulla v68 completa</td>
+</tr>
+<tr>
+  <td>Backup e ripristino</td>
+  <td><strong>Corretto logicamente v66–v67, test DB reale aperto</strong></td>
+  <td>Simulazione di rollback atomico, file JSON e ZIP reali; browser reale IndexedDB non certificato per v68</td>
+</tr>
+<tr>
+  <td>ZIP portatile</td>
+  <td><strong>Verificato su v67, mantenuto in v68</strong></td>
+  <td>JSZip 3.10.1 incorporato; contiene HTML e dati quando selezionati; non cifrato</td>
+</tr>
+<tr>
+  <td>Excel: esportazione</td>
+  <td><strong>Implementata e verificata in v68</strong></td>
+  <td>Fallback OpenXML offline con XLSX reale aperto via openpyxl; più fogli, numeri, 0, accenti e celle testuali</td>
+</tr>
+<tr>
+  <td>Excel: importazione</td>
+  <td><strong>Parziale / aperta</strong></td>
+  <td>Dipende da SheetJS online; il fallback offline rifiuta esplicitamente l'import</td>
+</tr>
+<tr>
+  <td>PDF vendite</td>
+  <td><strong>Stampa di emergenza disponibile</strong></td>
+  <td>Quando jsPDF manca, anteprima stampabile con marcatura BOZZA NON FISCALE; non sostituisce documenti SDI</td>
+</tr>
+<tr>
+  <td>PDF complessi, fatture e report</td>
+  <td><strong>Da certificare</strong></td>
+  <td>jsPDF e AutoTable ancora da CDN; test con biblioteca reale e verifica contenuti mancanti</td>
+</tr>
+<tr>
+  <td>Dashboard/grafici</td>
+  <td><strong>Da verificare v68</strong></td>
+  <td>Chart.js da CDN; assenza libreria identificata nella diagnostica</td>
+</tr>
+<tr>
+  <td>CRM, preventivi, ordini, magazzino, finanza</td>
+  <td><strong>Moduli presenti; test funzionali parziali pregressi</strong></td>
+  <td>CRUD di prova in v65; serve suite end-to-end v68 per ogni flusso</td>
+</tr>
+<tr>
+  <td>Google Drive, OAuth e sincronizzazione</td>
+  <td><strong>Non certificato</strong></td>
+  <td>Nessun accesso OAuth su account di prova, permessi e risoluzione conflitti da validare</td>
+</tr>
+<tr>
+  <td>SaaS multiutente</td>
+  <td><strong>Non disponibile come backend professionale</strong></td>
+  <td>HTML + IndexedDB e chiavi nel browser non equivalgono a server con RBAC/tenant isolation</td>
+</tr>
+</tbody>
+</table>
+<h2 id="roadmap">2. Ordine di esecuzione e gate (non saltare le dipendenze)</h2>
+<h3>GATE 0 — Sicurezza dati e ambiente QA (P0, blocca rilascio)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Salvare copia del gestionale operativo e <strong>backup indipendente</strong>, verificato aprendone contenuto e dimensione.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Creare due profili browser separati: A per generazione, B per ripristino; mai usare dati clienti reali nei test.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Eseguire backup JSON e ZIP con immagini grandi (oltre 150 kB) e confrontare conteggi, record, immagini e hash.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Testare ripristino IndexedDB reale, riavvio, rollback con errore deliberato, backup parziale e dati corrotti.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Verificare comportamento su origine <code>file://</code> e tramite server locale <code>http://localhost</code>, documentando la differenza di accesso ai dati.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Definire recupero dati, backup off-site cifrato, retention, autorizzazioni e procedura di emergenza.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> 100% dei record attesi ritrovati, 0 record mancanti, 0 modifiche dopo import rifiutato, ripristino atomico verificato sul motore IndexedDB reale.</p>
+<h3>GATE 1 — Documenti, PDF ed Excel (P0/P1)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled checked/>Esportazione XLSX offline di base: vera struttura OpenXML con più fogli, celle numeriche, <code>0</code>, Unicode, celle testuali sicure (v68).</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled checked/>Anteprima stampabile di vendita senza jsPDF, chiaramente marcata come bozza non fiscale (v68).</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled checked/>Diagnostica nell'area Impostazioni: disponibilità ZIP, Excel export/import, PDF, grafici, html2canvas, API IndexedDB (v68).</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Testare esportazioni XLSX <strong>reali</strong> dai moduli Vendite, Catalogo, Magazzino, Cashflow, Attrezzature e Generale (non soltanto fogli sintetici).</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Supportare importazione XLSX offline o fornire import CSV robusto e mappatura colonne assistita; test su file grandi e non validi.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Incorporare librerie PDF/Chart/Excel con verifica licenza, integrità e versioni, oppure consolidare un'alternativa equivalente.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Validare PDF clienti, listini, etichette, report, preventivi e ricevute; evitare numerazioni automatiche non idempotenti.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Separare <strong>bozza gestionale</strong> da documentazione fiscale; verificare regime IVA/forfettario/bollo/SDI con professionista e provider accreditato.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> ogni documento si apre, si ristampa e riporta importi e dati corretti; XLSX import/export con round-trip documentato; nessun bottone produce file vuoto o silenziosamente non valido.</p>
+<h3>GATE 2 — Regressione completa UI e funzioni (P0)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Ripetere tutte le <strong>115 schermate</strong> sulla v68, verificando non solo apertura ma almeno un'azione rappresentativa per ciascun gruppo.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Testare 320, 360, 390, 768, 1024, 1440 e 1920 px; sidebar, modali, filtri, griglie, toast, zoom al 125–150%.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Registrare e correggere gli errori console, gli errori <code>promise rejection</code>, navigazione e click non funzionanti.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Testare focus tastiera, etichette accessibili, contrasto chiaro/scuro e navigazione senza mouse.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Eseguire workflow <code>Lead → Preventivo → Ordine → Produzione → Vendita → Pagamento</code> con dati sintetici tracciati.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Verificare cancellazione, ricerca, modifica, duplicazione, filtri, date, valute, import/export e dati dopo reload.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> 0 P0/P1 aperti, nessuna perdita dati, 100% dei test smoke critici passati su Chrome ed Edge; Safari e Firefox nella matrice compatibilità.</p>
+<h3>GATE 3 — Modello ERP canonico e integrità (P1, prima delle nuove feature)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Censire schema attuale <code>InglyMasterDB</code> v31: store, chiavi, indici, duplicazioni, consumer e adapter legacy.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Stabilizzare <code>partners</code> canonici con ruoli cliente/fornitore, collegati a CRM lead e opportunità, senza cancellare prematuramente gli store legacy.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Formalizzare vincoli e stati per preventivi, ordini, pipeline, consegne, vendite, incassi e note contabili.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Centralizzare CRUD, eventi e validazioni; scritture tra store in transazioni atomiche e idempotenti.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Definire migrazioni sequenziali con dry-run, rollback e audit; no cancellazioni automatiche in caso di versioni superiori.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Creare test referenziali contro ordini orfani, clienti duplicati, importazioni parziali e record incoerenti.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> nessun record orfano, migrazione ripetibile e reversibile con dati anonimi; record v67 leggibili anche dopo aggiornamento.</p>
+<h3>GATE 4 — CRM, vendite e listini B2B (P1)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>CRM: clienti/fornitori, tag, segmenti, consenso contatto, storico attività, promemoria e follow-up.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Pipeline commerciale distinta da pipeline produzione, con valore probabilistico e attività assegnate.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Preventivi versionati, con materiali, tecnologia, personalizzazioni, sconti e scadenza.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Conversione <code>preventivo → ordine</code> senza duplicare o perdere righe; collegamento pagamento/stato.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Catalogo B2B: varianti, materiali, colori, MOQ, prezzi per quantità e canale; configurazioni per stampa UV, CO₂, IR, diodo, stampa 3D.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> un cliente di prova attraversa l'intero funnel e tutti gli importi rimangono coerenti nei moduli.</p>
+<h3>GATE 5 — Magazzino, acquisti e fornitori (P1)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Unificare materiali e articoli con SKU, unità, ubicazioni e valorizzazione stock.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Gestire carico/scarico, riserve per commessa, scorte minime, riordino, inventario fisico e rettifiche auditabili.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Gestire RFQ, confronti fornitori, ordini di acquisto, ricezioni parziali, costo trasporto e lead time.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Collegare consumi reali da ordini di produzione e registrare scarti/riutilizzi.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> invarianti quantità (stock + riserve + movimenti) riconciliate; nessuno scarico doppio.</p>
+<h3>GATE 6 — Produzione laser/UV/3D e costing (P1)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Distinta base revisionata: materia prima, spessore, dimensione pannello, sfrido, supporto, vernice, finitura e imballaggio.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Cicli per macchina (xTool CO₂, diodo, IR, stampa UV, stampa 3D) con tempi di setup, lavorazione e manodopera.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Audit matematico comune di <code>LaserCalcV2</code>, <code>CalcMacchine</code>, <code>Print3DQuoter</code>, <code>RealCostEngine</code>, <code>PricingEngine</code>.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Costing: materiali + tempo macchina + ammortamento + energia + consumabili + scarti + labor + spese + IVA applicabile.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Ordine di produzione, pianificazione capacità, checklist operatore, file di lavorazione, QC e consuntivo.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Traceability: associazione di parametri e file SVG/DXF/PNG a versioni prodotto, con backup e privacy.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> preventivo e consuntivo riconciliati su 10 commesse campione di tecnologie diverse, con tolleranze documentate.</p>
+<h3>GATE 7 — Finanza, fiscale e reporting (P1)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Prima nota, crediti/debiti, cashflow previsto/effettivo, riconciliazione di pagamenti.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Margine e profittabilità per prodotto, commessa, macchina, canale e cliente.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Documentazione fiscale italiana: identificare obblighi applicabili, fattura elettronica/SDI, esiti, numerazione, archiviazione e controlli professionali.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Report mensili e dashboard con grafici accessibili anche se CDN assente (fallback testuale).</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Export commercialista in formato concordato (non presumere conformità SDI di un semplice PDF).</li>
+</ul>
+<p><strong>Criterio PASS:</strong> importi e arrotondamenti verificati su casi forfettario/ordinario pertinenti; quadratura incassi e documenti.</p>
+<h3>GATE 8 — Cloud sicuro e multiutente (P2, architettura separata)</h3>
+<ul>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Definire API server, database remoto, tenant isolation, MFA e ruoli enforcement <strong>server-side</strong>.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Autenticazione e segreti solo server-side; rimuovere password/API key da HTML/IndexedDB.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Sync offline-first con versioni, conflitti, retry, idempotenza e monitoraggio.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>Backup server cifrati, export GDPR, audit log, retention, permessi e test recupero.</li>
+<li class="task-list-item"><input class="task-list-item-checkbox" type="checkbox" disabled/>CI/CD, ambiente staging/produzione, feature flags, osservabilità e suite automatica continua.</li>
+</ul>
+<p><strong>Criterio PASS:</strong> penetration test, tenant-isolation test, restore server, rollback deployment e auditing dei permessi.</p>
+<h2>3. Priorità concrete per la prossima iterazione</h2>
+<table>
+<thead>
+<tr>
+  <th style="text-align:right">Ordine</th>
+  <th>Attività</th>
+  <th>Perché</th>
+  <th>Evidenza richiesta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="text-align:right">1</td>
+  <td>Ripristino vero su due profili browser</td>
+  <td>Protezione dati</td>
+  <td>Report confronto record + hash e rollback</td>
+</tr>
+<tr>
+  <td style="text-align:right">2</td>
+  <td>PDF e fatturazione con librerie reali</td>
+  <td>Flusso vendita bloccato offline</td>
+  <td>PDF generati, ispezionati e validati</td>
+</tr>
+<tr>
+  <td style="text-align:right">3</td>
+  <td>XLSX modulo-per-modulo e import</td>
+  <td>Verificare XLSX non solo sintetico</td>
+  <td>Round-trip da file reali di prova</td>
+</tr>
+<tr>
+  <td style="text-align:right">4</td>
+  <td>115 navigazioni + smoke CRUD v68</td>
+  <td>Evitare regressioni v67→v68</td>
+  <td>Screenshot + log per viewport</td>
+</tr>
+<tr>
+  <td style="text-align:right">5</td>
+  <td>Catalogo → Quoter → Ordini → Produzione</td>
+  <td>Cuore business INGLY</td>
+  <td>Dati campione end-to-end</td>
+</tr>
+<tr>
+  <td style="text-align:right">6</td>
+  <td>Audit schema e transazioni inter-modulo</td>
+  <td>Prevenire dati fantasma</td>
+  <td>Test di idempotenza e invarianti</td>
+</tr>
+<tr>
+  <td style="text-align:right">7</td>
+  <td>Produzione/costi per tecnologia</td>
+  <td>Prezzi e marginalità affidabili</td>
+  <td>10 casi di costo riconciliati</td>
+</tr>
+<tr>
+  <td style="text-align:right">8</td>
+  <td>Cloud, sicurezza e SDI</td>
+  <td>Precondizione SaaS / fiscale</td>
+  <td>Test provider, accessi e compliance</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Definition of Done (obbligatoria)</h2>
+<p>Ogni modulo passa a <strong>APPROVATO</strong> solo se: (1) esistono dati e schema documentati; (2) tutte le azioni sono collegate a handler reali; (3) validazioni e messaggi d'errore sono chiari; (4) CRUD e rollback sono verificati; (5) permessi e privacy sono valutati; (6) il layout è testato in 6+ viewport; (7) il modulo funziona dopo reload; (8) i test sono ripetibili; (9) sono censite dipendenze esterne e limiti offline; (10) la documentazione è coerente col codice consegnato.</p>
+<h2>5. Piano di adozione, da seguire sulla tua macchina</h2>
+<ol>
+<li>Estrarre l'intero pacchetto v68 in una cartella dedicata e tenere intatti v67 e il file operativo.</li>
+<li>Leggere <code>README-RELEASE.md</code> e <code>QA-REPORT.md</code> prima di aprire la candidata.</li>
+<li>Utilizzare un <strong>nuovo profilo Chrome/Edge</strong> e dati di prova fittizi; non ripristinare subito il backup aziendale.</li>
+<li>Aprire <strong>Impostazioni → Verifica PDF / Excel / ZIP</strong>: registrare quali librerie sono disponibili e quali no.</li>
+<li>Provare export <code>.xlsx</code> da Vendite e Catalogo, quindi verificare che il file si apra e contenga gli importi attesi.</li>
+<li>Provare il flusso Vendita → documento; se il PDF avanzato non è disponibile, usare solo la <strong>bozza di stampa non fiscale</strong>.</li>
+<li>Testare export/restore su secondo profilo e documentare conteggi e immagini; <strong>non cancellare l'archivio originale</strong>.</li>
+<li>Registrare difetti con nome schermata, azione, risultato atteso, risultato ottenuto, browser e screenshot.</li>
+<li>Promuovere la build soltanto dopo i gate 0–2 e l'approvazione delle verifiche contabili/fiscali pertinenti.</li>
+</ol>
+<h2>6. Rischi e avvertenze</h2>
+<ul>
+<li>I backup locali JSON/ZIP <strong>non sono cifrati</strong>. Possono contenere nominativi, email, impostazioni e fotografie: custodirli in storage protetto e non condividerli pubblicamente.</li>
+<li>La persistenza browser dipende dal profilo e dall'origine. Aprire il gestionale da un percorso o URL diverso può mostrare un archivio separato.</li>
+<li>La disponibilità di <code>window.indexedDB</code> non è una prova di scrittura/ripristino corretto.</li>
+<li>Una stampa HTML salvata come PDF <strong>non è una fattura elettronica</strong> né una verifica degli adempimenti fiscali.</li>
+<li>La v68 migliora il fallback XLSX <strong>di esportazione</strong>, non importa ancora <code>.xlsx</code> senza librerie originali.</li>
+<li>La v68 non è un ERP multiutente con backend sicuro. Per quello è necessario Gate 8.</li>
+</ul>
+<hr />
+<p><strong>Release target:</strong> candidata v68 = stabilità delle esportazioni e trasparenza diagnostica. <strong>Release di produzione:</strong> sospesa fino a superamento documentato dei gate P0.<br />
+<strong>Responsabilità consigliate:</strong> product owner INGLY per accettazione funzionale; sviluppatore/QA per test; commercialista per aspetti fiscali; responsabile sicurezza per cloud/privacy.</p>
+</main><footer>Documento operativo · 21 novembre 2026 · Versione 1.0</footer></body></html>
