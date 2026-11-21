@@ -11486,6 +11486,7 @@ const Dashboard={
     } catch(e){ console.error('[Dashboard.render]', e.message||e); }
   },
   async updateKPIs(kpi){
+    kpi = kpi || {}; // guardia: alcuni chiamanti passano kpi undefined → niente crash su kpi.revenue
     const el=eid('dashboard-kpis')||eid('dash-kpi-grid');if(!el)return; if(el.id==='dashboard-kpis')el.id='dash-kpi-grid';
     const items=[
       {l:'Revenue MTD',v:fmtCur(kpi.revenue),i:'fa-euro-sign',c:'var(--primary)',w:'revenue'},
@@ -74515,6 +74516,72 @@ window.DigitalSignature = {
     if(typeof toast!=='undefined') toast('✅ Preventivo confermato da '+req.client+'!','success');
   }
 };
+
+// ═══ ClientPipeline — pipeline commerciale CRM (GATE 4 roadmap v68) ═══
+// Era referenziata dal route (crm_pipeline) ma MAI definita → ReferenceError e
+// sezione rotta. Implementazione reale: Kanban per stage su localStorage
+// 'ingly_pipeline_v1' (stessa fonte del patch valore-per-stage), valore dai
+// preventivi 'lb2b_quotes_v1', con aggiunta/spostamento/rimozione opportunità.
+const ClientPipeline = {
+  _KEY:'ingly_pipeline_v1', _QKEY:'lb2b_quotes_v1',
+  STAGES:[
+    {k:'lead',       label:'Lead',        color:'#64748b', emoji:'🌱'},
+    {k:'contattato', label:'Contattato',  color:'#3b82f6', emoji:'📞'},
+    {k:'qualificato',label:'Qualificato', color:'#8b5cf6', emoji:'✅'},
+    {k:'preventivo', label:'Preventivo',  color:'#f59e0b', emoji:'📋'},
+    {k:'vinto',      label:'Vinto',       color:'#22c55e', emoji:'🏆'},
+    {k:'perso',      label:'Perso',       color:'#ef4444', emoji:'✖'},
+  ],
+  _load(){ try{ return JSON.parse(localStorage.getItem(this._KEY)||'[]')||[]; }catch(e){ return []; } },
+  _save(a){ try{ localStorage.setItem(this._KEY, JSON.stringify(a)); }catch(e){} },
+  _quotes(){ try{ return JSON.parse(localStorage.getItem(this._QKEY)||'[]')||[]; }catch(e){ return []; } },
+  _esc(s){ return String(s==null?'':s).replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); },
+  _val(name){ return this._quotes().filter(x=>x.client===name).reduce((a,x)=>a+(+x.total||0),0); },
+  render(){
+    const el=document.getElementById('view-crm_pipeline'); if(!el) return;
+    const items=this._load();
+    const totalVal=items.reduce((a,c)=>a+this._val(c.name),0);
+    const cols=this.STAGES.map(st=>{
+      const inStage=items.map((c,i)=>({c,i})).filter(o=>(o.c.stage||'lead')===st.k);
+      const sval=inStage.reduce((a,o)=>a+this._val(o.c.name),0);
+      const cards=inStage.length? inStage.map(o=>this._card(o.c,o.i)).join('')
+        : `<div style="text-align:center;padding:14px 6px;color:var(--text-dim);font-size:10px;border:1px dashed var(--border2);border-radius:7px">—</div>`;
+      return `<div style="flex:1;min-width:180px;background:var(--bg-card2);border-radius:10px;padding:8px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;padding:2px 4px"><span style="font-size:12px;font-weight:800;color:${st.color}">${st.emoji} ${st.label}</span><span style="font-size:10px;color:var(--text-muted)">${inStage.length}</span></div>
+        <div style="font-size:10px;font-weight:700;color:#10b981;margin-bottom:6px;padding:0 4px;min-height:12px">${sval>0?('€'+sval.toFixed(0)+' potenziale'):''}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">${cards}</div></div>`;
+    }).join('');
+    el.innerHTML=`<div style="padding:20px">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+        <div><div style="font-size:22px;font-weight:900;color:var(--text)">📊 Pipeline Commerciale</div>
+        <div style="font-size:12px;color:var(--text-muted);margin-top:3px">${items.length} opportunità · €${totalVal.toFixed(0)} valore potenziale totale</div></div>
+        <button onclick="ClientPipeline.addOpp()" style="padding:9px 16px;background:var(--primary);color:#000;border:none;border-radius:9px;font-weight:800;cursor:pointer">+ Opportunità</button></div>
+      ${items.length===0?`<div style="background:#3b82f610;border:1px solid #3b82f630;border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text-muted);margin-bottom:14px">Pipeline commerciale (lead→vinto), distinta dalla pipeline di produzione (Ordini & Workflow). Aggiungi opportunità e spostale tra gli stage; il valore € è calcolato dai preventivi collegati per nome cliente.</div>`:''}
+      <div style="display:flex;gap:10px;overflow-x:auto;align-items:flex-start">${cols}</div></div>`;
+  },
+  _card(c,i){
+    const v=this._val(c.name);
+    const opts=this.STAGES.map(s=>`<option value="${s.k}" ${((c.stage||'lead')===s.k)?'selected':''}>${s.emoji} ${s.label}</option>`).join('');
+    return `<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:9px">
+      <div style="font-size:12px;font-weight:700;color:var(--text)">${this._esc(c.name)}</div>
+      ${v>0?`<div style="font-size:10px;color:#10b981;font-weight:700;margin-top:2px">€${v.toFixed(0)}</div>`:''}
+      <div style="display:flex;gap:4px;margin-top:6px;align-items:center">
+        <select onchange="ClientPipeline.move(${i},this.value)" style="flex:1;font-size:10px;padding:3px;background:var(--bg-card2);border:1px solid var(--border);border-radius:5px;color:var(--text)">${opts}</select>
+        <button onclick="ClientPipeline.remove(${i})" title="Rimuovi" style="background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:12px">✕</button>
+      </div></div>`;
+  },
+  addOpp(){
+    const name=(typeof prompt==='function'?(prompt('Nome cliente / opportunità:')||''):'').trim();
+    if(!name) return;
+    const items=this._load();
+    if(items.some(c=>c.name===name)){ if(typeof toast==='function')toast('Opportunità già presente','warning'); return; }
+    items.push({ name, stage:'lead', createdAt:new Date().toISOString() });
+    this._save(items); if(typeof toast==='function')toast('Opportunità aggiunta 🌱','success'); this.render();
+  },
+  move(i,stage){ const items=this._load(); if(items[i]){ items[i].stage=stage; items[i].updatedAt=new Date().toISOString(); this._save(items); this.render(); } },
+  remove(i){ const items=this._load(); if(items[i]){ items.splice(i,1); this._save(items); if(typeof toast==='function')toast('Rimossa','info'); this.render(); } },
+};
+window.ClientPipeline = ClientPipeline;
 
 // ─── Route patches for new sections ──────────────────────────────
 (function _v31Routes(){
