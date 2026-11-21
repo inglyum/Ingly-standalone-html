@@ -250,6 +250,34 @@ a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visib
 
 /* Numeri tabulari per importi/KPI (allineamento professionale) */
 .kpi-value, .stat-val, .stat-value, .num, .money, .amount{ font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+
+/* ─── Allineamento TOPBAR: molte feature iniettano pulsanti con stili inline
+   incoerenti (altezze/posizioni diverse) che sforavano la barra fissa da 46px.
+   Rendiamo la barra una toolbar che va a capo in modo pulito, con tutto
+   centrato verticalmente e i controlli ad altezza uniforme. ─── */
+#topbar{
+  height:auto !important; min-height:var(--header-h, 58px);
+  flex-wrap:wrap !important; align-items:center !important; align-content:center !important;
+  row-gap:5px; column-gap:8px; overflow:visible !important; padding:7px 12px !important;
+}
+#topbar > *{ align-self:center !important; margin-top:0 !important; margin-bottom:0 !important; flex-shrink:0; }
+/* Controlli iniettati (Cattura, Reply, bandiere, badge…) → altezza/allineamento coerenti */
+#topbar button{ min-height:30px; display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+#topbar img{ vertical-align:middle; }
+/* pill di stato (0 attivi / €0 da pagare) centrati, non deformati */
+#topbar [style*="border-radius"]{ align-self:center !important; }
+
+/* ─── Allineamento SIDEBAR: la riga di icone e la ricerca modulo in testa
+   erano compresse/disallineate. Spaziatura e centratura coerenti. ─── */
+#sidebar-inner #sidebar-search{ padding:10px 12px 8px; }
+#sidebar-inner #sidebar-search input{ height:34px; }
+/* righe di azioni rapide in sidebar: icone uniformi e centrate */
+#sidebar-inner [id*="quickbar"], #sidebar-inner .sidebar-actions{ display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+#sidebar-inner [id*="quickbar"] button, #sidebar-inner .sidebar-actions button{
+  width:30px; height:30px; padding:0; display:inline-flex; align-items:center; justify-content:center;
+  border-radius:8px; transition:background .15s ease, transform .12s ease;
+}
+#sidebar-inner [id*="quickbar"] button:hover, #sidebar-inner .sidebar-actions button:hover{ background:var(--bg-card2); }
 </style>
 
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
@@ -108772,6 +108800,26 @@ button:focus-visible { outline: 2px solid var(--primary, #d4af37); outline-offse
   #topbar #lang-toggle { min-width:32px !important; width:32px !important; padding:4px !important; }
   #topbar #theme-toggle-btn { min-width:32px !important; width:32px !important; padding:4px !important; }
 }
+/* ═══ POLISH FINALE topbar — allineamento professionale. Rispetta il design
+   SaaS (barra singola compatta) ma forza la CENTRATURA VERTICALE di tutti gli
+   elementi e un'altezza coerente dei controlli, risolvendo il disallineamento. ═══ */
+body.saas-active #topbar, body #topbar{
+  flex-wrap:nowrap !important; align-items:center !important; gap:7px !important;
+}
+/* tutto centrato verticalmente nella barra, qualunque sia l'altezza intrinseca */
+body.saas-active #topbar > *, body #topbar > *{
+  align-self:center !important; margin-top:0 !important; margin-bottom:0 !important;
+}
+/* controlli (icone e pulsanti iniettati) ad altezza uniforme e centrati */
+body.saas-active #topbar button, body #topbar button{
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  height:32px !important; min-height:32px !important; line-height:1 !important; box-sizing:border-box !important;
+}
+/* badge/contatori compatti e centrati */
+body #topbar .badge{ min-width:16px; height:16px; padding:0 4px; font-size:9px; display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+/* Sidebar: riga strumenti/icone allineata e uniforme */
+body #sidebar-toolbar{ display:flex !important; align-items:center !important; gap:6px !important; }
+body #sidebar-toolbar > *{ align-self:center !important; }
 </style>
 
 
