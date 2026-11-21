@@ -197,6 +197,61 @@ canvas { max-width: 100%; height: auto; }
 @keyframes pageIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 </style>
 
+<!-- ═══ POLISH UI/UX v68 — layer professionale additivo e reversibile ═══ -->
+<style id="ingly-polish-v68">
+/* Normalizzazione ICON-BUTTON della topbar: dimensioni e hover coerenti,
+   niente più micro-bottoni di altezze diverse. */
+#topbar .topbar-btn{
+  min-width:34px; height:34px; padding:0 9px; justify-content:center;
+  border-radius:9px; font-size:14px !important; line-height:1;
+  color:var(--text-muted);
+  transition:background .15s ease, color .15s ease, transform .12s ease, box-shadow .15s ease;
+}
+#topbar .topbar-btn i{ font-size:14px; }
+#topbar .topbar-btn:hover{ background:var(--bg-card2); color:var(--text); }
+#topbar .topbar-btn:active{ transform:scale(.94); }
+/* Badge/contatori: compatti e leggibili, non sovradimensionati */
+#topbar .badge, #topbar .topbar-btn .badge{
+  min-width:16px; height:16px; padding:0 4px; font-size:9px; font-weight:800;
+  display:inline-flex; align-items:center; justify-content:center; line-height:1;
+  border-radius:99px;
+}
+/* Pulsanti .btn: feedback professionale (hover-lift + press), coerenti */
+.btn{ transition:background .15s ease, box-shadow .18s ease, transform .12s ease, opacity .15s ease, border-color .15s ease; will-change:transform; }
+.btn:active{ transform:translateY(0) scale(.98); }
+.btn-primary:hover{ box-shadow:0 4px 16px var(--primary-dim); opacity:.95; }
+.btn-secondary:hover{ border-color:var(--primary-border); }
+/* Icon-button generici coerenti */
+.btn-icon{ transition:background .15s ease, color .15s ease, transform .12s ease, border-color .15s ease; }
+.btn-icon:active{ transform:scale(.94); }
+
+/* Motion e profondità solo se l'utente non ha ridotto il movimento */
+@media (prefers-reduced-motion: no-preference){
+  .btn:hover{ transform:translateY(-1px); }
+  .kpi-card, .card{ transition:transform .18s cubic-bezier(.4,0,.2,1), box-shadow .18s ease, border-color .15s ease; }
+  .kpi-card:hover{ transform:translateY(-2px); box-shadow:var(--shadow-sm); }
+  /* Lancio più fluido: fade-in dolce del contenuto al primo paint */
+  body{ animation:inglyBootFade .38s cubic-bezier(.4,0,.2,1) both; }
+  @keyframes inglyBootFade{ from{ opacity:0; } to{ opacity:1; } }
+}
+
+/* Focus ring accessibile e uniforme su tutti gli elementi interattivi (WCAG) */
+.btn:focus-visible, .topbar-btn:focus-visible, .btn-icon:focus-visible,
+.nav-item:focus-visible, .tab-btn:focus-visible, button:focus-visible,
+a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+  outline:2px solid var(--primary); outline-offset:2px; border-radius:7px;
+}
+
+/* Scrollbar raffinata (coerente coi temi) */
+*::-webkit-scrollbar{ width:10px; height:10px; }
+*::-webkit-scrollbar-track{ background:transparent; }
+*::-webkit-scrollbar-thumb{ background:var(--border2); border-radius:99px; border:2px solid transparent; background-clip:padding-box; }
+*::-webkit-scrollbar-thumb:hover{ background:var(--text-dim); }
+
+/* Numeri tabulari per importi/KPI (allineamento professionale) */
+.kpi-value, .stat-val, .stat-value, .num, .money, .amount{ font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+</style>
+
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
 <!-- INGLY OS v10.0 - Z-INDEX SYSTEM (Stacking Context Management)           -->
 <!-- ═══════════════════════════════════════════════════════════════════════ -->
