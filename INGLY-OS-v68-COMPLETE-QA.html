@@ -57,11 +57,43 @@
    Online le librerie vere restano attive (lo shim si attiva solo se mancano). */
 (function(){
   if(typeof window.Chart==='undefined'){
-    var C=function(){ this.destroy=function(){}; this.update=function(){}; this.resize=function(){};
-      this.reset=function(){}; this.render=function(){}; this.data={datasets:[]}; this.options={}; this.canvas=null; };
+    // GATE 7 roadmap: quando Chart.js è assente (offline) mostriamo un FALLBACK
+    // TESTUALE con i dati del grafico, invece di una canvas vuota — così i numeri
+    // restano accessibili. Online (Chart.js caricato) questo shim non si attiva.
+    var C=function(ctx, config){
+      this.destroy=function(){}; this.update=function(){ try{C._text(this.canvas,this.config);}catch(e){} };
+      this.resize=function(){}; this.reset=function(){}; this.render=function(){};
+      this.data=(config&&config.data)||{datasets:[]}; this.options={}; this.config=config||{};
+      this.canvas=(ctx&&ctx.canvas)?ctx.canvas:((ctx&&ctx.getContext)?ctx:(ctx&&ctx.nodeType===1?ctx:null));
+      try{ C._text(this.canvas, this.config); }catch(e){}
+    };
     C.getChart=function(){ return null; };
     C.register=function(){}; C.unregister=function(){};
     C.defaults={ font:{}, plugins:{legend:{},tooltip:{}}, scales:{}, elements:{}, color:'#888' };
+    C._esc=function(s){ return String(s==null?'':s).replace(/[<>&]/g,function(c){return {'<':'&lt;','>':'&gt;','&':'&amp;'}[c];}); };
+    C._text=function(canvas, config){
+      if(!canvas||!config||!config.data) return;
+      var host=canvas.parentElement; if(!host) return;
+      var d=config.data, labels=d.labels||[], ds=d.datasets||[];
+      var old=host.querySelector('.chart-text-fallback'); if(old) old.remove();
+      try{ canvas.style.display='none'; }catch(e){}
+      var rows='';
+      var n=Math.max(labels.length, (ds[0]&&ds[0].data&&ds[0].data.length)||0);
+      for(var i=0;i<n && i<24;i++){
+        var lbl=labels[i]!=null?C._esc(labels[i]):('#'+(i+1));
+        var vals=ds.map(function(s){ var v=(s.data&&s.data[i]!=null)?s.data[i]:''; return (typeof v==='object'&&v)?(v.y!=null?v.y:JSON.stringify(v)):v; });
+        rows+='<tr><td style="padding:3px 8px;color:var(--text-muted);border-bottom:1px solid var(--border)">'+lbl+'</td>'+
+          vals.map(function(v){return '<td style="padding:3px 8px;text-align:right;font-weight:700;color:var(--text);border-bottom:1px solid var(--border)">'+C._esc(v)+'</td>';}).join('')+'</tr>';
+      }
+      var heads=ds.length>1?('<tr><th></th>'+ds.map(function(s){return '<th style="padding:3px 8px;text-align:right;font-size:10px;color:var(--text-dim)">'+C._esc(s.label||'')+'</th>';}).join('')+'</tr>'):'';
+      var div=document.createElement('div');
+      div.className='chart-text-fallback';
+      div.setAttribute('role','table'); div.setAttribute('aria-label','Dati grafico (modalità offline)');
+      div.style.cssText='font-size:11px;max-height:100%;overflow:auto;padding:4px';
+      div.innerHTML='<div style="font-size:10px;color:var(--text-dim);margin-bottom:4px">📊 Grafico non disponibile offline — dati:</div>'+
+        (rows?('<table style="width:100%;border-collapse:collapse">'+heads+rows+'</table>'):'<div style="color:var(--text-dim)">Nessun dato</div>');
+      host.appendChild(div);
+    };
     C.Chart=C; window.Chart=C; window._chartOffline=true;
   }
 })();
