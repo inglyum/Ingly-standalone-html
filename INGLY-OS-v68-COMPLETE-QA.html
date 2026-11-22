@@ -85271,7 +85271,7 @@ body             #content-inner { padding-bottom: 76px; }
   }
   function fmtN(n) { return (+n || 0).toLocaleString('it-IT', { maximumFractionDigits: 0 }); }
   function dateIT(d) { try { return new Date(d).toLocaleDateString('it-IT'); } catch (e) { return d || '—'; } }
-  function esc(s) { return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function esc(s) { return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function uid() { return Math.random().toString(36).slice(2, 10); }
   function toastr(msg, type, ms) {
     if (typeof toast !== 'undefined') { toast(msg, type || 'info', ms || 2500); return; }
@@ -109361,5 +109361,12 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
 
 /* BADGE coerenti ovunque */
 .badge{ display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+
+/* MODALI — backdrop premium ed elevazione coerente */
+.modal-overlay{ backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); }
+.modal{ box-shadow:0 24px 60px rgba(0,0,0,.42); }
+.modal-header .modal-title, .modal-title{ letter-spacing:-.01em; }
+/* EMPTY STATE generico un filo più curato */
+[class*="empty"]{ }
 </style>
 </html>
