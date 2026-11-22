@@ -11017,7 +11017,7 @@ const App={
       competitors:()=>{ if(typeof CompetitorsBoard!=='undefined') CompetitorsBoard.render(); },
       marketintel:()=>{ if(typeof CompetitorTracker!=='undefined') (typeof CompetitorTracker!=='undefined'&&CompetitorTracker.render()); },
       leadscorer:()=>{ if(typeof LeadScorer!=='undefined') (typeof LeadScorer!=='undefined'&&LeadScorer.render()); },
-      studio_ai:()=>{ if(typeof AIStudio!=='undefined') (typeof AIStudio!=='undefined'&&AIStudio.render()); },
+      studio_ai:()=>{ if(typeof AIStudio!=='undefined' && typeof AIStudio.render==='function') AIStudio.render(); },
       web_presence:()=>{ if(typeof WebPresence!=='undefined') (typeof WebPresence!=='undefined'&&WebPresence.render()); },
       inglydesign:()=>{ if(typeof InglyDesign!=='undefined') (typeof InglyDesign!=='undefined'&&InglyDesign.render()); },
       
@@ -91908,7 +91908,7 @@ if(document.readyState !== 'loading'){
     }, 60);
   });
   NavBus.on('apparel',        function() { setTimeout(function(){ typeof ApparelQuoter !=='undefined' && ApparelQuoter.render(); }, 60); });
-  NavBus.on('studio_ai',      function() { setTimeout(function(){ typeof AIStudio !=='undefined' && AIStudio.render(); }, 100); });
+  NavBus.on('studio_ai',      function() { setTimeout(function(){ typeof AIStudio !=='undefined' && typeof AIStudio.render==='function' && AIStudio.render(); }, 100); });
   NavBus.on('decision',       function() { setTimeout(function(){ typeof BDW !=='undefined' && BDW.init().then(function(){ typeof DecisionEngine !=='undefined' && DecisionEngine.render(); }); }, 100); });
 
   // Hook globale: chiudi sidebar su mobile dopo navigazione
@@ -109243,5 +109243,90 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
  }
 })(window,document);
 
+</script>
+<!-- ═══ Topbar overflow menu "⋯" — raggruppa le scorciatoie secondarie per una
+     barra più pulita. Additivo/reversibile: nasconde alcuni bottoni dalla barra
+     e li ripropone in un dropdown che richiama le STESSE azioni. ═══ -->
+<style id="ingly-topbar-overflow-css">
+  /* nascondi dalla barra le scorciatoie spostate nel menu ⋯ */
+  #topbar button[onclick*="App.navigate('studio_ai')"],
+  #topbar button[onclick*="App.navigate('social')"],
+  #topbar button[onclick*="App.navigate('web_presence')"],
+  #topbar button[onclick*="App.navigate('produzione')"],
+  #topbar button[onclick*="App.navigate('design_studio')"],
+  #topbar #quick-capture-btn{ display:none !important; }
+  #ingly-more-menu{ position:fixed; z-index:11000; min-width:208px; background:var(--bg-card); border:1px solid var(--border2);
+    border-radius:12px; box-shadow:var(--shadow-lg,0 12px 32px rgba(0,0,0,.5)); padding:6px; display:none; }
+  #ingly-more-menu.open{ display:block; animation:inglyMoreIn .14s ease; }
+  @keyframes inglyMoreIn{ from{opacity:0; transform:translateY(-6px);} to{opacity:1; transform:translateY(0);} }
+  #ingly-more-menu .imm-item{ display:flex; align-items:center; gap:10px; width:100%; padding:9px 11px; border:none; background:none;
+    color:var(--text); font-size:13px; font-weight:600; cursor:pointer; border-radius:8px; text-align:left; transition:background .12s ease; }
+  #ingly-more-menu .imm-item:hover{ background:var(--bg-card2); }
+  #ingly-more-menu .imm-item .imm-ic{ width:20px; text-align:center; font-size:15px; }
+  #ingly-more-menu .imm-sep{ height:1px; background:var(--border); margin:5px 6px; }
+  #ingly-more-menu .imm-head{ font-size:10px; text-transform:uppercase; letter-spacing:.6px; color:var(--text-dim); padding:6px 11px 3px; font-weight:700; }
+</style>
+<script id="ingly-topbar-overflow-js">
+(function(w,d){
+  if(w.__inglyMoreMenu) return; w.__inglyMoreMenu=true;
+  var ITEMS=[
+    {t:'header', label:'Scorciatoie'},
+    {ic:'🤖', label:'AI Studio',     run:function(){ w.App&&App.navigate&&App.navigate('studio_ai'); }},
+    {ic:'📱', label:'Social',        run:function(){ w.App&&App.navigate&&App.navigate('social'); }},
+    {ic:'🌐', label:'Web Presence',  run:function(){ w.App&&App.navigate&&App.navigate('web_presence'); }},
+    {ic:'📦', label:'Produzione',    run:function(){ w.App&&App.navigate&&App.navigate('produzione'); }},
+    {ic:'🎨', label:'Design Studio', run:function(){ w.App&&App.navigate&&App.navigate('design_studio'); }},
+    {t:'sep'},
+    {ic:'✍️', label:'Cattura idea',  run:function(){ if(typeof w.QuickCapture!=='undefined') QuickCapture.open('text'); }},
+    {ic:'💾', label:'Backup ora',    run:function(){ if(typeof w.Backup!=='undefined'&&Backup.createNow) Backup.createNow(); }},
+  ];
+  function buildMenu(){
+    if(d.getElementById('ingly-more-menu')) return d.getElementById('ingly-more-menu');
+    var m=d.createElement('div'); m.id='ingly-more-menu'; m.setAttribute('role','menu');
+    ITEMS.forEach(function(it){
+      if(it.t==='header'){ var h=d.createElement('div'); h.className='imm-head'; h.textContent=it.label; m.appendChild(h); return; }
+      if(it.t==='sep'){ var s=d.createElement('div'); s.className='imm-sep'; m.appendChild(s); return; }
+      var b=d.createElement('button'); b.className='imm-item'; b.setAttribute('role','menuitem');
+      b.innerHTML='<span class="imm-ic" aria-hidden="true">'+it.ic+'</span><span>'+it.label+'</span>';
+      b.onclick=function(){ closeMenu(); try{ it.run(); }catch(e){} };
+      m.appendChild(b);
+    });
+    d.body.appendChild(m);
+    return m;
+  }
+  function closeMenu(){ var m=d.getElementById('ingly-more-menu'); if(m) m.classList.remove('open'); }
+  function toggleMenu(btn){
+    var m=buildMenu(); var open=m.classList.contains('open');
+    if(open){ closeMenu(); return; }
+    var r=btn.getBoundingClientRect();
+    m.style.top=(r.bottom+6)+'px';
+    var left=Math.min(r.left, w.innerWidth-224); m.style.left=Math.max(8,left)+'px';
+    m.classList.add('open');
+  }
+  var MOVED=['studio_ai','social','web_presence','produzione','design_studio'];
+  function hideMoved(){
+    var tb=d.getElementById('topbar'); if(!tb) return;
+    [].forEach.call(tb.querySelectorAll('button'),function(b){
+      var oc=b.getAttribute('onclick')||'';
+      var hit=MOVED.some(function(s){return oc.indexOf("navigate('"+s+"')")>=0;});
+      if(hit || b.id==='quick-capture-btn'){ try{ b.style.setProperty('display','none','important'); }catch(e){ b.style.display='none'; } }
+    });
+  }
+  function addBtn(){
+    var tb=d.getElementById('topbar'); if(!tb) return;
+    hideMoved();
+    if(d.getElementById('ingly-more-btn')) return;
+    var b=d.createElement('button'); b.id='ingly-more-btn'; b.className='topbar-btn'; b.title='Altre scorciatoie';
+    b.setAttribute('aria-label','Altre scorciatoie'); b.innerHTML='<i class="fas fa-ellipsis"></i>';
+    b.onclick=function(ev){ ev.stopPropagation(); toggleMenu(b); };
+    // posiziona prima del toggle tema, altrimenti in coda
+    var ref=d.getElementById('theme-toggle-btn')||d.getElementById('lang-toggle');
+    if(ref&&ref.parentElement===tb) tb.insertBefore(b,ref); else tb.appendChild(b);
+  }
+  d.addEventListener('click',function(e){ var m=d.getElementById('ingly-more-menu'); if(!m||!m.classList.contains('open'))return; if(!m.contains(e.target)&&e.target.id!=='ingly-more-btn'&&!(e.target.closest&&e.target.closest('#ingly-more-btn'))) closeMenu(); });
+  w.addEventListener('resize',closeMenu);
+  function init(){ addBtn(); setTimeout(addBtn,3500); setTimeout(addBtn,6000); } // riprova dopo le iniezioni tardive
+  if(d.readyState==='loading') d.addEventListener('DOMContentLoaded',init,{once:true}); else init();
+})(window,document);
 </script>
 </html>
