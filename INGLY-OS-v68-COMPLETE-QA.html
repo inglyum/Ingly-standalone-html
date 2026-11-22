@@ -109329,4 +109329,37 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
   if(d.readyState==='loading') d.addEventListener('DOMContentLoaded',init,{once:true}); else init();
 })(window,document);
 </script>
+<!-- ═══ Rifinitura grafica v68 — refinements conservativi, theme-aware, reversibili ═══ -->
+<style id="ingly-refine-v68">
+/* SIDEBAR — voci di navigazione con ritmo e indicatore attivo professionale */
+#sidebar .nav-item{ min-height:34px; padding:8px 11px !important; position:relative; border-radius:9px; transition:background .15s ease, color .15s ease; }
+#sidebar .nav-item i{ width:17px; text-align:center; }
+#sidebar .nav-item.active{ background:var(--primary-dim) !important; color:var(--primary) !important; font-weight:700 !important; }
+#sidebar .nav-item.active::before{ content:""; position:absolute; left:3px; top:7px; bottom:7px; width:3px; border-radius:3px; background:var(--primary); }
+#sidebar .nav-item:hover:not(.active){ background:var(--bg-card2); color:var(--text); }
+#sidebar .nav-group-title{ opacity:.9; }
+
+/* CARD / KPI — profondità sottile per staccare dalle superfici (utile sui temi chiari) */
+.card, .kpi-card{ box-shadow:0 1px 3px rgba(0,0,0,.07); }
+@media (prefers-reduced-motion: no-preference){
+  .kpi-card:hover{ box-shadow:0 6px 18px rgba(0,0,0,.10); }
+}
+
+/* RITMO intestazioni di sezione */
+.page-header{ margin-bottom:20px; padding-bottom:2px; }
+.module-header{ margin-bottom:18px; }
+
+/* INPUT/SELECT — focus coerente e leggibile */
+.form-control{ transition:border-color .15s ease, box-shadow .15s ease, background .15s ease; }
+.form-control:hover:not(:focus){ border-color:var(--primary-border); }
+
+/* BARRA ACCOUNT SaaS — allineamento verticale pulito di tutti gli elementi */
+#saas-session-bar{ align-items:center !important; }
+#saas-session-bar ._eh-left, #saas-session-bar ._eh-center, #saas-session-bar ._eh-right{ display:flex !important; align-items:center !important; }
+#saas-session-bar ._eh-icon-btn, #saas-session-bar ._eh-logout, #saas-session-bar ._eh-profile{ display:inline-flex !important; align-items:center !important; justify-content:center !important; }
+#saas-session-bar ._eh-plan-badge{ display:inline-flex; align-items:center; line-height:1; }
+
+/* BADGE coerenti ovunque */
+.badge{ display:inline-flex; align-items:center; justify-content:center; line-height:1; }
+</style>
 </html>
