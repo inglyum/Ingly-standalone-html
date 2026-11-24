@@ -109403,4 +109403,44 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
 /* EMPTY STATE generico un filo più curato */
 [class*="empty"]{ }
 </style>
+<style id="ingly-a11y-v68">
+/* ACCESSIBILITÀ v68 (fix conservativo, solo CSS, reversibile)
+   1) --text-dim portato ad almeno ~3:1 sul proprio --bg-card (lift minimo, resta
+      tenue; stesso family di tinta). Prima molti temi erano ~2.56:1 (sotto WCAG).
+      Override additivo: vince per posizione nel cascade, non tocca i temi originali.
+   2) Target touch ≥40px SOLO su dispositivi a puntatore grosso (coarse): la densità
+      desktop resta invariata. */
+:root{--text-dim:#636363}
+[data-theme=midnight]{--text-dim:#50637e}
+[data-theme=emerald]{--text-dim:#316d54}
+[data-theme=crimson]{--text-dim:#7b5862}
+[data-theme=arctic]{--text-dim:#8593a6}
+[data-theme=purple]{--text-dim:#6b5c8a}
+[data-theme=sand]{--text-dim:#78664f}
+[data-theme=matrix]{--text-dim:#3f673f}
+[data-theme=rosegold]{--text-dim:#8a526e}
+[data-theme=ocean]{--text-dim:#3e6976}
+[data-theme=cyberpunk]{--text-dim:#8e4272}
+[data-theme=vulcano]{--text-dim:#86553b}
+[data-theme=foresta]{--text-dim:#3f6c51}
+[data-theme=slate]{--text-dim:#646973}
+[data-theme=aurora]{--text-dim:#605c7a}
+[data-theme=latte]{--text-dim:#a6876e}
+[data-theme=tokyo]{--text-dim:#7240c0}
+[data-theme=ghiaccio]{--text-dim:#8593a6}
+[data-theme=nordic]{--text-dim:#426685}
+[data-theme=sakura]{--text-dim:#87516c}
+[data-theme=olive]{--text-dim:#576c3f}
+[data-theme=amber]{--text-dim:#775e14}
+[data-theme=graphite]{--text-dim:#5d697b}
+[data-theme=neongreen]{--text-dim:#316c3e}
+@media (pointer:coarse){
+  /* Target touch ≥40px su nav e bottoni di contenuto (la navigazione primaria e
+     le azioni reali). I bottoni-icona della topbar restano compatti (32px, sizing
+     per-id voluto) e sono comunque conformi a WCAG 2.2 (min 24px); su mobile le
+     loro azioni sono già nel menu "⋯" con tap target ampi. */
+  .nav-item{ min-height:40px !important; display:flex; align-items:center; }
+  .btn, .tab-btn, .act-btn{ min-height:40px !important; }
+}
+</style>
 </html>

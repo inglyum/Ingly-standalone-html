@@ -146,9 +146,30 @@ perso **tutti** i dati core (viola il principio #1 «nessuna perdita dati»). Fi
 allega `IDB.exportAll()` (esclude `backups`, no ricorsione); `importJSON` ripristina anche gli
 store IDB (merge per chiave `id`, guardato per-store, non cancella nulla). Round-trip verificato.
 
+### GATE 2 — Accessibilità (contrasto WCAG + target touch)
+Audit via metriche DOM (contrasto WCAG calcolato, nessuno screenshot — il renderer
+headless va in crash sul file ~8MB). Fix conservativo approvato, solo CSS, reversibile
+(blocco `ingly-a11y-v68`, override additivo che non tocca le definizioni-tema originali).
+
+| Prova | Prima | Dopo |
+|---|---|---|
+| Contrasto `--text` vs `--bg-card` | 14–18:1 | ✅ invariato |
+| Contrasto `--text-muted` | 4.76–7.58:1 | ✅ invariato (già AA) |
+| Contrasto **`--text-dim`** (24 temi) | ❌ ~2.56:1 (sotto 3:1 e 4.5:1) | ✅ **3.04–3.20:1** (≥3:1, lift minimo, resta tenue) |
+| Target touch `.nav-item` (primaria) su desktop | 34px | ✅ 34px (densità desktop preservata) |
+| Target touch `.nav-item`/`.btn`/`.tab-btn` su **touch** (`pointer:coarse`) | 34px | ✅ **40px** |
+| Bottoni-icona topbar | 32px | 32px (sizing per-id voluto; conforme **WCAG 2.2** min 24px; azioni mobili nel menu "⋯") |
+
+**Metodo del fix contrasto:** i valori corretti di `--text-dim` sono stati **calcolati**
+(non a mano) per ogni tema — lift minimo verso bianco/nero fino a ≥3:1 sul rispettivo
+`--bg-card`, mantenendo il family di tinta. Nessun valore magico, niente modifica alle righe
+dei temi originali (override per posizione nel cascade → reversibile rimuovendo un solo blocco).
+
 ## Da verificare nei prossimi giri
-- BOM/distinta materiali e **consumo stock su conferma ordine di produzione** (MRP, quando presente).
-- Multi-viewport e accessibilità (GATE 2).
+- BOM/distinta materiali e **consumo stock su conferma ordine di produzione** (MRP): **non
+  implementato** in v68 (confermato: nessuna logica `consumeStock`/BOM). È una feature pianificata
+  (GATE 6 / nota `MODULE_MAP`), non un bug — richiede il modello canonico + decisione.
+- `--text-dim` al pieno WCAG AA 4.5:1 (oggi 3:1): valutabile quando si deciderà il design system.
 - **Codice morto da bonificare (candidato):** `QuoterBridge.convert` riga 14572 (crea vendita) è shadowato dall'override riga 26116; due forme d'ordine coesistono (`total` vs `value`) — valutare unificazione campo totale a livello di modello (GATE 1/DB).
 - Magazzino: carico/scarico, scorte, riordino, invarianti quantità (GATE 5).
 - Acquisti/Fornitori: RFQ → PO → ricezione (GATE 5).
