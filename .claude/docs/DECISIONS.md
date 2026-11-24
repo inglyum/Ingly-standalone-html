@@ -142,3 +142,22 @@ backdrop-blur, KPI card con hover-lift, tabelle con header sticky + zebra, botto
 `.v2-btn` riutilizzabili (tolto il margin-top di login, aggiunti hover/press/focus),
 focus-visible WCAG AA sui controlli condivisi. Nessun colore hardcoded fuori token.
 Reversibile (solo CSS). Suite 565 verde (1 fallimento ambientale: ICU locale).
+
+## 2026-11-24 — Strategia di trasformazione: Fase 0 Baseline, strangler-fig (no big-bang)
+A fronte di un'analisi esterna che proponeva un rewrite completo verso stack SaaS
+(React/TS + NestJS + PostgreSQL + Supabase), decisione: **non** avviare un rewrite
+big-bang. Si procede con la **Fase 0 (Baseline)** non distruttiva, prerequisito di
+qualunque strada futura. Motivazioni: il monolite single-file è offline/zero-ops/
+CSP-safe (asset reale per uno studio piccolo, non solo debito); un big-bang uccide un
+prodotto che funziona; la roadmap stessa dell'analisi è, letta bene, incrementale.
+Scoperta determinante: v68 contiene già lo scaffold `INGLYERP` (riga ~107158) con
+`MODULE_MAP` (10 domini, tutti `state:'partial'` con note oneste), repository con
+`audit()`/redazione campi sensibili, e store `erp_migrations` (framework migrazioni).
+→ La trasformazione **costruisce su `INGLYERP`**, non reinventa. Qualsiasi migrazione
+di dominio usa v68 come oracle di comportamento (confronto I/O/dati prima di spegnere
+il percorso legacy), con backup e conteggi pre/post. Numeri reali fissati: 108 sezioni
+nav, 51 store base (+~11 ERP = ~62 nel registro congelato), DB v31.
+Decisioni di modello dati **proposte** (attesa approvazione utente, §8 del blueprint):
+partner canonico `erp_partners` (clients=vista), ordine canonico `orders`
+(pipeline=proiezione), articolo canonico `items`. Da riconciliare: costo lavoro
+€0,50/min (codice) vs €0,30/min = €18/h (KB). Artefatto: docs/INGLY_BLUEPRINT_NEXTGEN.md.
