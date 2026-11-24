@@ -60,8 +60,45 @@ Semantica reale v88: `QuoterBridge.convert` (override riga 26116) **non** crea p
 
 Verificato end-to-end con la forma reale del preventivo e con entrambi i creatori di ordini. `verify-syntax`: 138 blocchi, 0 errori.
 
+### GATE 4 — Incassi (vendita `da_pagare → pagato`)
+`Sales.markPaid(id)`:
+| Invariante | Esito |
+|---|---|
+| `status → 'pagato'` + `paidAt` valorizzato | ✅ |
+| Persistenza su `sales` | ✅ |
+| Entrata `cashflow` auto (toggle `s5b_auto_cashflow`, default-OFF) con importo corretto | ✅ (€150) |
+
+### GATE 4/6 — Fattura da Ordine (FatturaPA XML) 🔴 2 BUG CORRETTI
+`FatturaDaOrdine.genera(ordine)`:
+| Prova | Prima | Dopo il fix |
+|---|---|---|
+| Generazione fattura | ❌ **crash** `PrimaNota.register is not a function` | ✅ genera e scarica |
+| XML valido con nome cliente `"Rossi & Figli <S.r.l.>"` | ❌ XML **malformato** (SDI lo rifiuta) | ✅ XML well-formed (DOMParser OK) |
+| Imponibile scorporato da `total` (ora corretto) | — | ✅ €122 → €100 imponibile @22% |
+
+**Bug 1 — `PrimaNota.register` mancante (crash fattura).** Esistevano **due** `PrimaNota`: un
+`const` ricco (`getEntries/render/exportCSV`, riga 58960) e un secondo oggetto `window.PrimaNota`
+(`register/load/save`, riga 78184) che si **clobberavano** a vicenda. I riferimenti nudi
+(`FatturaDaOrdine.genera` → `PrimaNota.register`) risolvevano al `const`, privo di `register` →
+crash a runtime (fattura salvata in SDI ma **nessun download** e **nessuna registrazione in prima
+nota**). Fix non distruttivo: **merge** delle due API con `Object.assign(PrimaNota, {...})` →
+un solo oggetto completo, nessun metodo perso (verificato: `register`, `exportCSV`, `render`
+tutti presenti, `window.PrimaNota === PrimaNota`).
+
+**Bug 2 — FatturaPA senza escape XML.** `brand.name`, `ordine.client`, `ordine.description`
+entravano **grezzi** nell'XML → un nome con `&`/`<`/`>`/`"`/`'` produceva una fattura elettronica
+non valida, rifiutata dal Sistema di Interscambio. Fix: helper `xmlEsc()` applicato ai tre campi
+(richiesto dalle `security-rules`: sanitizzare prima del markup).
+
+### GATE 5 — Magazzino (`Inventory.adjust`)
+| Invariante | Esito |
+|---|---|
+| Carico `+5` → stock aggiornato, delta corretto | ✅ |
+| Scarico oltre giacenza (`−1000`) → **clamp a 0**, nessun negativo | ✅ |
+| Persistenza su `inventory` | ✅ |
+
 ## Da verificare nei prossimi giri
-- Ordine → Fattura; incassi/pagamenti (pipeline pagamenti + IVA).
+- Acquisti/Fornitori: RFQ → PO → ricezione → carico `items` (GATE 5).
 - **Codice morto da bonificare (candidato):** `QuoterBridge.convert` riga 14572 (crea vendita) è shadowato dall'override riga 26116; due forme d'ordine coesistono (`total` vs `value`) — valutare unificazione campo totale a livello di modello (GATE 1/DB).
 - Magazzino: carico/scarico, scorte, riordino, invarianti quantità (GATE 5).
 - Acquisti/Fornitori: RFQ → PO → ricezione (GATE 5).

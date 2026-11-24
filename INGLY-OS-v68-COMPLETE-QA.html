@@ -78101,6 +78101,9 @@ window.FatturaDaOrdine = {
     var brand={}; try{brand=JSON.parse(localStorage.getItem('ingly_brand_v1')||'{}');}catch(e){}
     var ivaCfg={}; try{ivaCfg=JSON.parse(localStorage.getItem('ingly_iva_cfg')||'{}');}catch(e){}
     var ivaRate=(ivaCfg.regime==='forfettario'?0:(parseFloat(ivaCfg.rate)||22));
+    // Escape XML: nomi come "Rossi & Figli <S.r.l.>" renderebbero la FatturaPA
+    // non valida (SDI la rifiuta). Obbligatorio prima di inserire dati nel markup.
+    var xmlEsc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');};
     var imponibile=parseFloat(ordine.total||0)/(1+ivaRate/100);
     var ivaAmt=imponibile*(ivaRate/100);
     var dateStr=new Date().toISOString().slice(0,10);
@@ -78118,12 +78121,12 @@ window.FatturaDaOrdine = {
       '  <CedentePrestatore>',
       '    <DatiAnagrafici>',
       '      <IdFiscaleIVA><IdPaese>IT</IdPaese><IdCodice>'+(brand.vatNum||'00000000000').replace(/\D/g,'').padStart(11,'0')+'</IdCodice></IdFiscaleIVA>',
-      '      <Anagrafica><Denominazione>'+(brand.name||'Ingly Laser')+'</Denominazione></Anagrafica>',
+      '      <Anagrafica><Denominazione>'+xmlEsc(brand.name||'Ingly Laser')+'</Denominazione></Anagrafica>',
       '      <RegimeFiscale>'+(ivaCfg.regime==='forfettario'?'RF19':'RF01')+'</RegimeFiscale>',
       '    </DatiAnagrafici>',
       '  </CedentePrestatore>',
       '  <CessionarioCommittente>',
-      '    <DatiAnagrafici><Anagrafica><Denominazione>'+( ordine.client||'Cliente')+'</Denominazione></Anagrafica></DatiAnagrafici>',
+      '    <DatiAnagrafici><Anagrafica><Denominazione>'+xmlEsc(ordine.client||'Cliente')+'</Denominazione></Anagrafica></DatiAnagrafici>',
       '  </CessionarioCommittente>',
       '</FatturaElettronicaHeader>',
       '<FatturaElettronicaBody>',
@@ -78139,7 +78142,7 @@ window.FatturaDaOrdine = {
       '  <DatiBeniServizi>',
       '    <DettaglioLinee>',
       '      <NumeroLinea>1</NumeroLinea>',
-      '      <Descrizione>'+(ordine.description||ordine.product||'Personalizzazione laser').slice(0,100)+'</Descrizione>',
+      '      <Descrizione>'+xmlEsc((ordine.description||ordine.product||'Personalizzazione laser').slice(0,100))+'</Descrizione>',
       '      <Quantita>1.00</Quantita>',
       '      <PrezzoUnitario>'+imponibile.toFixed(2)+'</PrezzoUnitario>',
       '      <PrezzoTotale>'+imponibile.toFixed(2)+'</PrezzoTotale>',
@@ -78181,7 +78184,11 @@ window.FatturaDaOrdine = {
 };
 
 // ─── PRIMA NOTA AUTOMATICA ──────────────────────────────────────
-window.PrimaNota = {
+// FIX: questo secondo oggetto clobberava il `const PrimaNota` ricco (render/
+// exportCSV/getEntries), e viceversa il const nascondeva register/load/save ai
+// riferimenti nudi (es. FatturaDaOrdine.genera → "PrimaNota.register is not a
+// function"). Merge non distruttivo: uniamo le due API su un solo oggetto.
+Object.assign(PrimaNota, {
   _SK:'ingly_prima_nota_v1',
   load:function(){try{return JSON.parse(localStorage.getItem(this._SK)||'[]');}catch(e){return[];}},
   save:function(d){try{localStorage.setItem(this._SK,JSON.stringify(d.slice(0,500)));}catch(e){}},
@@ -78204,7 +78211,8 @@ window.PrimaNota = {
       count:d.length
     };
   }
-};
+});
+window.PrimaNota = PrimaNota;
 
 // ─── INJECT FATTURA BUTTON IN ORDER TRACKER ─────────────────────
 (function _patchOrdersForFattura(){
