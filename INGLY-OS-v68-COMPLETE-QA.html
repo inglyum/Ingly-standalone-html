@@ -23178,8 +23178,12 @@ const TaxCalendar = {
 // ═══════════════════════════════════════════════════════
 const RealCostEngine = {
   async logCost(orderId, type, amount, desc, minutes=0) {
-    const entry = { id: Date.now(), orderId, type, amount: +amount, desc, minutes: +minutes, date: new Date().toISOString() };
-    await IDB.put('cost_entries', entry);
+    // FIX perdita dati: id:Date.now() faceva collidere due costi loggati nello
+    // stesso ms (il secondo put sovrascriveva il primo) → costo reale sottostimato
+    // e margine commessa gonfiato. Lo store cost_entries ha autoIncrement su 'id':
+    // omettiamo l'id e lasciamo che il DB ne assegni uno univoco.
+    const entry = { orderId, type, amount: +amount, desc, minutes: +minutes, date: new Date().toISOString() };
+    entry.id = await IDB.put('cost_entries', entry);
     BDW.touch('cost_entries');
     toast(`✅ Costo registrato: ${fmtCur(amount)}`, '💰');
     return entry;
@@ -70711,12 +70715,22 @@ window.InglyCloudSync = (function(){
       }
     },
 
-    exportJSON(){
+    async exportJSON(){
       var snap = collectAllData();
+      // FIX data-safety: il backup prometteva "tutti i dati" ma salvava solo le
+      // chiavi localStorage (SYNC_STORES). I dati core (clienti, vendite, ordini,
+      // magazzino, catalogo...) vivono in IndexedDB → vanno inclusi, altrimenti il
+      // ripristino su installazione pulita perderebbe tutto. Esclude 'backups'
+      // (evita crescita ricorsiva), coerente con lo snapshot system.
+      try{
+        var full = await IDB.exportAll();
+        snap.idb = {};
+        Object.keys(full||{}).forEach(function(store){ if(store!=='backups') snap.idb[store]=full[store]; });
+      }catch(e){ snap.idb = null; }
       var blob = new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
       var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
       a.download='ingly_backup_'+new Date().toISOString().slice(0,10)+'.json'; a.click();
-      if(typeof toast!=='undefined') toast('📤 Backup JSON esportato!','success');
+      if(typeof toast!=='undefined') toast('📤 Backup JSON completo esportato (localStorage + IndexedDB)','success');
     },
 
     importJSON(){
@@ -70727,7 +70741,17 @@ window.InglyCloudSync = (function(){
           var text=await file.text();
           var snap=JSON.parse(text);
           var count=applySnap(snap);
-          if(typeof toast!=='undefined') toast('📂 Importati '+count+' store. Ricarica la pagina.','success');
+          // Ripristina anche gli store IndexedDB (merge per chiave id: non cancella
+          // nulla). Guardato per-store: uno store assente nello schema viene saltato.
+          var idbStores=0;
+          if(snap.idb && typeof snap.idb==='object'){
+            for(var store in snap.idb){
+              var rows=snap.idb[store];
+              if(!Array.isArray(rows)) continue;
+              try{ for(var i=0;i<rows.length;i++){ await IDB.put(store,rows[i]); } idbStores++; if(typeof AppStore!=='undefined')AppStore.invalidate(store); }catch(e){}
+            }
+          }
+          if(typeof toast!=='undefined') toast('📂 Importati '+count+' set localStorage + '+idbStores+' store IndexedDB. Ricarico.','success');
           setTimeout(function(){ if(confirm('Importazione completata! Ricaricare?')) window.location.reload(); },1000);
         }catch(e){ alert('Errore importazione: '+e.message); }
       };

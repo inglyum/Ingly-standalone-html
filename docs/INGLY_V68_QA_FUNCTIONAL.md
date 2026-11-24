@@ -111,9 +111,44 @@ seconda chiamata programmatica avrebbe **raddoppiato** le giacenze (l'UI nascond
 non è una difesa sui dati). Aggiunta guardia coerente col pattern dedup già usato in
 `QuoterBridge.toOrder`. Il magazzino è dato critico: carico esattamente una volta.
 
+### GATE 6 — Costing & margine commessa 🔴 BUG PERDITA DATI CORRETTO
+`RealCostEngine` + aggregazione `BDW.realCostByOrder`:
+| Prova | Prima | Dopo il fix |
+|---|---|---|
+| 3 costi loggati sullo stesso ordine (rapidi) | ❌ **1 solo persistito** (sum 10) | ✅ 3 persistiti, id distinti, sum 60 |
+| `getByOrder` / somma costi reali | ❌ sottostimata | ✅ corretta |
+| Margine reale commessa (`getRealMarginForSale`, ricavo 200) | ❌ **90% gonfiato** | ✅ **70%** corretto `(200−60)/200` |
+
+**Bug — collisione id in `logCost` (perdita costo → margine gonfiato).** `logCost` usava
+`id: Date.now()`: due costi registrati nello stesso millisecondo (batch, click rapidi, percorso
+programmatico) collidevano sull'id e il secondo `IDB.put` **sovrascriveva** il primo → costo reale
+sottostimato e **margine commessa artificialmente alto** (una BI fuorviante su un numero di
+business critico). Fix: lo store `cost_entries` ha `autoIncrement` su `id` → ometto l'id e lascio
+che il DB ne assegni uno univoco (impossibile collidere). Verificato: 3 costi → 3 record distinti,
+margine reale corretto.
+
+### GATE 0/7 — Backup & Restore 🔴 TRAPPOLA PERDITA DATI CORRETTA
+Esistono due sistemi di backup:
+1. **Snapshot su store `backups`** (`_createSnapshot`/`restore`, riga ~41735): usa `IDB.exportAll()`
+   su **tutti** gli store, restore **atomico** con validazione e conferma. ✅ corretto (è il backup reale).
+2. **`InglyCloudSync.exportJSON`/`importJSON`** (riga ~70714): etichettato *"Esporta Backup JSON —
+   Salva tutti i dati in locale"*.
+
+| Prova | Prima | Dopo il fix |
+|---|---|---|
+| Export "tutti i dati" include IndexedDB (clienti/vendite/ordini/magazzino) | ❌ **solo 9 chiavi localStorage** | ✅ **62 store IDB + localStorage** |
+| Round-trip: export → perdita dati → import → dati tornano | ❌ dati IDB persi per sempre | ✅ ripristinati (merge per `id`) |
+
+**Bug — backup "completo" che ometteva IndexedDB.** `collectAllData()` salvava solo
+`SYNC_STORES` (9 chiavi localStorage); il commento prometteva «include IDB critical stores» ma
+non lo faceva. Un utente che si fida di quel backup e ripristina su installazione pulita avrebbe
+perso **tutti** i dati core (viola il principio #1 «nessuna perdita dati»). Fix: `exportJSON` ora
+allega `IDB.exportAll()` (esclude `backups`, no ricorsione); `importJSON` ripristina anche gli
+store IDB (merge per chiave `id`, guardato per-store, non cancella nulla). Round-trip verificato.
+
 ## Da verificare nei prossimi giri
-- Produzione/costing per tecnologia: BOM, consumo materiali su conferma ordine, margine commessa (GATE 6).
-- Backup/restore: export completo → import su DB vuoto, conteggi identici.
+- BOM/distinta materiali e **consumo stock su conferma ordine di produzione** (MRP, quando presente).
+- Multi-viewport e accessibilità (GATE 2).
 - **Codice morto da bonificare (candidato):** `QuoterBridge.convert` riga 14572 (crea vendita) è shadowato dall'override riga 26116; due forme d'ordine coesistono (`total` vs `value`) — valutare unificazione campo totale a livello di modello (GATE 1/DB).
 - Magazzino: carico/scarico, scorte, riordino, invarianti quantità (GATE 5).
 - Acquisti/Fornitori: RFQ → PO → ricezione (GATE 5).
