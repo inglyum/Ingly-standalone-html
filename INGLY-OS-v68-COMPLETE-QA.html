@@ -48883,6 +48883,8 @@ const SuppliersManager = {
   ignoreReorder(reorderId){ let r=[]; try{ r=JSON.parse(localStorage.getItem('ingly_reorders')||'[]'); }catch(e){} r=r.filter(x=>String(x.id)!==String(reorderId)); try{ localStorage.setItem('ingly_reorders',JSON.stringify(r)); }catch(e){} this.openOrders(); },
   async receivePO(id){
     const o=await IDB.get('supplier_orders',id).catch(()=>null); if(!o)return;
+    // Guardia idempotenza: evita il doppio carico magazzino se già ricevuto.
+    if(o.status==='ricevuto'){ if(typeof toast!=='undefined')toast('Ordine già ricevuto','warning'); return; }
     for(const l of (o.lines||[])){
       const it=await IDB.get('inventory',l.itemId).catch(()=>null);
       if(it){ it.stock=(+it.stock||0)+(+l.qty||0); await IDB.put('inventory',it); if(window.Inventory&&Inventory.logMove)Inventory.logMove(l.itemId,'carico',+l.qty||0,'ricezione ordine '+(o.supplier||'')); }

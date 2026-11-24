@@ -97,8 +97,23 @@ non valida, rifiutata dal Sistema di Interscambio. Fix: helper `xmlEsc()` applic
 | Scarico oltre giacenza (`−1000`) → **clamp a 0**, nessun negativo | ✅ |
 | Persistenza su `inventory` | ✅ |
 
+### GATE 5 — Acquisti/Fornitori (PO → ricezione → carico magazzino)
+`SuppliersManager.receivePO(id)`:
+| Invariante | Esito |
+|---|---|
+| PO → `status:'ricevuto'` + `receivedAt` | ✅ |
+| Carico magazzino: stock `+qty` per ogni riga (via `itemId`) + `logMove` | ✅ (+10 verificato) |
+| Persistenza su `inventory` | ✅ |
+| **Idempotenza**: seconda ricezione non raddoppia il carico | ✅ **guardia aggiunta** (`if status==='ricevuto' return`) — doppia chiamata = carico singolo (+7, non +14) |
+
+**Irrobustimento (non distruttivo):** `receivePO` non aveva guardia di idempotenza — una
+seconda chiamata programmatica avrebbe **raddoppiato** le giacenze (l'UI nasconde il bottone, ma
+non è una difesa sui dati). Aggiunta guardia coerente col pattern dedup già usato in
+`QuoterBridge.toOrder`. Il magazzino è dato critico: carico esattamente una volta.
+
 ## Da verificare nei prossimi giri
-- Acquisti/Fornitori: RFQ → PO → ricezione → carico `items` (GATE 5).
+- Produzione/costing per tecnologia: BOM, consumo materiali su conferma ordine, margine commessa (GATE 6).
+- Backup/restore: export completo → import su DB vuoto, conteggi identici.
 - **Codice morto da bonificare (candidato):** `QuoterBridge.convert` riga 14572 (crea vendita) è shadowato dall'override riga 26116; due forme d'ordine coesistono (`total` vs `value`) — valutare unificazione campo totale a livello di modello (GATE 1/DB).
 - Magazzino: carico/scarico, scorte, riordino, invarianti quantità (GATE 5).
 - Acquisti/Fornitori: RFQ → PO → ricezione (GATE 5).
