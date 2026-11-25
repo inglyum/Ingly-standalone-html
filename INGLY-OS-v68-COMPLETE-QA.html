@@ -109491,6 +109491,9 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
 body #sidebar-toolbar{ display:none !important; }
 /* La ricerca sidebar guadagna respiro ora che la toolbar non c'è */
 #sidebar-inner #sidebar-search{ padding-bottom:12px !important; }
+/* Anti-sovrapposizione: la barra utente flottante #ia-pill (h46 + 16 margine) copriva
+   gli ultimi item del nav. Diamo allo scroller padding-bottom sufficiente a liberarli. */
+#sidebar-inner #sidebar-nav{ padding-bottom:78px !important; }
 </style>
 <script id="ingly-topbar-dedupe-v68">
 /* DEDUPE TOPBAR v68 (B) — rimuove i controlli DUPLICATI della topbar che la
