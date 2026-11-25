@@ -109491,9 +109491,13 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
 body #sidebar-toolbar{ display:none !important; }
 /* La ricerca sidebar guadagna respiro ora che la toolbar non c'è */
 #sidebar-inner #sidebar-search{ padding-bottom:12px !important; }
-/* Anti-sovrapposizione: la barra utente flottante #ia-pill (h46 + 16 margine) copriva
-   gli ultimi item del nav. Diamo allo scroller padding-bottom sufficiente a liberarli. */
-#sidebar-inner #sidebar-nav{ padding-bottom:78px !important; }
+/* Anti-sovrapposizione barra utente #ia-pill (position:fixed, h46 + ~16 margine).
+   Il fix col solo padding dello scroller NON bastava: lo scroller arrivava fino al
+   fondo viewport e la barra flottava su qualunque item lì. Soluzione corretta:
+   riserviamo lo spazio della barra sul CONTENITORE flex #sidebar-inner, così lo
+   scroller #sidebar-nav (flex:1) termina SOPRA la barra e nessun item ci va sotto. */
+#sidebar-inner{ padding-bottom:72px !important; box-sizing:border-box !important; }
+#sidebar-inner #sidebar-nav{ padding-bottom:12px !important; }
 </style>
 <script id="ingly-topbar-dedupe-v68">
 /* DEDUPE TOPBAR v68 (B) — rimuove i controlli DUPLICATI della topbar che la
