@@ -108047,8 +108047,21 @@ console.log('%c🔐 INGLY Access — gate attivo','color:#a855f7;font-weight:bol
         <div class="ec-modal-actions"><span class="ec-muted">Record analizzati: ${p.clientsSeen} clienti · ${p.suppliersSeen} fornitori</span><button type="button" class="ec-btn" data-close>Chiudi</button><button type="button" class="ec-btn ec-btn-primary" id="ec-run-migration" ${p.recordsToWrite?'':'disabled'}>Conferma importazione</button></div>`);
       modal.querySelectorAll('[data-close]').forEach(btn=>btn.addEventListener('click',closeModal));
       modal.querySelector('#ec-run-migration')?.addEventListener('click',async()=>{
-        const button=modal.querySelector('#ec-run-migration'); button.disabled=true; button.textContent='Importazione…';
-        try { const result=await migration.run(); closeModal(); toast(`Importati ${result.recordsWritten} contatti · collegati ${result.documentsLinked.quotes+result.documentsLinked.orders+result.documentsLinked.sales} documenti`,'success'); await render(); }
+        const button=modal.querySelector('#ec-run-migration'); button.disabled=true;
+        try {
+          // Sicurezza (blueprint, principio #1 "nessuna perdita dati"): snapshot
+          // automatico PRIMA della migrazione. La migrazione è già additiva e non
+          // distruttiva, ma un backup pre-operazione è insurance a costo zero.
+          try {
+            button.textContent='Backup…';
+            // Snapshot pre-migrazione affidabile: export diretto di tutti gli store
+            // (esclude 'backups') nel formato letto dal restore esistente.
+            const _snap = await IDB.exportAll(); if(_snap) delete _snap.backups;
+            const _recs = Object.values(_snap||{}).reduce((n,rows)=>n+(Array.isArray(rows)?rows.length:0),0);
+            await IDB.put('backups',{ id:Date.now()+Math.floor(Math.random()*500), ts:Date.now(), date:new Date().toISOString(), type:'manual', records:_recs, scope:'pre-migration-partners', data:JSON.stringify(Object.assign({_ingly_backup:true,_ts:new Date().toISOString(),_v:'12'},_snap)) });
+          } catch(e){ console.warn('[pre-migration backup]',e); }
+          button.textContent='Importazione…';
+          const result=await migration.run(); closeModal(); toast(`Importati ${result.recordsWritten} contatti · collegati ${result.documentsLinked.quotes+result.documentsLinked.orders+result.documentsLinked.sales} documenti`,'success'); await render(); }
         catch(error){ button.disabled=false; button.textContent='Riprova'; toast(error.message||'Errore importazione','error'); }
       });
     } catch(error) { toast(error.message || 'Impossibile preparare l’anteprima','error'); }

@@ -94,7 +94,16 @@ non sono unificati, i **punti di lettura** usano un accessor tollerante unico
 (es. `amountOf(order)` → `total||value||grossPrice||amount||0`) — già applicato come fix puntuale,
 da promuovere a helper condiviso in Fase 1.
 
-> **Fase C — avviata (fondazione, non distruttiva).** Introdotto il modulo `Canon` (riga ~9357):
+> **Fase C — unificazione partner: già implementata in INGLYCORE, verificata e messa in sicurezza.**
+> L'unificazione `clients + suppliers → erp_partners` **esiste già** come `INGLYCORE.migration`
+> (preview-first, user-triggered, UI "ERP Core · CRM & Vendite"). Verificata end-to-end: merge per
+> email (cliente+fornitore stesso contatto → 1 partner con due ruoli), **idempotente** (re-run
+> scrive 0), **non distruttiva** (copia in `erp_partners`, non tocca `clients`/`suppliers`; aggiunge
+> solo `partnerId` ai documenti privi). Hardening aggiunto: **snapshot completo automatico PRIMA**
+> del run (export di tutti gli store nel formato del restore, ripristinabile dalla sezione Backup) —
+> principio #1 "nessuna perdita dati". La migrazione resta a conferma esplicita dell'utente.
+
+> **Fase C — fondazione accessor (non distruttiva).** Introdotto il modulo `Canon` (riga ~9357):
 > accessor canonici in un solo posto — `Canon.orderTotal/quoteGross/quoteNet/saleAmount/partnerName/
 > clientName`. I punti-denaro critici (`createFromQuote`, `createSaleFromOrder`) ora leggono via
 > `Canon` invece di ripetere catene di fallback: la risoluzione del campo vive in un punto unico.
