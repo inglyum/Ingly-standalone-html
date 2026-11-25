@@ -39815,6 +39815,10 @@ const MorningBriefing = {
     // Primo avvio meno invadente: se il wizard di setup non è ancora stato
     // completato, non impilare il briefing sopra — apparirà dal giorno dopo.
     try{ if(!localStorage.getItem('ingly_wizard_done_v2')) return; }catch(e){}
+    // Fluidità primo avvio: finché il tour guidato non è completato, NON mostrare
+    // il briefing (altrimenti tour + briefing si sovrappongono al lancio). Il
+    // briefing riprende dal giorno dopo, a tour concluso. Sequenza pulita.
+    try{ if(!localStorage.getItem('ingly_tour_done_v1')) return; }catch(e){}
     const today = new Date().toISOString().split('T')[0];
     const lastShown = localStorage.getItem(this._KEY);
     if (lastShown === today) return;
