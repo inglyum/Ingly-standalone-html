@@ -94,6 +94,13 @@ non sono unificati, i **punti di lettura** usano un accessor tollerante unico
 (es. `amountOf(order)` → `total||value||grossPrice||amount||0`) — già applicato come fix puntuale,
 da promuovere a helper condiviso in Fase 1.
 
+> **Fase C — avviata (fondazione, non distruttiva).** Introdotto il modulo `Canon` (riga ~9357):
+> accessor canonici in un solo posto — `Canon.orderTotal/quoteGross/quoteNet/saleAmount/partnerName/
+> clientName`. I punti-denaro critici (`createFromQuote`, `createSaleFromOrder`) ora leggono via
+> `Canon` invece di ripetere catene di fallback: la risoluzione del campo vive in un punto unico.
+> Additivo e reversibile, nessuna migrazione dati. Prossimi passi C: estendere `Canon` ai lettori
+> rimanenti (strangler-fig), poi unificare gli store dietro adapter con backup + conferma.
+
 ### 3.2 Sequenza di consolidamento (idempotente, con backup)
 
 1. **`orders` ⇄ `pipeline`**: `orders` sorgente di verità; `pipeline` ricostruita come proiezione.

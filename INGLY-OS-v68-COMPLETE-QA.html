@@ -9355,6 +9355,30 @@ async function snapshotRecord(store,id){
   await IDB.put('versions',{store,recId:String(id),v:version,snapshot:{...rec},ts:Date.now()});
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CANON v68 — accessor canonici (strangler-fig, fase C, non distruttivo)
+// Causa radice di molti bug di questa sessione: i lettori "indovinavano" il nome
+// del campo (es. ordine total vs value, preventivo grossPrice vs grand vs total).
+// Qui la risoluzione del campo vive in UN SOLO posto: ogni lettore chiama Canon.*
+// invece di ripetere catene di fallback. Additivo: non cambia i dati, non migra
+// nulla, non rimuove store. I fallback usano || (non ??) perché un campo-denaro a
+// 0/assente deve cadere sul successivo (è esattamente il bug "ricavo €0").
+const Canon = {
+  num(v){ v=parseFloat(v); return isNaN(v)?0:v; },
+  // Totale LORDO di un ordine: 'orders' usa total; QuoterBridge.toOrder usa value.
+  orderTotal(o){ o=o||{}; return this.num(o.total)||this.num(o.value)||this.num(o.grossPrice)||this.num(o.amount)||0; },
+  // Preventivo (Quoter.saveQuote salva grossPrice/netPrice).
+  quoteGross(q){ q=q||{}; return this.num(q.grossPrice)||this.num(q.grand)||this.num(q.total)||0; },
+  quoteNet(q){ q=q||{}; return this.num(q.netPrice)||this.num(q.subFinal)||this.num(q.subtotal)||0; },
+  // Importo di una vendita.
+  saleAmount(s){ s=s||{}; return this.num(s.amount)||this.num(s.total)||this.num(s.value)||0; },
+  // Nome di un partner (clients.name / erp_partners.name / denominazione).
+  partnerName(p){ p=p||{}; return p.name||p.ragioneSociale||p.denominazione||p.clientName||p.cliente||''; },
+  // Nome cliente referenziato da un record (ordine/vendita/preventivo).
+  clientName(r){ r=r||{}; return r.clientName||r.client||r.cliente||''; },
+};
+window.Canon = Canon;
+
 // ===== DEFAULT DATA =====
 const DEFAULTS={
   clients:[],
@@ -11250,7 +11274,7 @@ const AutoEngine = {
       clientName: order.clientName || order.client || '',
       date: new Date().toISOString().split('T')[0],
       desc: order.name || 'Vendita da ordine',
-      amount: order.total || order.value || order.grossPrice || order.amount || 0,
+      amount: (window.Canon?Canon.orderTotal(order):(order.total||order.value||order.grossPrice||order.amount||0)),
       status: 'pagato',
       channel: 'Diretto',
       fromOrderId: order.id,
@@ -67944,9 +67968,9 @@ if (document.readyState === 'loading') {
           price: l.price||(l.unitCost||0),
           total: l.subtotal||((l.price||l.unitCost||0)*(l.qty||1)),
         };}),
-        total: quote.grand||quote.grossPrice||quote.total||0,
-        subtotal: quote.subFinal||quote.netPrice||quote.subtotal||0,
-        tax: quote.vatAmt||((quote.grand||quote.grossPrice||0)-(quote.subFinal||quote.netPrice||0))||0,
+        total: (window.Canon?Canon.quoteGross(quote):(quote.grand||quote.grossPrice||quote.total||0)),
+        subtotal: (window.Canon?Canon.quoteNet(quote):(quote.subFinal||quote.netPrice||quote.subtotal||0)),
+        tax: quote.vatAmt||((window.Canon?Canon.quoteGross(quote):(quote.grand||quote.grossPrice||0))-(window.Canon?Canon.quoteNet(quote):(quote.subFinal||quote.netPrice||0)))||0,
         vatRate: 0.22,
         stage: 'backlog',
         status: 'backlog',
