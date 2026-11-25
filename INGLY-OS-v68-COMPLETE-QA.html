@@ -14580,7 +14580,8 @@ const QuoterBridge={
       status:'backlog',               // FIX: era 'todo' (non esiste come colonna)
       priority:'alta',                // FIX: era 'high' (valore IT)
       dueDate:q.deadline||q.dueDate||'',
-      value:q.grossPrice||0,          // FIX: era 'amount'
+      value:(window.Canon?Canon.quoteGross(q):(q.grossPrice||0)),  // FIX: era 'amount'; Canon = totale lordo robusto
+      total:(window.Canon?Canon.quoteGross(q):(q.grossPrice||0)),  // anche 'total' così l'ordine è leggibile da entrambi i consumatori
       desc:q.notes||'',               // FIX: era 'notes'
       originQuote:quoteId,
       createdAt:new Date().toISOString()
@@ -14617,7 +14618,7 @@ const QuoterBridge={
     if(!confirm(`Segnare ordine "${o.name||o.title}" come PAGATO e creare una vendita?`))return;
     const saleId=await IDB.put('sales',{
       clientId:o.clientId,clientName:o.client||o.clientName,
-      date:today(),description:o.name||o.title,amount:o.value||o.amount||0,
+      date:today(),description:o.name||o.title,amount:(window.Canon?Canon.orderTotal(o):(o.value||o.amount||0)),
       status:'pagato',channel:'Diretto',originOrder:orderId
     });
     o.status='delivered';o.saleId=saleId;
@@ -78158,7 +78159,10 @@ window.FatturaDaOrdine = {
     // Escape XML: nomi come "Rossi & Figli <S.r.l.>" renderebbero la FatturaPA
     // non valida (SDI la rifiuta). Obbligatorio prima di inserire dati nel markup.
     var xmlEsc=function(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');};
-    var imponibile=parseFloat(ordine.total||0)/(1+ivaRate/100);
+    // Canon: totale lordo robusto (un ordine in forma 'value' da toOrder non ha
+    // 'total' → senza questo la fattura uscirebbe a €0). Risolto in un punto solo.
+    var ordTot=(window.Canon?Canon.orderTotal(ordine):ordTot)||0;
+    var imponibile=ordTot/(1+ivaRate/100);
     var ivaAmt=imponibile*(ivaRate/100);
     var dateStr=new Date().toISOString().slice(0,10);
     var qn='IT'+( brand.vatNum||'00000000000').replace(/[^0-9]/g,'')+'_'+Date.now().toString().slice(-8);
@@ -78190,7 +78194,7 @@ window.FatturaDaOrdine = {
       '      <Divisa>EUR</Divisa>',
       '      <Data>'+dateStr+'</Data>',
       '      <Numero>'+qn+'</Numero>',
-      '      <ImportoTotaleDocumento>'+parseFloat(ordine.total||0).toFixed(2)+'</ImportoTotaleDocumento>',
+      '      <ImportoTotaleDocumento>'+ordTot.toFixed(2)+'</ImportoTotaleDocumento>',
       '    </DatiGeneraliDocumento>',
       '  </DatiGenerali>',
       '  <DatiBeniServizi>',
@@ -78214,7 +78218,7 @@ window.FatturaDaOrdine = {
       '    <DettaglioPagamento>',
       '      <ModalitaPagamento>MP05</ModalitaPagamento>',
       '      <DataScadenzaPagamento>'+dateStr+'</DataScadenzaPagamento>',
-      '      <ImportoPagamento>'+parseFloat(ordine.total||0).toFixed(2)+'</ImportoPagamento>',
+      '      <ImportoPagamento>'+ordTot.toFixed(2)+'</ImportoPagamento>',
       '    </DettaglioPagamento>',
       '  </DatiPagamento>',
       '</FatturaElettronicaBody>',
@@ -78222,16 +78226,16 @@ window.FatturaDaOrdine = {
     ].join('\n');
     // Save to SDI store
     var sdi=[]; try{sdi=JSON.parse(localStorage.getItem('ingly_sdi_v1')||'[]');}catch(e){}
-    var fattura={id:Date.now(),xml:xml,qn:qn,client:ordine.client,total:ordine.total,
+    var fattura={id:Date.now(),xml:xml,qn:qn,client:ordine.client,total:ordTot,
       date:dateStr,ordineId:ordine.id,ivaRate:ivaRate,imponibile:imponibile.toFixed(2)};
     sdi.unshift(fattura); try{localStorage.setItem('ingly_sdi_v1',JSON.stringify(sdi.slice(0,100)));}catch(e){}
     // Auto register prima nota
-    PrimaNota.register(ordine.client,parseFloat(ordine.total||0),'Fattura '+qn+' — '+( ordine.description||ordine.product||'Personalizzazione'));
+    PrimaNota.register(ordine.client,ordTot,'Fattura '+qn+' — '+( ordine.description||ordine.product||'Personalizzazione'));
     // Download XML
     var blob=new Blob([xml],{type:'application/xml;charset=utf-8'});
     var a=document.createElement('a'); a.href=URL.createObjectURL(blob);
     a.download=qn+'.xml'; a.click();
-    if(typeof toast!=='undefined') toast('📄 FatturaPA generata: '+qn+' — €'+parseFloat(ordine.total||0).toFixed(2),'success');
+    if(typeof toast!=='undefined') toast('📄 FatturaPA generata: '+qn+' — €'+ordTot.toFixed(2),'success');
     if(typeof window._inglyLastSave==='function') window._inglyLastSave('Fattura salvata');
     return fattura;
   }
