@@ -165,6 +165,23 @@ headless va in crash sul file ~8MB). Fix conservativo approvato, solo CSS, rever
 `--bg-card`, mantenendo il family di tinta. Nessun valore magico, niente modifica alle righe
 dei temi originali (override per posizione nel cascade → reversibile rimuovendo un solo blocco).
 
+### Fase C — Unificazione partner (INGLYCORE) — verificata e messa in sicurezza
+`INGLYCORE.migration` (`clients + suppliers → erp_partners`, sezione "ERP Core · CRM & Vendite"):
+merge per email (cliente+fornitore stesso contatto → 1 partner, due ruoli) ✅ · **idempotente**
+(re-run scrive 0) ✅ · **non distruttiva** (clients/suppliers intatti; aggiunge solo `partnerId`) ✅.
+Hardening: **snapshot completo automatico PRIMA del run** (ripristinabile dalla sezione Backup).
+
+### Finding architetturali tracciati (non bug attivi — fix in sessioni dedicate)
+- **Doppio oggetto `Backup`**: `const Backup` (riga ~41766, usato dal codice `Backup` nudo —
+  AutoBackup periodico — che **salva correttamente**) e un `window.Backup` diverso (usato dagli
+  `onclick="Backup.xxx"`), il cui `_createSnapshot` è no-op (ritorna `undefined`). Non rompe i path
+  critici (auto-backup OK; backup pre-migrazione usa `IDB.exportAll` diretto). Footgun: chi usa
+  `window.Backup._createSnapshot` non salva. Riconciliare quale è canonico richiede analisi di tutti
+  i call-site → fix dedicato con test della sezione Backup.
+- **`ClientPricing` codice morto**: `getDiscount/setDiscount/applyDiscount` (`client.customDiscount`)
+  senza alcun chiamante né UI → lo sconto per-cliente non viene mai applicato. Nessun impatto utente
+  e non è un concetto KB. Da rimuovere o implementare se servirà il listino per-cliente.
+
 ## Da verificare nei prossimi giri
 - BOM/distinta materiali e **consumo stock su conferma ordine di produzione** (MRP): **non
   implementato** in v68 (confermato: nessuna logica `consumeStock`/BOM). È una feature pianificata
@@ -176,4 +193,6 @@ dei temi originali (override per posizione nel cascade → reversibile rimuovend
 - Produzione/costing per tecnologia (GATE 6).
 - Multi-viewport e accessibilità (GATE 2).
 
-> Nota ambiente: gli screenshot dell'app completa non sono producibili in questa sessione (il renderer headless va in crash per il peso del file ~8MB); le verifiche funzionali sono fatte via misure DOM e stato IndexedDB, non visivamente.
+> Nota ambiente (aggiornata): gli screenshot **ora sono producibili** catturando il **solo viewport**
+> (`fullPage:false`) — era il `fullPage` del DOM ~8MB a far crashare il renderer. Le verifiche
+> funzionali restano via misure DOM e stato IndexedDB; in più ora si possono mostrare schermate reali.
