@@ -109519,4 +109519,19 @@ body #sidebar-toolbar{ display:none !important; }
   try{ var tb=document.getElementById('topbar'); if(tb) new MutationObserver(hide).observe(tb,{childList:true,subtree:true}); }catch(e){}
 })();
 </script>
+<script id="ingly-backup-reconcile-v68">
+/* FIX footgun Backup v68 — l'early-stub (riga ~7773) imposta window.Backup = Proxy
+   no-op PRIMA che il vero `const Backup` (riga ~41766) esista, e nulla lo riaggancia:
+   così `onclick="Backup.xxx"` (che risolve su window) colpiva lo stub no-op (restore/
+   backup non funzionanti dalla UI). Qui ricolleghiamo window.Backup al const reale.
+   Il codice con `Backup` nudo già usava il const; ora anche gli onclick lo usano. */
+(function(){
+  try{
+    if(typeof Backup!=='undefined' && window.Backup!==Backup){
+      window._real_Backup = Backup;
+      window.Backup = Backup;
+    }
+  }catch(e){ console.warn('[backup-reconcile]',e); }
+})();
+</script>
 </html>
