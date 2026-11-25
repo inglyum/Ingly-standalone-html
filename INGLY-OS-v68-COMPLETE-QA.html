@@ -109458,4 +109458,24 @@ body #sidebar-toolbar{ display:none !important; }
 /* La ricerca sidebar guadagna respiro ora che la toolbar non c'è */
 #sidebar-inner #sidebar-search{ padding-bottom:12px !important; }
 </style>
+<script id="ingly-topbar-dedupe-v68">
+/* DEDUPE TOPBAR v68 (B) — rimuove i controlli DUPLICATI della topbar che la
+   rendevano affollata/poco professionale. Ogni funzione resta accessibile da un
+   altro controllo superstite:
+   - _theme_toggle_btn (2° sole, quick light/dark) → resta il pannello temi (theme-toggle-btn)
+   - ds-ck-btn ("🔍 Cerca ⌘K") → resta la ricerca (cmd-launch-btn ⌘K + barra in alto)
+   - prox-sidebar-toggle ("☰ Menu") → resta menu-toggle (App.toggleSidebar)
+   - profile-topbar-btn ("👤 Profilo") → resta l'accesso profilo dalla barra in alto
+   Questi erano già destinati all'hide (riga ~108868) ma una regola a specificità
+   maggiore li ri-mostrava; qui usiamo inline !important (batte la cascade) + retry
+   perché alcuni sono iniettati in modo asincrono da patch successive. */
+(function(){
+  var DUPES=['_theme_toggle_btn','ds-ck-btn','prox-sidebar-toggle','profile-topbar-btn'];
+  function hide(){ DUPES.forEach(function(id){ var e=document.getElementById(id); if(e) e.style.setProperty('display','none','important'); }); }
+  if(document.readyState!=='loading') hide();
+  document.addEventListener('DOMContentLoaded',hide);
+  var n=0,iv=setInterval(function(){ hide(); if(++n>24) clearInterval(iv); },500);
+  try{ var tb=document.getElementById('topbar'); if(tb) new MutationObserver(hide).observe(tb,{childList:true,subtree:true}); }catch(e){}
+})();
+</script>
 </html>
