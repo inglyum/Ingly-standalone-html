@@ -3470,7 +3470,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="form-group"><label class="form-label" data-i18n="settings.markup">Markup Default (%)</label><input class="form-control" id="set-markup" type="number" value="40"></div>
       <div class="form-group"><label class="form-label" data-i18n="settings.vat">IVA (%)</label><input class="form-control" id="set-vat" type="number" value="22"></div>
       <div class="form-group"><label class="form-label" data-i18n="settings.machineCost">Costo Macchina (€/min)</label><input class="form-control" id="set-machine-cost" type="number" value="0.38" step="0.01"></div>
-      <div class="form-group"><label class="form-label" data-i18n="settings.laborCost">Costo Lavoro (€/min)</label><input class="form-control" id="set-labor-cost" type="number" value="0.50" step="0.01"></div>
+      <div class="form-group"><label class="form-label" data-i18n="settings.laborCost">Costo Lavoro (€/min)</label><input class="form-control" id="set-labor-cost" type="number" value="0.30" step="0.01"></div>
     </div>
     <div class="card">
       <div class="card-title" data-i18n="settings.goals">Obiettivi</div>
@@ -13235,8 +13235,8 @@ const Quoter={
       // Manodopera da impostazioni + team
       const cfg = await IDB.get('settings','main')||{};
       items.push({
-        label:`[👷] Manodopera Generica — ${fmtCur(cfg.laborCost||0.50)}/min`,
-        cost: cfg.laborCost||0.50, unit:'€/min', name:'Manodopera Generica', group:'Default'
+        label:`[👷] Manodopera Generica — ${fmtCur(cfg.laborCost||0.30)}/min`,
+        cost: cfg.laborCost||0.30, unit:'€/min', name:'Manodopera Generica', group:'Default'
       });
       const team = await IDB.getAll('team').catch(()=>[]);
       team.forEach(t => items.push({
@@ -17426,7 +17426,7 @@ const ResourcePicker = {
     } else if(cat === 'manodopera') {
       const cfg = await IDB.get('settings','main').catch(()=>null) || {};
       const team = await IDB.getAll('team').catch(()=>[]);
-      this._items.push({ id:'gen_labor', name:'Manodopera Generica', cost: cfg.laborCost||0.50, unit:'€/min', category:'Manodopera', supplier:'Studio' });
+      this._items.push({ id:'gen_labor', name:'Manodopera Generica', cost: cfg.laborCost||0.30, unit:'€/min', category:'Manodopera', supplier:'Studio' });
       team.forEach(t => this._items.push({
         id:'team_'+t.id, name:t.name+' ('+t.role+')', cost:+(t.rate/60).toFixed(4), unit:'€/min', category:'Manodopera', supplier:t.role
       }));
@@ -18338,9 +18338,9 @@ Quoter._loadRPData = async function(){
     const cfg = await IDB.get('settings','main')||{};
     items.push({
       label:'Manodopera Generica',
-      cost:cfg.laborCost||0.50, unit:'€/min',
+      cost:cfg.laborCost||0.30, unit:'€/min',
       group:'Default', color:'#6366f1', emoji:'👷',
-      meta:`${fmtCur(cfg.laborCost||0.50)}/min · da Impostazioni`
+      meta:`${fmtCur(cfg.laborCost||0.30)}/min · da Impostazioni`
     });
     const team = await IDB.getAll('team').catch(()=>[]);
     team.forEach(t => items.push({
@@ -29703,7 +29703,7 @@ if(typeof Catalog!=="undefined")window.Catalog=Catalog; // immediate window expo
 const PricingEngine={
   async suggest({materialCost=0,machineMin=0,laborMin=0,category=''}={}){
     const cfg=await IDB.get('settings','main')||{};
-    const mcost=+cfg.machineCost||0.35,lcost=+cfg.laborCost||0.50;
+    const mcost=+cfg.machineCost||0.35,lcost=+cfg.laborCost||0.30;
     const markup=+cfg.markup||40,vat=+cfg.vat||22;
     const totalCost=+materialCost+(+machineMin*mcost)+(+laborMin*lcost);
     const net=totalCost*(1+markup/100);
@@ -30000,7 +30000,7 @@ const Listino = {
     if(cfg.time && eid('lc-time')) eid('lc-time').value = cfg.time;
     const s = JSON.parse(localStorage.getItem('ingly_settings_main')||'{}');
     if(eid('lc-machine')) eid('lc-machine').value = cfg.machine || s.machineCost || 0.35;
-    if(eid('lc-labor')) eid('lc-labor').value = cfg.labor || s.laborCost || 0.25;
+    if(eid('lc-labor')) eid('lc-labor').value = cfg.labor || s.laborCost || 0.30;
     if(cfg.fixed && eid('lc-fixed')) eid('lc-fixed').value = cfg.fixed;
     if(cfg.custom && eid('lc-custom')) eid('lc-custom').value = cfg.custom;
     if(cfg.mat) this.calcola();
@@ -42275,7 +42275,7 @@ const Settings={
     eid('set-markup').value=cfg.markup??40;
     eid('set-vat').value=cfg.vat??22;
     eid('set-machine-cost').value=cfg.machineCost??0.35;
-    eid('set-labor-cost').value=cfg.laborCost??0.50;
+    eid('set-labor-cost').value=cfg.laborCost??0.30;
     eid('set-goal-rev').value=cfg.goalRevenue??5000;
     eid('set-goal-save').value=cfg.goalSavings??500;
     eid('set-backup-freq').value=cfg.backupFreq||'daily';
@@ -42335,7 +42335,7 @@ const Settings={
         markup:      readNumber('set-markup', cfg.markup ?? 40),
         vat:         readNumber('set-vat', cfg.vat ?? 22),
         machineCost: readNumber('set-machine-cost', cfg.machineCost ?? 0.35),
-        laborCost:   readNumber('set-labor-cost', cfg.laborCost ?? 0.50),
+        laborCost:   readNumber('set-labor-cost', cfg.laborCost ?? 0.30),
         goalRevenue: readNumber('set-goal-rev', cfg.goalRevenue ?? 5000),
         goalSavings: readNumber('set-goal-save', cfg.goalSavings ?? 500),
         backupFreq:  eid('set-backup-freq')?.value||cfg.backupFreq||'daily',
@@ -46988,7 +46988,7 @@ const BDW = {
     const timelogs = await IDB.getAll('timelogs').catch(()=>[]);
     const costEntries = await IDB.getAll('cost_entries').catch(()=>[]);
     const settings = await IDB.get('settings','main').catch(()=>null)||{};
-    const laborCostPerMin = parseFloat(settings.laborCost)||0.25; // €/min
+    const laborCostPerMin = parseFloat(settings.laborCost)||0.30; // €/min (KB: €18/h)
     const machineCostPerMin = parseFloat(settings.machineCost)||0.08; // €/min
 
     // Build real cost per order from timelogs + cost_entries
