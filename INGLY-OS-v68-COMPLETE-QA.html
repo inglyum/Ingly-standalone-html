@@ -109447,4 +109447,15 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
   .btn, .tab-btn, .act-btn{ min-height:40px !important; }
 }
 </style>
+<style id="ingly-chrome-v68">
+/* PULIZIA CHROME v68 (B) — declutter della sidebar sotto la ricerca.
+   Il cluster #sidebar-toolbar (Espandi/Comprimi + emoji 📦💡🔔💬⚙️) appariva
+   affollato e poco professionale e duplicava accessi già presenti altrove
+   (Stock Planner → Laser B2B, Note → topbar, Alert prezzi/Gestione Sezioni →
+   loro sezioni). Rimosso dalla vista; le funzioni restano nel codice. */
+/* specificità ≥ regola esistente `body #sidebar-toolbar{display:flex!important}` */
+body #sidebar-toolbar{ display:none !important; }
+/* La ricerca sidebar guadagna respiro ora che la toolbar non c'è */
+#sidebar-inner #sidebar-search{ padding-bottom:12px !important; }
+</style>
 </html>
