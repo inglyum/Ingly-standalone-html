@@ -185,6 +185,26 @@ Hardening: **snapshot completo automatico PRIMA del run** (ripristinabile dalla 
 Navigazione di **119 sezioni**: 119/119 OK, **0 pageerror, 0 console error reali**. KPI ricavi
 mese corretto (somma vendite pagate = 800 su dato di prova). Nessuna regressione introdotta.
 
+### GATE 6 — Produzione (Kanban stage) & Progetti
+| Flusso | Esito |
+|---|---|
+| Ordine attraverso gli stage `production → completed → delivered` (`OrderFlow.moveStage`) | ✅ ogni stage persiste |
+| **Valore ordine preservato** lungo i cambi di stage | ✅ (300 invariato) |
+| Stage id non valido → no-op sicuro (nessun crash) | ✅ |
+| Progetti: `Projects.setStatus('done')` → status done + progress 100 | ✅ |
+| Progetti: `Projects.setProgress(100)` → status 'done' automatico | ✅ |
+| Persistenza su `projects` | ✅ |
+
+> Nota: coesistono due sistemi progetti (store `projects` del modulo `Projects`, e `ev3_projects`
+> in localStorage di un altro modulo) — da unificare in futuro (stesso pattern dei doppioni già
+> visti); non è un bug attivo finché l'utente usa una sola vista.
+
+### UI — Sidebar/bars
+- ✅ **Sovrapposizione risolta**: la barra utente flottante (`#ia-pill`) copriva gli ultimi item
+  del nav; aggiunto padding-bottom allo scroller `#sidebar-nav` → ora sono visibili sopra la barra.
+- Il "box azzurro" in topbar era lo **stato attivo del toggle tema** (sfondo crema), non un elemento
+  vuoto — nessun intervento necessario. Topbar già ridotta da 16 a 12 controlli.
+
 ## Da verificare nei prossimi giri
 - BOM/distinta materiali e **consumo stock su conferma ordine di produzione** (MRP): **non
   implementato** in v68 (confermato: nessuna logica `consumeStock`/BOM). È una feature pianificata
