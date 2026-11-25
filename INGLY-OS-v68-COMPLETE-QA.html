@@ -19863,19 +19863,11 @@ const ClientLifecycle = {
   },
 };
 // ═══════════════════════════════════════════════════════════════════
-const ClientPricing = {
-  async getDiscount(clientId) {
-    const client = await IDB.get('clients', clientId);
-    return parseFloat(client?.customDiscount || 0);
-  },
-  async setDiscount(clientId, discount) {
-    const client = await IDB.get('clients', clientId);
-    if (client) { client.customDiscount = parseFloat(discount); await IDB.put('clients', client); }
-  },
-  applyDiscount(price, discountPct) {
-    return price * (1 - discountPct / 100);
-  }
-};
+// [rimosso v68] ClientPricing era codice morto: getDiscount/setDiscount/applyDiscount
+// (client.customDiscount) non avevano alcun chiamante né UI → lo sconto per-cliente
+// non veniva mai applicato, e non è un concetto della KB (sconti per quantità/
+// referral/riordino). Rimosso per pulizia. Se in futuro servirà un listino per-
+// cliente, va implementato e cablato nel Quoter in modo esplicito.
 
 // ===== ⑪ AI FORECASTING =====
 const ClientTimeline = {
@@ -20406,7 +20398,7 @@ Sii concreto, in italiano, max 200 parole.`;
 window.ClientIntelligenceEngine = ClientIntelligenceEngine;
 window.Clients = Clients;
 window.ClientLifecycle = ClientLifecycle;
-window.ClientPricing = typeof ClientPricing !== 'undefined' ? ClientPricing : {};
+// window.ClientPricing rimosso (codice morto, v68)
 window.ClientTimeline = ClientTimeline;
 window.LeadScorer = LeadScorer;
 window.ClientIntelligence = ClientIntelligence;
@@ -23983,14 +23975,15 @@ const Orders={
       o = pl.find(x=>x.id===id || x._sourceId===id)||null;
     }
     if(!o){ toast('Ordine non trovato','error'); return; }
-    if(!confirm(`Creare vendita da ordine "${o.name||o.id}"?\n€${o.value||0} — verrà aggiunta in Vendite & Fatture`)) return;
+    const _oTot = (window.Canon?Canon.orderTotal(o):(+o.value||+o.total||0));
+    if(!confirm(`Creare vendita da ordine "${o.name||o.id}"?\n€${_oTot} — verrà aggiunta in Vendite & Fatture`)) return;
     const sale = {
       id: Date.now(),
       clientId: o.clientId||null,
       clientName: o.clientName||'',
       date: today(),
       desc: o.name||o.desc||'Ordine #'+o.id,
-      amount: +o.value||0,
+      amount: _oTot,
       status: 'da_pagare',
       channel: 'Diretto',
       fromOrderId: o.id,
