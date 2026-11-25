@@ -171,16 +171,19 @@ merge per email (cliente+fornitore stesso contatto → 1 partner, due ruoli) ✅
 (re-run scrive 0) ✅ · **non distruttiva** (clients/suppliers intatti; aggiunge solo `partnerId`) ✅.
 Hardening: **snapshot completo automatico PRIMA del run** (ripristinabile dalla sezione Backup).
 
-### Finding architetturali tracciati (non bug attivi — fix in sessioni dedicate)
-- **Doppio oggetto `Backup`**: `const Backup` (riga ~41766, usato dal codice `Backup` nudo —
-  AutoBackup periodico — che **salva correttamente**) e un `window.Backup` diverso (usato dagli
-  `onclick="Backup.xxx"`), il cui `_createSnapshot` è no-op (ritorna `undefined`). Non rompe i path
-  critici (auto-backup OK; backup pre-migrazione usa `IDB.exportAll` diretto). Footgun: chi usa
-  `window.Backup._createSnapshot` non salva. Riconciliare quale è canonico richiede analisi di tutti
-  i call-site → fix dedicato con test della sezione Backup.
-- **`ClientPricing` codice morto**: `getDiscount/setDiscount/applyDiscount` (`client.customDiscount`)
-  senza alcun chiamante né UI → lo sconto per-cliente non viene mai applicato. Nessun impatto utente
-  e non è un concetto KB. Da rimuovere o implementare se servirà il listino per-cliente.
+### Finding architetturali — RISOLTI
+- **Doppio oggetto `Backup`** ✅ CORRETTO: la causa era l'early-safety-stub (riga ~7773) che
+  impostava `window.Backup = Proxy(no-op)` prima del vero `const Backup` (riga ~41766), mai
+  riagganciato. Gli `onclick="Backup.xxx"` (restore/snapshot dalla UI) colpivano lo stub → **no-op**.
+  Fix: a fine file `window.Backup` è ricollegato al const reale. Verificato: `window.Backup===Backup`,
+  `_createSnapshot` ora salva, altri stub (Quoter…) intatti.
+- **`ClientPricing` codice morto** ✅ RIMOSSO (+esposizione window). Non era KB, zero chiamanti.
+- **Bug €0 (terzo path) `Orders.toSale`** ✅ CORRETTO: leggeva solo `o.value` → vendita €0 per ordini
+  `total`-shaped (da `OrderFlow.createFromQuote`). Ora via `Canon.orderTotal`. Verificato: 260→260.
+
+### GATE 2 — Regressione post-modifiche (Canon, Backup, pulizia)
+Navigazione di **119 sezioni**: 119/119 OK, **0 pageerror, 0 console error reali**. KPI ricavi
+mese corretto (somma vendite pagate = 800 su dato di prova). Nessuna regressione introdotta.
 
 ## Da verificare nei prossimi giri
 - BOM/distinta materiali e **consumo stock su conferma ordine di produzione** (MRP): **non
