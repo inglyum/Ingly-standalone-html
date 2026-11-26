@@ -109574,6 +109574,64 @@ body #topbar #notif-count, body #topbar #ai-count{
 /* (d) indicatori di stato passivi: niente cursore "?" (help) ingannevole */
 body #topbar #backup-last-indicator{ cursor:default !important; }
 </style>
+
+<!-- ═══ RIFINITURA SIDEBAR v68 — livello Linear/Notion, additiva e reversibile ═══
+     Obiettivo: ritmo verticale coerente, gerarchia a spazio bianco (non righe
+     pesanti), stato attivo pulito SENZA layout-shift, hover crisp, scrollbar
+     discreta. Tutto theme-aware via design token; nessun colore magico. -->
+<style id="ingly-sidebar-refine-v68">
+/* ── Scroller: respiro ai lati e scrollbar sottile/elegante ── */
+body #sidebar-nav{ padding:6px 8px !important; }
+body #sidebar-nav::-webkit-scrollbar{ width:8px; }
+body #sidebar-nav::-webkit-scrollbar-thumb{ background:var(--border2); border-radius:99px; border:2px solid transparent; background-clip:padding-box; }
+body #sidebar-nav:hover::-webkit-scrollbar-thumb{ background:var(--text-dim); background-clip:padding-box; }
+body #sidebar-nav::-webkit-scrollbar-track{ background:transparent; }
+
+/* ── Voci: ritmo verticale uniforme, angoli morbidi, tipografia pulita.
+   Mantengo il padding-right per la pin (30px) senza spostare il testo. ── */
+body #sidebar-nav .nav-item{
+  padding:7px 30px 7px 10px !important;
+  margin:1px 0 !important;
+  border-radius:8px !important;
+  font-size:13px !important; font-weight:500 !important; letter-spacing:.1px !important;
+  color:var(--text-muted) !important;
+  transition:background .13s ease, color .13s ease !important;
+}
+body #sidebar-nav .nav-item i{ color:var(--text-dim) !important; transition:color .13s ease !important; }
+body #sidebar-nav .nav-item:hover{ background:var(--bg-card2) !important; color:var(--text) !important; }
+body #sidebar-nav .nav-item:hover i{ color:var(--text-muted) !important; }
+
+/* ── Stato attivo Linear-style: fill morbido + accento sinistro via box-shadow
+   INSET (niente border-left → zero spostamento del contenuto tra on/off). ── */
+body #sidebar-nav .nav-item.active{
+  background:var(--primary-dim) !important;
+  color:var(--primary) !important;
+  font-weight:600 !important;
+  border-left:none !important;
+  box-shadow:inset 2px 0 0 var(--primary) !important;
+}
+body #sidebar-nav .nav-item.active i{ color:var(--primary) !important; }
+
+/* ── Intestazioni gruppo: gerarchia a spazio bianco. Via le righe divisorie su
+   OGNI gruppo; separazione affidata al respiro verticale + hover discreto. ── */
+body #sidebar-nav .nav-group{ margin-bottom:2px !important; }
+body #sidebar-nav .nav-group-title,
+body #sidebar-nav .nav-group-title.ng-header{
+  border-top:none !important; margin:10px 0 2px !important;
+  padding:6px 10px 5px !important;
+  font-size:10px !important; letter-spacing:1px !important; font-weight:700 !important;
+  color:var(--text-dim) !important; border-radius:7px !important;
+}
+body #sidebar-nav .nav-group:first-child .nav-group-title{ margin-top:2px !important; }
+body #sidebar-nav .nav-group-title .ng-label{ color:var(--text-dim) !important; letter-spacing:1px !important; }
+body #sidebar-nav .nav-group-title:hover .ng-label{ color:var(--text-muted) !important; }
+body #sidebar-nav .nav-group-title .ng-chevron{ opacity:.35 !important; }
+
+/* ── Preferiti / Recenti: separazione morbida (una sola linea sottile sotto) ── */
+body #sidebar-nav #nav-favs-group, body #sidebar-nav #nav-recent-group{
+  border-bottom:1px solid var(--border) !important; margin-bottom:6px !important; padding-bottom:6px !important;
+}
+</style>
 <script id="ingly-topbar-dedupe-v68">
 /* DEDUPE TOPBAR v68 (B) — rimuove i controlli DUPLICATI della topbar che la
    rendevano affollata/poco professionale. Ogni funzione resta accessibile da un
