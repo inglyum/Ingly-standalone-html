@@ -109511,7 +109511,7 @@ body #topbar #cloud-topbar-btn{             /* "☁️" Cloud Update — c'è la
   display:none !important;
 }
 /* (b) uniformità: tutti i bottoni topbar stessa forma, centrati, gap costante */
-body #topbar{ align-items:center !important; gap:6px !important; }
+body #topbar{ align-items:center !important; gap:9px !important; }
 body #topbar > *{ align-self:center !important; }
 body #topbar button, body #topbar .topbar-btn{
   height:32px !important; min-width:32px !important; box-sizing:border-box !important;
@@ -109519,6 +109519,19 @@ body #topbar button, body #topbar .topbar-btn{
   border-radius:8px !important; line-height:1 !important; margin:0 !important;
   padding:0 7px !important; white-space:nowrap !important; vertical-align:middle !important;
 }
+/* (c) BADGE numerici (notifiche / AI): badge-angolo ASSOLUTO sull'icona, così non
+   allargano il bottone né si sovrappongono all'icona vicina (era il bug: badge
+   inline che sbordava a destra sul vicino). */
+body #topbar #notif-btn, body #topbar #ai-btn{ position:relative !important; overflow:visible !important; }
+body #topbar #notif-btn > .badge, body #topbar #ai-btn > .badge,
+body #topbar #notif-count, body #topbar #ai-count{
+  position:absolute !important; top:-4px !important; right:-4px !important; left:auto !important; bottom:auto !important;
+  min-width:15px !important; height:15px !important; padding:0 3px !important; box-sizing:border-box !important;
+  font-size:8px !important; line-height:1 !important; font-weight:800 !important; border-radius:8px !important;
+  display:flex !important; align-items:center !important; justify-content:center !important; pointer-events:none !important;
+}
+/* (d) indicatori di stato passivi: niente cursore "?" (help) ingannevole */
+body #topbar #backup-last-indicator{ cursor:default !important; }
 </style>
 <script id="ingly-topbar-dedupe-v68">
 /* DEDUPE TOPBAR v68 (B) — rimuove i controlli DUPLICATI della topbar che la
