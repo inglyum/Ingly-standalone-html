@@ -109496,6 +109496,26 @@ body #sidebar-toolbar{ display:none !important; }
    quick-access. Teniamo SOLO Favs; nascondiamo il doppione NavPrefs. */
 #nav-favorites-bar{ display:none !important; }                 /* barra preferiti ridondante (NavPrefs) */
 #sidebar-nav .nav-item .nav-ctrl{ display:none !important; }   /* seconda stellina+occhio duplicati per voce */
+
+/* ── PIN PREFERITI professionale ─────────────────────────────────────────────
+   Prima: .nav-pin opacity:0 (invisibile fino all'hover, poi 55%) → poco scopribile
+   e "spariva" al click. Ora: sempre presente ma discreta, con stato hover chiaro
+   (sfondo+scala) e oro quando è preferito. Bersaglio cliccabile ampio. */
+#sidebar-nav .nav-item{ position:relative !important; padding-right:30px !important; }
+#sidebar-nav .nav-item > .nav-pin{
+  position:absolute !important; right:7px !important; top:50% !important; transform:translateY(-50%) !important;
+  opacity:.28 !important; color:var(--text-dim) !important;
+  width:22px !important; height:22px !important; min-width:22px !important; margin:0 !important; font-size:12px !important;
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  border-radius:6px !important; cursor:pointer !important; text-align:center !important;
+  transition:opacity .15s ease, color .15s ease, background .15s ease !important;
+}
+#sidebar-nav .nav-item:hover > .nav-pin{ opacity:.55 !important; }
+#sidebar-nav .nav-item > .nav-pin:hover{
+  opacity:1 !important; color:#f59e0b !important; background:rgba(245,158,11,.16) !important;
+}
+#sidebar-nav .nav-item > .nav-pin.pinned{ opacity:1 !important; color:#f59e0b !important; }
+#nav-favs-list .nav-item > .nav-pin{ opacity:1 !important; color:#f59e0b !important; }
 /* La ricerca sidebar guadagna respiro ora che la toolbar non c'è */
 #sidebar-inner #sidebar-search{ padding-bottom:12px !important; }
 /* Anti-sovrapposizione barra utente #ia-pill (position:fixed, h46 + ~16 margine).
