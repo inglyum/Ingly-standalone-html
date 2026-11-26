@@ -109489,6 +109489,13 @@ body.saas-active #topbar #lang-toggle { width:36px !important; min-width:36px !i
    loro sezioni). Rimosso dalla vista; le funzioni restano nel codice. */
 /* specificità ≥ regola esistente `body #sidebar-toolbar{display:flex!important}` */
 body #sidebar-toolbar{ display:none !important; }
+/* ── PREFERITI: un solo sistema (Favs) ───────────────────────────────────────
+   Coesistevano DUE sistemi: Favs (sezioni "⭐ PREFERITI" + "🕐 RECENTI", completo e
+   pulito) e NavPrefs (una barra ridondante "⭐ Favorites — hover to pin" + una
+   seconda stellina/occhio per voce). Da qui sovrapposizioni e confusione preferiti/
+   quick-access. Teniamo SOLO Favs; nascondiamo il doppione NavPrefs. */
+#nav-favorites-bar{ display:none !important; }                 /* barra preferiti ridondante (NavPrefs) */
+#sidebar-nav .nav-item .nav-ctrl{ display:none !important; }   /* seconda stellina+occhio duplicati per voce */
 /* La ricerca sidebar guadagna respiro ora che la toolbar non c'è */
 #sidebar-inner #sidebar-search{ padding-bottom:12px !important; }
 /* Anti-sovrapposizione barra utente #ia-pill (position:fixed, h46 + ~16 margine).
@@ -109577,7 +109584,21 @@ body #topbar #backup-last-indicator{ cursor:default !important; }
       }
     });
   }
-  function tick(){ hide(); fixBadges(); }
+  // Pulizia lista PREFERITI: mostra SOLO i preferiti reali. Difensivo contro item
+  // spuri (senza data-section o non tra i favoriti) inseriti da race/sistemi legacy.
+  function cleanFavs(){
+    try{
+      var fl=document.getElementById('nav-favs-list');
+      if(!fl || !window.Favs || typeof Favs.getFavs!=='function') return;
+      var favs=Favs.getFavs()||[];
+      Array.prototype.slice.call(fl.children).forEach(function(it){
+        if(!it.classList || !it.classList.contains('nav-item')) return;
+        var s=it.getAttribute('data-section');
+        if(!s || favs.indexOf(s)<0) it.remove();
+      });
+    }catch(e){}
+  }
+  function tick(){ hide(); fixBadges(); cleanFavs(); }
   if(document.readyState!=='loading') tick();
   document.addEventListener('DOMContentLoaded',tick);
   var n=0,iv=setInterval(function(){ tick(); if(++n>40) clearInterval(iv); },400);
