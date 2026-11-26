@@ -1039,6 +1039,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="nav-item" data-section="template_docs" onclick="App.navigate('template_docs')" style="color:#d4af37;font-weight:700"><i class="fas fa-palette"></i> 🎨 Template Documenti</div>
       <div class="nav-item" data-section="quoteintel" onclick="App.navigate('quoteintel')" style="color:#a78bfa;font-weight:700"><i class="fas fa-chart-pie"></i> Quote Intelligence 🎯</div>
       <div class="nav-item" data-section="lasercalc" onclick="App.navigate('lasercalc')" style="color:#a5b4fc;font-weight:700"><i class="fas fa-bolt"></i> ⚡ 🧮 Calc Laser</div>
+      <div class="nav-item" data-section="uvomni" onclick="App.navigate('uvomni')" style="color:#c084fc;font-weight:700"><i class="fas fa-print"></i> 🖨️ Quoter UV Omni</div>
       <div class="nav-item" data-section="gestione_ordini" onclick="App.navigate('gestione_ordini')" style="background:linear-gradient(90deg,#6366f115,transparent);font-weight:700;color:#818cf8"><i class="fas fa-layer-group"></i> 🔄 Ordini & Workflow</div>
       
       
@@ -1720,6 +1721,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <!-- ===================== LASER CALC P3 ===================== -->
 <div class="section-view" id="view-sales_archive"></div>
 
+<div class="section-view" id="view-uvomni"></div>
 <div class="section-view" id="view-lasercalc">
   <div class="page-header">
     <div>
@@ -11012,6 +11014,7 @@ const App={
       quoter:()=>Quoter.init(),
       template_docs:()=>{ if(typeof TemplateDocsModule!=='undefined') (typeof TemplateDocsModule!=='undefined'&&TemplateDocsModule.render()); },
       lasercalc:()=>LaserCalcPage.init(),
+      uvomni:()=>{ if(window.UVOmni) UVOmni.render(); },
       // workflow → pipeline alias above
       // sales → pipeline alias above
       cashflow:()=>{if(typeof Cashflow!=='undefined')(typeof Cashflow!=='undefined'&&Cashflow.render());},
@@ -109639,5 +109642,161 @@ body #topbar #backup-last-indicator{ cursor:default !important; }
     }
   }catch(e){ console.warn('[backup-reconcile]',e); }
 })();
+</script>
+<script id="ingly-uvomni-quoter">
+/* ═══════════════════════════════════════════════════════════════════════════
+   SMART QUOTER UV — xTool O1 Omni (Dual UV)
+   Modello di costo fondato su ricerca reale (nov 2026): stampante Dual UV
+   ~€2.999, inchiostri ~€0,11–0,16/ml, testina Epson F1080 720×1440dpi, piano
+   330×420mm, oggetti fino a 50mm. Supporta stampa PIATTA / RILIEVO / TEXTURE,
+   bianco di base, vernice. Formula KB: (Materiale + Macchina + Lavoro + Design)
+   × Markup canale, arrotondato a ,90, minimi psicologici. Le densità inchiostro
+   sono stime da CALIBRARE col consumo reale (pannello Parametri). Local-first. */
+const UVOmni = {
+  _K:'ingly_uvomni_cfg_v2',
+  defaults:{
+    printerCost:2999, lifetimeHours:1500,          // ammortamento (costo / ore vita)
+    inkCMYK:0.13, inkWhite:0.13, inkVarnish:0.13, inkFluo:0.16,   // €/ml
+    densFlat:0.012, densWhite:0.015, densVarnish:0.006, densRelief01:0.004, // ml/cm²
+    speedFlat:30,                                   // cm²/min (stampa piatta 1 passata)
+    machineRate:0.06, laborRate:0.30, designFee:15, // €/min, €/min (KB €18/h), una tantum
+    mB2C:3, mB2B:2.3, mEtsy:3.5
+  },
+  cfg(){ try{ return Object.assign({},this.defaults,JSON.parse(localStorage.getItem(this._K)||'{}')); }catch(e){ return Object.assign({},this.defaults); } },
+  saveCfg(c){ try{ localStorage.setItem(this._K, JSON.stringify(c)); }catch(e){} },
+  _r90(v){ v=Math.max(0,+v||0); var f=Math.floor(v); var out=f+0.90; if(out<v) out=f+1+0.90; return +out.toFixed(2); },
+  _n(id,def){ var e=document.getElementById(id); var v=e?parseFloat(e.value):NaN; return isNaN(v)?(def||0):v; },
+  _b(id){ var e=document.getElementById(id); return !!(e&&e.checked); },
+  _s(id){ var e=document.getElementById(id); return e?e.value:''; },
+
+  calc(){
+    var c=this.cfg();
+    var w=this._n('uv-w',0), h=this._n('uv-h',0), qty=Math.max(1,this._n('uv-qty',1));
+    var area=Math.max(0,w*h);                       // cm²
+    var cov=Math.min(100,Math.max(0,this._n('uv-cov',70)))/100;
+    var type=this._s('uv-type')||'piatta';
+    var white=this._b('uv-white'), varnish=this._b('uv-varnish'), fluo=this._b('uv-fluo');
+    var relMm=Math.max(0,this._n('uv-relief',0));
+    var substrate=Math.max(0,this._n('uv-sub',0));
+
+    // ── Inchiostro (ml) ──
+    var mlCMYK=area*cov*c.densFlat;
+    var mlWhite=white?area*c.densWhite:0;
+    var mlVarn=varnish?area*c.densVarnish:0;
+    if(type==='texture') mlVarn+=area*c.densVarnish*2;             // texture = più vernice
+    var mlRelief=(type==='rilievo')?area*(relMm/0.1)*c.densRelief01:0; // rilievo = strati bianco/vernice
+    var inkCMYKcost=mlCMYK*(fluo?c.inkFluo:c.inkCMYK);
+    var inkWhiteCost=mlWhite*c.inkWhite;
+    var inkVarnCost=(mlVarn+mlRelief)*c.inkVarnish;
+    var inkMl=mlCMYK+mlWhite+mlVarn+mlRelief;
+    var inkCost=inkCMYKcost+inkWhiteCost+inkVarnCost;
+
+    // ── Tempo stampa (min) ──
+    var passMult = type==='rilievo' ? (1+relMm*3) : (type==='texture'?2:1);
+    var tPrint=(area>0? area/c.speedFlat : 0)*passMult + (white?area/c.speedFlat*0.8:0);
+
+    // ── Costi ──
+    var machine=tPrint*c.machineRate;
+    var amort=tPrint*(c.printerCost/Math.max(1,c.lifetimeHours*60));
+    var laborMin=4 + area*0.02 + (type==='rilievo'?3:0);          // prep + finitura
+    var labor=laborMin*c.laborRate;
+    var unitCost=substrate+inkCost+machine+amort+labor;
+    var jobCost=unitCost*qty + c.designFee;                        // design una tantum
+
+    var mk={b2c:c.mB2C,b2b:c.mB2B,etsy:c.mEtsy};
+    var price={};
+    for(var k in mk){ var p=this._r90(jobCost*mk[k]); p=Math.max(p,15); price[k]={tot:p, unit:+(p/qty).toFixed(2), margin:+(((p-jobCost)/p)*100).toFixed(0)}; }
+
+    return {area:+area.toFixed(1),inkMl:+inkMl.toFixed(2),inkCost:+inkCost.toFixed(2),
+      machine:+machine.toFixed(2),amort:+amort.toFixed(2),labor:+labor.toFixed(2),
+      substrate:+substrate.toFixed(2),design:c.designFee,tPrint:+tPrint.toFixed(1),qty:qty,
+      unitCost:+unitCost.toFixed(2),jobCost:+jobCost.toFixed(2),price:price,type:type,relMm:relMm};
+  },
+
+  recalc(){
+    var el=document.getElementById('uv-out'); if(!el) return;
+    var r=this.calc(); var f=function(v){return '€'+(+v||0).toFixed(2);};
+    el.innerHTML =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">'+
+        this._kpi('Area',r.area+' cm²','#60a5fa')+this._kpi('Inchiostro',r.inkMl+' ml','#c084fc')+
+        this._kpi('Tempo stampa',r.tPrint+' min','#f59e0b')+this._kpi('Costo unitario',f(r.unitCost),'#22c55e')+
+      '</div>'+
+      '<div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px">'+
+        '<div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Scomposizione costo (per pezzo)</div>'+
+        this._row('Materiale / supporto',f(r.substrate))+
+        this._row('Inchiostro ('+r.type+(r.type==='rilievo'?' '+r.relMm+'mm':'')+')',f(r.inkCost))+
+        this._row('Macchina',f(r.machine))+
+        this._row('Ammortamento stampante',f(r.amort))+
+        this._row('Lavoro (€'+this.cfg().laborRate.toFixed(2)+'/min)',f(r.labor))+
+        '<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px">'+this._row('Design (una tantum)',f(r.design))+'</div>'+
+        '<div style="border-top:1px solid var(--border);margin-top:6px;padding-top:6px;font-weight:800">'+this._row('COSTO TOTALE ('+r.qty+' pz)',f(r.jobCost))+'</div>'+
+      '</div>'+
+      '<div style="font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Prezzo consigliato per canale</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">'+
+        this._price('B2C ×'+this.cfg().mB2C, r.price.b2c, r.qty)+
+        this._price('B2B ×'+this.cfg().mB2B, r.price.b2b, r.qty)+
+        this._price('Etsy ×'+this.cfg().mEtsy, r.price.etsy, r.qty)+
+      '</div>';
+  },
+  _kpi(l,v,c){ return '<div style="background:var(--bg-card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px"><div style="font-size:10px;color:var(--text-dim);text-transform:uppercase;font-weight:700">'+l+'</div><div style="font-size:17px;font-weight:900;color:'+c+'">'+v+'</div></div>'; },
+  _row(l,v){ return '<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0"><span style="color:var(--text-muted)">'+l+'</span><span style="font-weight:700;color:var(--text)">'+v+'</span></div>'; },
+  _price(l,p,qty){ return '<div style="background:var(--bg-card2);border:1px solid var(--primary-border);border-radius:10px;padding:10px;text-align:center"><div style="font-size:10px;color:var(--text-dim);font-weight:700;margin-bottom:2px">'+l+'</div><div style="font-size:20px;font-weight:900;color:var(--primary)">€'+p.tot.toFixed(2)+'</div>'+(qty>1?'<div style="font-size:10px;color:var(--text-muted)">€'+p.unit.toFixed(2)+'/pz</div>':'')+'<div style="font-size:10px;color:#22c55e;font-weight:700">margine '+p.margin+'%</div></div>'; },
+
+  _field(l,id,val,step,unit){ return '<div style="margin-bottom:10px"><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:3px;font-weight:600">'+l+(unit?' <span style="color:var(--text-dim)">('+unit+')</span>':'')+'</label><input class="form-control" id="'+id+'" type="number" value="'+val+'" step="'+(step||'0.1')+'" min="0" oninput="UVOmni.recalc()" style="height:36px"></div>'; },
+
+  render(){
+    var host=document.getElementById('view-uvomni'); if(!host) return;
+    var c=this.cfg();
+    host.innerHTML =
+    '<div style="padding:16px 20px;max-width:1100px;margin:0 auto">'+
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">'+
+        '<div style="width:46px;height:46px;border-radius:12px;background:linear-gradient(135deg,#8b5cf6,#c084fc);display:flex;align-items:center;justify-content:center;font-size:22px">🖨️</div>'+
+        '<div><h2 style="margin:0;font-size:20px;font-weight:900">Quoter UV Omni</h2><p style="margin:0;font-size:12px;color:var(--text-muted)">xTool O1 Omni Dual UV · stampa piatta · rilievo · texture</p></div>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:1fr 1.1fr;gap:16px;margin-top:14px">'+
+        // ── FORM ──
+        '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:16px">'+
+          '<div style="font-size:12px;font-weight:800;color:var(--text);margin-bottom:12px">📐 Lavoro</div>'+
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">'+
+            this._field('Largh.','uv-w',10,'0.5','cm')+this._field('Alt.','uv-h',10,'0.5','cm')+this._field('Quantità','uv-qty',1,'1','')+
+          '</div>'+
+          '<div style="margin-bottom:10px"><label style="font-size:11px;color:var(--text-muted);display:block;margin-bottom:3px;font-weight:600">Tipo stampa</label>'+
+            '<select class="form-control" id="uv-type" onchange="UVOmni.recalc()" style="height:36px"><option value="piatta">Piatta (CMYK)</option><option value="texture">Texture (vernice)</option><option value="rilievo">Rilievo 3D (embossed)</option></select></div>'+
+          this._field('Altezza rilievo (solo rilievo)','uv-relief',0.5,'0.1','mm')+
+          this._field('Copertura colore','uv-cov',70,'5','%')+
+          this._field('Costo supporto / pz','uv-sub',1.5,'0.1','€')+
+          '<div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:6px">'+
+            '<label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="uv-white" onchange="UVOmni.recalc()"> Bianco di base</label>'+
+            '<label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="uv-varnish" onchange="UVOmni.recalc()"> Vernice gloss</label>'+
+            '<label style="font-size:12px;display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" id="uv-fluo" onchange="UVOmni.recalc()"> Colori fluo</label>'+
+          '</div>'+
+          '<details style="margin-top:14px"><summary style="cursor:pointer;font-size:11px;font-weight:800;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px">⚙️ Parametri costo (da calibrare)</summary>'+
+            '<div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:8px">'+
+              this._field('Prezzo stampante','cfg-printer',c.printerCost,'50','€')+this._field('Ore vita (ammort.)','cfg-life',c.lifetimeHours,'100','h')+
+              this._field('Inchiostro CMYK','cfg-cmyk',c.inkCMYK,'0.01','€/ml')+this._field('Inchiostro vernice/bianco','cfg-varn',c.inkVarnish,'0.01','€/ml')+
+              this._field('Densità piatta','cfg-dflat',c.densFlat,'0.001','ml/cm²')+this._field('Densità rilievo /0,1mm','cfg-drel',c.densRelief01,'0.001','ml/cm²')+
+              this._field('Velocità stampa','cfg-speed',c.speedFlat,'1','cm²/min')+this._field('Costo macchina','cfg-mach',c.machineRate,'0.01','€/min')+
+            '</div>'+
+            '<button onclick="UVOmni.applyCfg()" style="margin-top:10px;padding:8px 14px;background:var(--primary);color:#000;border:none;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700">Salva parametri</button>'+
+          '</details>'+
+        '</div>'+
+        // ── OUTPUT ──
+        '<div><div id="uv-out"></div>'+
+          '<div style="font-size:10px;color:var(--text-dim);margin-top:10px;line-height:1.5">⚠️ Le densità inchiostro sono stime di partenza (ricerca nov 2026). Per prezzi precisi, calibra "Densità" misurando il consumo reale su una stampa campione. Prezzi arrotondati a ,90, minimo ordine €15 (KB).</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+    this.recalc();
+  },
+  applyCfg(){
+    var c=this.cfg();
+    c.printerCost=this._n('cfg-printer',c.printerCost); c.lifetimeHours=this._n('cfg-life',c.lifetimeHours);
+    c.inkCMYK=this._n('cfg-cmyk',c.inkCMYK); c.inkVarnish=this._n('cfg-varn',c.inkVarnish); c.inkWhite=c.inkVarnish;
+    c.densFlat=this._n('cfg-dflat',c.densFlat); c.densRelief01=this._n('cfg-drel',c.densRelief01);
+    c.speedFlat=this._n('cfg-speed',c.speedFlat); c.machineRate=this._n('cfg-mach',c.machineRate);
+    this.saveCfg(c); if(typeof toast!=='undefined') toast('⚙️ Parametri UV salvati','success'); this.recalc();
+  }
+};
+window.UVOmni = UVOmni;
 </script>
 </html>
