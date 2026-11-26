@@ -109498,6 +109498,27 @@ body #sidebar-toolbar{ display:none !important; }
    scroller #sidebar-nav (flex:1) termina SOPRA la barra e nessun item ci va sotto. */
 #sidebar-inner{ padding-bottom:72px !important; box-sizing:border-box !important; }
 #sidebar-inner #sidebar-nav{ padding-bottom:12px !important; }
+
+/* ── TOPBAR — allineamento e organizzazione v68 ──────────────────────────────
+   La topbar è assemblata da 8 iniezioni JS diverse (ognuna con stile proprio),
+   da cui disallineamenti, duplicati e spaziatura irregolare. Qui: (a) nascondiamo
+   i controlli fuori posto / duplicati; (b) uniformiamo tutti i bottoni (stessa
+   altezza, centratura verticale, gap costante). */
+/* (a) duplicati / clutter da rimuovere dalla topbar globale */
+body #topbar #quote-lang-toggle,            /* secondo toggle lingua (lingua preventivo) */
+body #topbar #ai-reply-topbar-btn,          /* "🤖 Reply" — accessibile dalla sezione AI */
+body #topbar #cloud-topbar-btn{             /* "☁️" Cloud Update — c'è la sezione Cloud Sync */
+  display:none !important;
+}
+/* (b) uniformità: tutti i bottoni topbar stessa forma, centrati, gap costante */
+body #topbar{ align-items:center !important; gap:6px !important; }
+body #topbar > *{ align-self:center !important; }
+body #topbar button, body #topbar .topbar-btn{
+  height:32px !important; min-width:32px !important; box-sizing:border-box !important;
+  display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  border-radius:8px !important; line-height:1 !important; margin:0 !important;
+  padding:0 7px !important; white-space:nowrap !important; vertical-align:middle !important;
+}
 </style>
 <script id="ingly-topbar-dedupe-v68">
 /* DEDUPE TOPBAR v68 (B) — rimuove i controlli DUPLICATI della topbar che la
