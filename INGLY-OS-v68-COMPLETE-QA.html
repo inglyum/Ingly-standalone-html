@@ -109510,25 +109510,36 @@ body #topbar #ai-reply-topbar-btn,          /* "🤖 Reply" — accessibile dall
 body #topbar #cloud-topbar-btn{             /* "☁️" Cloud Update — c'è la sezione Cloud Sync */
   display:none !important;
 }
-/* (b) uniformità: tutti i bottoni topbar stessa forma, centrati, gap costante */
-body #topbar{ align-items:center !important; gap:9px !important; }
+/* (b) ICON-BUTTON COERENTI: stessa altezza, centrati, senza bordi-fantasma.
+   Default trasparente + hover morbido → fila pulita e uniforme; niente riquadri
+   sbiaditi (es. il box su ⌘K) né stili incoerenti dalle varie iniezioni. */
+body #topbar{ align-items:center !important; gap:8px !important; }
 body #topbar > *{ align-self:center !important; }
 body #topbar button, body #topbar .topbar-btn{
-  height:32px !important; min-width:32px !important; box-sizing:border-box !important;
+  height:34px !important; min-width:34px !important; width:auto !important; box-sizing:border-box !important;
   display:inline-flex !important; align-items:center !important; justify-content:center !important;
-  border-radius:8px !important; line-height:1 !important; margin:0 !important;
-  padding:0 7px !important; white-space:nowrap !important; vertical-align:middle !important;
+  gap:4px !important; padding:0 8px !important; margin:0 !important;
+  border:none !important; background:transparent !important; box-shadow:none !important; outline:none !important;
+  border-radius:9px !important; line-height:1 !important; white-space:nowrap !important;
+  color:var(--text-muted) !important; cursor:pointer !important;
+  transition:background .15s ease, color .15s ease !important;
 }
-/* (c) BADGE numerici (notifiche / AI): badge-angolo ASSOLUTO sull'icona, così non
-   allargano il bottone né si sovrappongono all'icona vicina (era il bug: badge
-   inline che sbordava a destra sul vicino). */
-body #topbar #notif-btn, body #topbar #ai-btn{ position:relative !important; overflow:visible !important; }
+body #topbar button:hover, body #topbar .topbar-btn:hover{
+  background:rgba(128,128,128,.16) !important; color:var(--text) !important;
+}
+body #topbar #lang-toggle{ font-weight:700 !important; font-size:12px !important; }
+
+/* (c) BADGE numerici (notifiche / AI): pastiglia INLINE auto-contenuta nel bottone.
+   Il bottone cresce per contenere [icona][badge] come un'unica unità (es. 🔔 50),
+   così il badge sta ATTACCATO alla sua icona, non galleggia sopra e non invade il
+   vicino. Era inline ma il bottone aveva larghezza forzata → ora width:auto. */
+body #topbar #notif-btn, body #topbar #ai-btn{ overflow:visible !important; padding:0 7px !important; }
 body #topbar #notif-btn > .badge, body #topbar #ai-btn > .badge,
 body #topbar #notif-count, body #topbar #ai-count{
-  position:absolute !important; top:-4px !important; right:-4px !important; left:auto !important; bottom:auto !important;
-  min-width:15px !important; height:15px !important; padding:0 3px !important; box-sizing:border-box !important;
-  font-size:8px !important; line-height:1 !important; font-weight:800 !important; border-radius:8px !important;
-  display:flex !important; align-items:center !important; justify-content:center !important; pointer-events:none !important;
+  position:static !important; display:inline-flex !important; align-items:center !important; justify-content:center !important;
+  min-width:16px !important; height:16px !important; padding:0 4px !important; margin:0 !important;
+  font-size:9px !important; line-height:1 !important; font-weight:800 !important; border-radius:8px !important;
+  flex:0 0 auto !important; vertical-align:middle !important;
 }
 /* (d) indicatori di stato passivi: niente cursore "?" (help) ingannevole */
 body #topbar #backup-last-indicator{ cursor:default !important; }
@@ -109547,10 +109558,30 @@ body #topbar #backup-last-indicator{ cursor:default !important; }
 (function(){
   var DUPES=['_theme_toggle_btn','ds-ck-btn','prox-sidebar-toggle','profile-topbar-btn'];
   function hide(){ DUPES.forEach(function(id){ var e=document.getElementById(id); if(e) e.style.setProperty('display','none','important'); }); }
-  if(document.readyState!=='loading') hide();
-  document.addEventListener('DOMContentLoaded',hide);
-  var n=0,iv=setInterval(function(){ hide(); if(++n>24) clearInterval(iv); },500);
-  try{ var tb=document.getElementById('topbar'); if(tb) new MutationObserver(hide).observe(tb,{childList:true,subtree:true}); }catch(e){}
+  // Badge notifiche/AI: lo stile inline !important batte le regole stratificate
+  // (es. `.topbar-btn{max-width:30px!important}` che impediva al bottone di
+  // crescere → badge che sbordava/galleggiava). Rendiamo [icona][badge] un'unica
+  // unità auto-contenuta, pulita e attaccata.
+  function fixBadges(){
+    ['notif-btn','ai-btn'].forEach(function(id){
+      var btn=document.getElementById(id); if(!btn) return;
+      var sp=function(k,v){ btn.style.setProperty(k,v,'important'); };
+      sp('width','auto'); sp('min-width','34px'); sp('max-width','none');
+      sp('display','inline-flex'); sp('align-items','center'); sp('justify-content','center');
+      sp('gap','4px'); sp('padding','0 8px'); sp('overflow','visible');
+      var bd=btn.querySelector('.badge'); if(bd && (bd.textContent||'').trim()!==''){
+        var b=function(k,v){ bd.style.setProperty(k,v,'important'); };
+        b('position','static'); b('display','inline-flex'); b('align-items','center'); b('justify-content','center');
+        b('min-width','16px'); b('height','16px'); b('padding','0 4px'); b('margin','0');
+        b('font-size','9px'); b('line-height','1'); b('font-weight','800'); b('border-radius','8px'); b('flex','0 0 auto');
+      }
+    });
+  }
+  function tick(){ hide(); fixBadges(); }
+  if(document.readyState!=='loading') tick();
+  document.addEventListener('DOMContentLoaded',tick);
+  var n=0,iv=setInterval(function(){ tick(); if(++n>40) clearInterval(iv); },400);
+  try{ var tb=document.getElementById('topbar'); if(tb) new MutationObserver(tick).observe(tb,{childList:true,subtree:true,characterData:true}); }catch(e){}
 })();
 </script>
 <script id="ingly-backup-reconcile-v68">
